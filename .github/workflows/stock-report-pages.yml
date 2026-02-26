@@ -35,6 +35,7 @@ jobs:
         run: |
           python stock-report-site/scripts/update_report.py
           python stock-report-site/scripts/update_us_report.py
+          python stock-report-site/scripts/update_tw_news.py
           python stock-report-site/scripts/update_us_news.py
           python btc-hourly-site/scripts/update_btc_report.py
 
@@ -44,6 +45,7 @@ jobs:
           mkdir -p dist/us/data
           mkdir -p dist/btc-hourly/data
           mkdir -p dist/news
+          mkdir -p dist/tw-news/data
           mkdir -p dist/us-news/data
 
           # Combined portal (root)
@@ -63,6 +65,10 @@ jobs:
 
           # Daily news summary tag page
           cp stock-report-site/public/news.html dist/news/index.html
+
+          # TW stock news tag page
+          cp stock-report-site/public/tw-news.html dist/tw-news/index.html
+          cp stock-report-site/data/tw_news.json dist/tw-news/data/tw_news.json
 
           # US stock news tag page
           cp stock-report-site/public/us-news.html dist/us-news/index.html
