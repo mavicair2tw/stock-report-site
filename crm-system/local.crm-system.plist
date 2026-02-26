@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>local.crm-system</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-lc</string>
+    <string>cd /Users/mavicair2tw/.openclaw/workspace/crm-system &amp;&amp; source .venv/bin/activate &amp;&amp; export CRM_ENV=production &amp;&amp; export CRM_SECRET='CHANGE_ME_TO_A_STRONG_SECRET' &amp;&amp; exec gunicorn -c gunicorn.conf.py wsgi:app</string>
+  </array>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/mavicair2tw/.openclaw/workspace/crm-system</string>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/crm-system.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/crm-system.err.log</string>
+</dict>
+</plist>
