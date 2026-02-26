@@ -37,6 +37,7 @@
         <button class="tab" data-target="usnews">美股新聞</button>
         <button class="tab" data-target="stories">每日有趣故事</button>
         <button class="tab" data-target="coffee">每日咖啡新聞</button>
+        <button class="tab" data-target="podcast">Podcast</button>
       </div>
 
       <div id="spotifyWrap" class="spotify-wrap">
@@ -51,6 +52,7 @@
         <iframe id="usnews" src="./us-news/"></iframe>
         <iframe id="stories" src="./interesting-stories/"></iframe>
         <iframe id="coffee" src="./coffee-news/"></iframe>
+        <iframe id="podcast" src="./podcast/"></iframe>
       </div>
 
       <div class="foot">提示：綠色 = 上漲，紅色 = 下跌。</div>
@@ -65,7 +67,7 @@
       if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
 
       const tabs = document.querySelectorAll('.tab');
-      const frames = { tw: document.getElementById('tw'), us: document.getElementById('us'), btc: document.getElementById('btc'), twnews: document.getElementById('twnews'), usnews: document.getElementById('usnews'), stories: document.getElementById('stories'), coffee: document.getElementById('coffee') };
+      const frames = { tw: document.getElementById('tw'), us: document.getElementById('us'), btc: document.getElementById('btc'), twnews: document.getElementById('twnews'), usnews: document.getElementById('usnews'), stories: document.getElementById('stories'), coffee: document.getElementById('coffee'), podcast: document.getElementById('podcast') };
       let currentTab = 'tw';
 
 
@@ -85,6 +87,7 @@
       else if (location.hash === '#usnews') switchTab('usnews');
       else if (location.hash === '#stories') switchTab('stories');
       else if (location.hash === '#coffee') switchTab('coffee');
+      else if (location.hash === '#podcast') switchTab('podcast');
       else switchTab('tw');
     </script>
   </body>

@@ -58,6 +58,7 @@ jobs:
           mkdir -p dist/us-news/data
           mkdir -p dist/interesting-stories/data
           mkdir -p dist/coffee-news/data
+          mkdir -p dist/podcast
 
           # Combined portal (root)
           cp stock-report-site/public/index.html dist/index.html
@@ -89,6 +90,9 @@ jobs:
           # Daily coffee news tag page
           cp stock-report-site/public/coffee-news.html dist/coffee-news/index.html
           cp stock-report-site/data/coffee_news.json dist/coffee-news/data/coffee_news.json
+
+          # Podcast tag page
+          cp stock-report-site/public/podcast.html dist/podcast/index.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
