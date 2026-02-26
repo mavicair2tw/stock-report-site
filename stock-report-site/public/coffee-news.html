@@ -20,35 +20,47 @@
   </head>
   <body>
     <div class="wrap">
-      <h1>每日咖啡新聞</h1>
+      <h1 id="title">每日咖啡新聞</h1>
       <div class="sub" id="updated">載入中...</div>
       <div class="card" id="summary">載入摘要中...</div>
       <div class="card" id="list">載入新聞中...</div>
     </div>
 
     <script>
+      const lang = new URLSearchParams(location.search).get('lang') || 'zh';
+      const i18n = {
+        zh: { title:'每日咖啡新聞', updated:'更新時間', loading:'載入中...', fail:'載入失敗', loadFail:'讀取每日咖啡新聞失敗。', empty:'目前無資料，請稍後再試。', source:'來源', fallback:'今日咖啡市場與產業重點整理。' },
+        en: { title:'Daily Coffee News', updated:'Updated', loading:'Loading...', fail:'Load failed', loadFail:'Failed to load daily coffee news.', empty:'No data for now.', source:'Source', fallback:'Today’s key updates on coffee market and industry.' },
+        ja: { title:'毎日コーヒーニュース', updated:'更新時間', loading:'読み込み中...', fail:'読み込み失敗', loadFail:'毎日コーヒーニュースの読み込みに失敗しました。', empty:'現在データはありません。', source:'情報源', fallback:'本日のコーヒー市場・業界の要点です。' }
+      };
+      const t = i18n[lang] || i18n.zh;
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('updated').textContent = t.loading;
+
       fetch('./data/coffee_news.json?ts='+Date.now())
         .then(r=>r.json())
         .then(d=>{
-          document.getElementById('updated').textContent = `更新時間：${d.updatedAt} (${d.timezone})`;
-          document.getElementById('summary').innerHTML = `${d.summary || '今日咖啡市場與產業重點整理。'}`;
+          document.getElementById('updated').textContent = `${t.updated}：${d.updatedAt} (${d.timezone})`;
+          document.getElementById('summary').innerHTML = `${d.summary || t.fallback}`;
           const list = document.getElementById('list');
           const news = (d.news || []).slice(0, 10);
           list.innerHTML = news.length
-            ? news.map((n, i) => `
-                <div class="item">
-                  <h3>${i+1}. ${n.title || 'Untitled'}</h3>
-                  ${n.titleZh ? `<p>${n.titleZh}</p>` : ''}
-                  ${n.note ? `<p>${n.note}</p>` : ''}
-                  ${n.url ? `<p><a href="${n.url}" target="_blank">Source</a></p>` : ''}
-                </div>
-              `).join('')
-            : '<p>目前無資料，請稍後再試。</p>';
+            ? news.map((n, i) => {
+                const title = lang === 'zh' ? (n.titleZh || n.title || 'Untitled') : (n.title || n.titleZh || 'Untitled');
+                return `
+                  <div class="item">
+                    <h3>${i+1}. ${title}</h3>
+                    ${n.note ? `<p>${n.note}</p>` : ''}
+                    ${n.url ? `<p><a href="${n.url}" target="_blank">${t.source}</a></p>` : ''}
+                  </div>
+                `;
+              }).join('')
+            : `<p>${t.empty}</p>`;
         })
         .catch(()=>{
-          document.getElementById('updated').textContent = '載入失敗';
-          document.getElementById('summary').innerHTML = '讀取每日咖啡新聞失敗。';
-          document.getElementById('list').innerHTML = '<p>暫時無法讀取資料。</p>';
+          document.getElementById('updated').textContent = t.fail;
+          document.getElementById('summary').innerHTML = t.loadFail;
+          document.getElementById('list').innerHTML = `<p>${t.empty}</p>`;
         });
     </script>
   </body>

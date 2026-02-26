@@ -16,11 +16,22 @@
   </head>
   <body>
     <div class="wrap">
-      <h1>Podcast</h1>
-      <div class="sub">每日收聽推薦</div>
+      <h1 id="title">Podcast</h1>
+      <div class="sub" id="subtitle">每日收聽推薦</div>
       <div class="card">
         <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/show/4Knr7V4oC63Zi1SXYhJ4OU?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
       </div>
     </div>
+    <script>
+      const lang = new URLSearchParams(location.search).get('lang') || 'zh';
+      const i18n = {
+        zh: { title:'Podcast', subtitle:'每日收聽推薦' },
+        en: { title:'Podcast', subtitle:'Daily Listening Picks' },
+        ja: { title:'Podcast', subtitle:'毎日のおすすめ' }
+      };
+      const t = i18n[lang] || i18n.zh;
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('subtitle').textContent = t.subtitle;
+    </script>
   </body>
 </html>

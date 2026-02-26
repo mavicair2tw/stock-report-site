@@ -56,14 +56,14 @@
       </div>
 
       <div class="panel">
-        <iframe id="tw" class="active" src="./tw/"></iframe>
-        <iframe id="us" src="./us/"></iframe>
-        <iframe id="btc" src="./btc-hourly/"></iframe>
-        <iframe id="twnews" src="./tw-news/"></iframe>
-        <iframe id="usnews" src="./us-news/"></iframe>
-        <iframe id="stories" src="./interesting-stories/"></iframe>
-        <iframe id="coffee" src="./coffee-news/"></iframe>
-        <iframe id="podcast" src="./podcast/"></iframe>
+        <iframe id="tw" class="active" data-base="./tw/" src="./tw/"></iframe>
+        <iframe id="us" data-base="./us/" src="./us/"></iframe>
+        <iframe id="btc" data-base="./btc-hourly/" src="./btc-hourly/"></iframe>
+        <iframe id="twnews" data-base="./tw-news/" src="./tw-news/"></iframe>
+        <iframe id="usnews" data-base="./us-news/" src="./us-news/"></iframe>
+        <iframe id="stories" data-base="./interesting-stories/" src="./interesting-stories/"></iframe>
+        <iframe id="coffee" data-base="./coffee-news/" src="./coffee-news/"></iframe>
+        <iframe id="podcast" data-base="./podcast/" src="./podcast/"></iframe>
       </div>
 
       <div class="foot" id="footNote">提示：綠色 = 上漲，紅色 = 下跌。</div>
@@ -132,6 +132,17 @@
       let currentLang = localStorage.getItem('portalLang') || 'zh';
       if (!i18n[currentLang]) currentLang = 'zh';
 
+      function refreshFrameLang(target = null) {
+        const keys = target ? [target] : Object.keys(frames);
+        keys.forEach((k) => {
+          const el = frames[k];
+          if (!el) return;
+          const base = el.dataset.base || el.getAttribute('src') || '';
+          const next = `${base}${base.includes('?') ? '&' : '?'}lang=${encodeURIComponent(currentLang)}`;
+          if (el.getAttribute('src') !== next) el.setAttribute('src', next);
+        });
+      }
+
       function applyLanguage(lang) {
         const dict = i18n[lang] || i18n.zh;
         if (mainTitleEl) mainTitleEl.textContent = dict.title;
@@ -146,6 +157,7 @@
 
         langButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
         localStorage.setItem('portalLang', lang);
+        refreshFrameLang();
       }
 
       function switchTab(target) {

@@ -21,7 +21,7 @@
   </head>
   <body>
     <div class="wrap">
-      <h1>美股新聞</h1>
+      <h1 id="title">美股新聞</h1>
       <div class="sub" id="updated">載入中...</div>
       <div class="sub" id="viewCounter">點閱數：--</div>
 
@@ -30,7 +30,7 @@
       </div>
       <div class="card" id="summary">載入摘要中...</div>
       <div class="card">
-        <h3 style="margin-top:0">新聞清單</h3>
+        <h3 style="margin-top:0" id="listTitle">新聞清單</h3>
         <ol id="list"></ol>
       </div>
 
@@ -41,23 +41,34 @@
     </div>
 
     <script>
+      const lang = new URLSearchParams(location.search).get('lang') || 'zh';
+      const i18n = {
+        zh: { title:'美股新聞', listTitle:'新聞清單', views:'點閱數', updated:'更新時間', source:'來源', loading:'載入中...', fail:'載入失敗', empty:'目前無資料' },
+        en: { title:'US Stock News', listTitle:'News List', views:'Views', updated:'Updated', source:'Source', loading:'Loading...', fail:'Load failed', empty:'No data available' },
+        ja: { title:'米国株ニュース', listTitle:'ニュース一覧', views:'閲覧数', updated:'更新時間', source:'情報源', loading:'読み込み中...', fail:'読み込み失敗', empty:'データがありません' }
+      };
+      const t = i18n[lang] || i18n.zh;
+
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('listTitle').textContent = t.listTitle;
+      document.getElementById('updated').textContent = t.loading;
 
       const pageKey = `views:${location.pathname}`;
       const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
       localStorage.setItem(pageKey, String(pageViews));
       const viewCounterEl = document.getElementById('viewCounter');
-      if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
+      if (viewCounterEl) viewCounterEl.textContent = `${t.views}：${pageViews}`;
 
       fetch('./data/us_news.json?ts='+Date.now())
         .then(r=>r.json())
         .then(d=>{
-          document.getElementById('updated').textContent = `更新時間：${d.updatedAt} (${d.timezone})`;
-          document.getElementById('summary').innerHTML = `來源：<a href="${d.source}" target="_blank">cnyes 美股</a><br>${d.summary}`;
+          document.getElementById('updated').textContent = `${t.updated}：${d.updatedAt} (${d.timezone})`;
+          document.getElementById('summary').innerHTML = `${t.source}：<a href="${d.source}" target="_blank">cnyes 美股</a><br>${d.summary}`;
           const list = document.getElementById('list');
-          list.innerHTML = (d.headlines||[]).map(h=>`<li><a href="${h.url}" target="_blank">${h.title}</a></li>`).join('') || '<li>目前無資料</li>';
+          list.innerHTML = (d.headlines||[]).map(h=>`<li><a href="${h.url}" target="_blank">${h.title}</a></li>`).join('') || `<li>${t.empty}</li>`;
         })
         .catch(()=>{
-          document.getElementById('updated').textContent = '載入失敗';
+          document.getElementById('updated').textContent = t.fail;
         });
     </script>
   </body>

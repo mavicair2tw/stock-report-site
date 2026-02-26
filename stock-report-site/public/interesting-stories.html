@@ -20,33 +20,45 @@
   </head>
   <body>
     <div class="wrap">
-      <h1>每日 5 則有趣故事</h1>
+      <h1 id="title">每日有趣故事</h1>
       <div class="sub" id="updated">載入中...</div>
       <div class="card" id="list">載入故事中...</div>
     </div>
 
     <script>
+      const lang = new URLSearchParams(location.search).get('lang') || 'zh';
+      const i18n = {
+        zh: { title:'每日有趣故事', updated:'更新時間', loading:'載入中...', fail:'載入失敗', loadFail:'讀取每日故事失敗。', empty:'目前無資料，請稍後再試。', source:'來源' },
+        en: { title:'Daily Interesting Stories', updated:'Updated', loading:'Loading...', fail:'Load failed', loadFail:'Failed to load daily stories.', empty:'No data for now.', source:'Source' },
+        ja: { title:'毎日の面白い話', updated:'更新時間', loading:'読み込み中...', fail:'読み込み失敗', loadFail:'毎日の話題の読み込みに失敗しました。', empty:'現在データはありません。', source:'情報源' }
+      };
+      const t = i18n[lang] || i18n.zh;
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('updated').textContent = t.loading;
+
       fetch('./data/interesting_stories.json?ts='+Date.now())
         .then(r=>r.json())
         .then(d=>{
-          document.getElementById('updated').textContent = `更新時間：${d.updatedAt} (${d.timezone})`;
+          document.getElementById('updated').textContent = `${t.updated}：${d.updatedAt} (${d.timezone})`;
           const list = document.getElementById('list');
           const stories = (d.stories || []).slice(0, 5);
           list.innerHTML = stories.length
-            ? stories.map((s, i) => `
-                <div class="story">
-                  <h3>${i+1}. ${s.titleEn || 'Untitled'}</h3>
-                  <p>${s.titleZh || ''}</p>
-                  ${s.summaryEn ? `<p>${s.summaryEn}</p>` : ''}
-                  ${s.summaryZh ? `<p>${s.summaryZh}</p>` : ''}
-                  ${s.url ? `<p><a href="${s.url}" target="_blank">Source</a></p>` : ''}
-                </div>
-              `).join('')
-            : '<p>目前無資料，請稍後再試。</p>';
+            ? stories.map((s, i) => {
+                const title = lang === 'zh' ? (s.titleZh || s.titleEn || 'Untitled') : (s.titleEn || s.titleZh || 'Untitled');
+                const summary = lang === 'zh' ? (s.summaryZh || s.summaryEn || '') : (s.summaryEn || s.summaryZh || '');
+                return `
+                  <div class="story">
+                    <h3>${i+1}. ${title}</h3>
+                    ${summary ? `<p>${summary}</p>` : ''}
+                    ${s.url ? `<p><a href="${s.url}" target="_blank">${t.source}</a></p>` : ''}
+                  </div>
+                `;
+              }).join('')
+            : `<p>${t.empty}</p>`;
         })
         .catch(()=>{
-          document.getElementById('updated').textContent = '載入失敗';
-          document.getElementById('list').innerHTML = '<p>讀取每日故事失敗。</p>';
+          document.getElementById('updated').textContent = t.fail;
+          document.getElementById('list').innerHTML = `<p>${t.loadFail}</p>`;
         });
     </script>
   </body>
