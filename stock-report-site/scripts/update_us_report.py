@@ -15,7 +15,7 @@ ASSETS = [
     {"label": "NVIDIA", "symbol": "NVDA", "type": "Stock"},
     {"label": "Tesla", "symbol": "TSLA", "type": "Stock"},
     {"label": "S&P 500", "symbol": "^GSPC", "type": "Index"},
-    {"label": "NASDAQ SOX", "symbol": "^SOX", "type": "Index"},
+    {"label": "美國費城半導體指數", "symbol": "^SOX", "type": "Index"},
 ]
 
 

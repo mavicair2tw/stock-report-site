@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-26T13:42:43.694610+08:00",
+  "updatedAt": "2026-02-26T14:55:58.625645+08:00",
   "timezone": "Asia/Taipei",
   "market": "US",
   "items": [
@@ -640,7 +640,7 @@
       ]
     },
     {
-      "label": "NASDAQ SOX",
+      "label": "美國費城半導體指數",
       "symbol": "^SOX",
       "type": "Index",
       "price": 8467.38,
