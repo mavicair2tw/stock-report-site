@@ -31,6 +31,7 @@
         <button class="tab" data-target="us">美股 15 分鐘</button>
         <button class="tab" data-target="btc">BTC 每小時</button>
         <button class="tab" data-target="news">盤後新聞摘要</button>
+        <button class="tab" data-target="usnews">美股新聞</button>
       </div>
 
       <div class="panel">
@@ -38,6 +39,7 @@
         <iframe id="us" src="./us/"></iframe>
         <iframe id="btc" src="./btc-hourly/"></iframe>
         <iframe id="news" src="./news/"></iframe>
+        <iframe id="usnews" src="./us-news/"></iframe>
       </div>
 
       <div class="foot">提示：綠色 = 上漲，紅色 = 下跌。</div>
@@ -45,7 +47,7 @@
 
     <script>
       const tabs = document.querySelectorAll('.tab');
-      const frames = { tw: document.getElementById('tw'), us: document.getElementById('us'), btc: document.getElementById('btc'), news: document.getElementById('news') };
+      const frames = { tw: document.getElementById('tw'), us: document.getElementById('us'), btc: document.getElementById('btc'), news: document.getElementById('news'), usnews: document.getElementById('usnews') };
       let currentTab = 'tw';
 
 
@@ -60,6 +62,7 @@
       if (location.hash === '#us') switchTab('us');
       else if (location.hash === '#btc') switchTab('btc');
       else if (location.hash === '#news') switchTab('news');
+      else if (location.hash === '#usnews') switchTab('usnews');
       else switchTab('tw');
     </script>
   </body>

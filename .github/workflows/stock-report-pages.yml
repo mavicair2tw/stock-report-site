@@ -35,6 +35,7 @@ jobs:
         run: |
           python stock-report-site/scripts/update_report.py
           python stock-report-site/scripts/update_us_report.py
+          python stock-report-site/scripts/update_us_news.py
           python btc-hourly-site/scripts/update_btc_report.py
 
       - name: Build static site
@@ -43,6 +44,7 @@ jobs:
           mkdir -p dist/us/data
           mkdir -p dist/btc-hourly/data
           mkdir -p dist/news
+          mkdir -p dist/us-news/data
 
           # Combined portal (root)
           cp stock-report-site/public/index.html dist/index.html
@@ -61,6 +63,10 @@ jobs:
 
           # Daily news summary tag page
           cp stock-report-site/public/news.html dist/news/index.html
+
+          # US stock news tag page
+          cp stock-report-site/public/us-news.html dist/us-news/index.html
+          cp stock-report-site/data/us_news.json dist/us-news/data/us_news.json
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

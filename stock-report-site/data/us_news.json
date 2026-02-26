@@ -1,0 +1,58 @@
+{
+  "updatedAt": "2026-02-26T14:41:24.873489+08:00",
+  "timezone": "Asia/Taipei",
+  "source": "https://www.cnyes.com/usstock",
+  "ok": true,
+  "summary": "今日美股新聞重點：1. 川普變臉！傳歐盟42億歐元商品面臨高於15%關稅；2. 06:05警報響起！2025年美國興建中資料中心總容量年減5.7% 2020年來首見下滑；3. 05:30三星半導體部門以100%漲幅報價！蘋果立即接受；4. 05:30分析師：甲骨文暴跌帶來低接「頂級成長股」機會；5. 04:30白銀超越黃金 成投資人因應貿易緊張首選避險資產。建議優先關注與財報、利率及大型科技股相關消息。",
+  "headlines": [
+    {
+      "title": "川普變臉！傳歐盟42億歐元商品面臨高於15%關稅",
+      "url": "https://news.cnyes.com/news/id/6353672"
+    },
+    {
+      "title": "06:05警報響起！2025年美國興建中資料中心總容量年減5.7% 2020年來首見下滑",
+      "url": "https://news.cnyes.com/news/id/6353692"
+    },
+    {
+      "title": "05:30三星半導體部門以100%漲幅報價！蘋果立即接受",
+      "url": "https://news.cnyes.com/news/id/6354366"
+    },
+    {
+      "title": "05:30分析師：甲骨文暴跌帶來低接「頂級成長股」機會",
+      "url": "https://news.cnyes.com/news/id/6353684"
+    },
+    {
+      "title": "04:30白銀超越黃金 成投資人因應貿易緊張首選避險資產",
+      "url": "https://news.cnyes.com/news/id/6353631"
+    },
+    {
+      "title": "04:23記憶體雙雄聯手！SK海力士與SanDisk共同推動HBF",
+      "url": "https://news.cnyes.com/news/id/6354306"
+    },
+    {
+      "title": "04:10三星Galaxy S26系列亮相 搶先揭示Apple Siri未來可能樣貌",
+      "url": "https://news.cnyes.com/news/id/6353685"
+    },
+    {
+      "title": "03:30輝達電話會議實錄：黃仁勳稱AI工業革命才剛開始、每家公司都將產生Token",
+      "url": "https://news.cnyes.com/news/id/6354119"
+    },
+    {
+      "title": "03:10三大AI模型戰爭模擬 最終動用核武比例高達95%",
+      "url": "https://news.cnyes.com/news/id/6353635"
+    },
+    {
+      "title": "02:48輝達財報會議詳解：黃仁勳稱AI代理拐點已至、「推理即收入」、太空資料中心經濟仍「貧瘠」",
+      "url": "https://news.cnyes.com/news/id/6354111"
+    },
+    {
+      "title": "02:37AI取代軟體公司？黃仁勳反駁：市場誤判威脅",
+      "url": "https://news.cnyes.com/news/id/6353695"
+    },
+    {
+      "title": "02:36京東劉強東稱已接到5艘大型遊艇訂單 每艘平均賣6,000萬歐元",
+      "url": "https://news.cnyes.com/news/id/6353056"
+    }
+  ],
+  "error": null
+}
