@@ -30,8 +30,8 @@
       th, td { padding: 12px; border-bottom: 1px solid #1f2a44; text-align: left; }
       th { background: var(--panel-2); }
       tr:last-child td { border-bottom: none; }
-      .up { color: var(--green); }
-      .down { color: var(--red); }
+      .up { color: #22c55e; }   /* positive = green */
+      .down { color: #ef4444; } /* negative = red */
       .flat { color: var(--muted); }
       .muted { color: var(--muted); }
       .chart-wrap {
@@ -48,6 +48,7 @@
       <h1>台股即時報表（15 分鐘更新）</h1>
       <div class="sub" id="updated">載入中...</div>
       <div class="status" id="marketStatus">檢查交易時段中...</div>
+      <div class="sub">顏色規則：<span class="up">綠色 = 正報酬/上漲</span>，<span class="down">紅色 = 負報酬/下跌</span></div>
 
       <div class="chart-wrap">
         <canvas id="changeChart" height="90"></canvas>
@@ -79,6 +80,12 @@
         return `${v}${suffix}`;
       }
 
+      function fmtSigned(v, suffix = '') {
+        if (v === null || v === undefined || Number.isNaN(v)) return '<span class="muted">N/A</span>';
+        const sign = v > 0 ? '+' : '';
+        return `${sign}${v}${suffix}`;
+      }
+
       function twMarketStatus() {
         const now = new Date();
         const tw = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
@@ -107,8 +114,8 @@
                   <td>${item.label}</td>
                   <td>${item.symbol}</td>
                   <td>${fmt(item.price)}</td>
-                  <td class="${c}">${fmt(item.change)}</td>
-                  <td class="${c}">${fmt(item.changePercent, '%')}</td>
+                  <td class="${c}">${fmtSigned(item.change)}</td>
+                  <td class="${c}">${fmtSigned(item.changePercent, '%')}</td>
                 </tr>
               `;
             }).join('');
