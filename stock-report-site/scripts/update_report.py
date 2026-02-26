@@ -29,7 +29,7 @@ def fmt(value, digits=2):
 
 def fetch_quote(symbol: str):
     t = yf.Ticker(symbol)
-    hist = t.history(period="5d", interval="1d", auto_adjust=False)
+    hist = t.history(period="1mo", interval="1d", auto_adjust=False)
 
     if hist.empty:
         return {
@@ -37,9 +37,11 @@ def fetch_quote(symbol: str):
             "change": None,
             "changePercent": None,
             "currency": None,
+            "trend7d": [],
         }
 
-    closes = hist["Close"].dropna().tolist()
+    closes_series = hist["Close"].dropna()
+    closes = closes_series.tolist()
     latest = closes[-1] if closes else None
     previous = closes[-2] if len(closes) >= 2 else None
 
@@ -54,11 +56,20 @@ def fetch_quote(symbol: str):
 
     currency = info.get("currency") if isinstance(info, dict) else None
 
+    trend_points = []
+    trend_series = closes_series.tail(7)
+    for idx, val in trend_series.items():
+        trend_points.append({
+            "date": idx.strftime("%Y-%m-%d"),
+            "close": fmt(val, 2),
+        })
+
     return {
         "price": fmt(latest, 2),
         "change": fmt(change, 2),
         "changePercent": fmt(change_pct, 2),
         "currency": currency,
+        "trend7d": trend_points,
     }
 
 

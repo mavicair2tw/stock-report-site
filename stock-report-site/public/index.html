@@ -49,6 +49,26 @@
         padding: 12px;
         margin-bottom: 14px;
       }
+      .trend-wrap {
+        background: var(--panel);
+        border: 1px solid #1f2a44;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 14px;
+      }
+      .trend-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      select {
+        background: #0f1730;
+        color: var(--text);
+        border: 1px solid #253252;
+        border-radius: 8px;
+        padding: 6px 8px;
+      }
 
       table {
         width: 100%;
@@ -80,6 +100,14 @@
 
       <div class="chart-wrap">
         <canvas id="changeChart" height="90"></canvas>
+      </div>
+
+      <div class="trend-wrap">
+        <div class="trend-head">
+          <strong>Last 7 days trend</strong>
+          <select id="trendSelect"></select>
+        </div>
+        <canvas id="trendChart" height="70"></canvas>
       </div>
 
       <table>
@@ -120,6 +148,40 @@
         if (day === 0 || day === 6) return 'US Market: Closed (Weekend)';
         if (minutes >= open && minutes < close) return 'US Market: Open';
         return 'US Market: Closed';
+      }
+
+      let trendChart;
+
+      function renderTrend(asset) {
+        const points = asset?.trend7d || [];
+        const labels = points.map(p => p.date.slice(5));
+        const values = points.map(p => p.close);
+
+        if (trendChart) trendChart.destroy();
+
+        trendChart = new Chart(document.getElementById('trendChart'), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: `${asset?.label || ''} 7D`,
+              data: values,
+              borderColor: 'rgba(88,166,255,1)',
+              backgroundColor: 'rgba(88,166,255,0.18)',
+              tension: 0.3,
+              fill: true,
+              pointRadius: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#e6edf3' } } },
+            scales: {
+              x: { ticks: { color: '#c7d5e5' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+              y: { ticks: { color: '#c7d5e5' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            }
+          }
+        });
       }
 
       fetch('./data/latest.json?ts=' + Date.now())
@@ -175,6 +237,19 @@
                 y: { ticks: { color: '#c7d5e5' }, grid: { color: 'rgba(255,255,255,0.05)' } }
               }
             }
+          });
+
+          const trendSelect = document.getElementById('trendSelect');
+          trendSelect.innerHTML = data.items
+            .map((item, idx) => `<option value="${idx}">${item.label}</option>`)
+            .join('');
+
+          const first = data.items[0];
+          renderTrend(first);
+
+          trendSelect.addEventListener('change', (e) => {
+            const chosen = data.items[Number(e.target.value)] || data.items[0];
+            renderTrend(chosen);
           });
         })
         .catch(err => {
