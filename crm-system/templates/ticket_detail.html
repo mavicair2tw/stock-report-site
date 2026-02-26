@@ -10,6 +10,7 @@
 <div class="card">
   <h3>新增案件活動</h3>
   <form method="post" class="grid2 form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
     <label>處理人員<input name="assignee" required /></label>
     <label>狀態
       <select name="status">

@@ -3,6 +3,7 @@
 <h1>公司資料管理</h1>
 <div class="card">
   <form method="post" class="grid2 form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
     <label>公司ID<input name="company_id" required /></label>
     <label>公司名稱<input name="name" required /></label>
     <label>地址<input name="address" /></label>
@@ -20,7 +21,7 @@
     <tr><th>公司ID</th><th>名稱</th><th>地址</th><th>電話</th><th>Line</th><th>Email</th><th>統編</th><th>登入密碼</th></tr>
     {% for r in rows %}
       <tr>
-        <td>{{ r['company_id'] }}</td><td>{{ r['name'] }}</td><td>{{ r['address'] }}</td><td>{{ r['phone'] }}</td><td>{{ r['line_id'] }}</td><td>{{ r['email'] }}</td><td>{{ r['tax_id'] }}</td><td>{{ r['login_password'] }}</td>
+        <td>{{ r['company_id'] }}</td><td>{{ r['name'] }}</td><td>{{ r['address'] }}</td><td>{{ r['phone'] }}</td><td>{{ r['line_id'] }}</td><td>{{ r['email'] }}</td><td>{{ r['tax_id'] }}</td><td>{% if r['login_password'] %}******{% endif %}</td>
       </tr>
     {% else %}
       <tr><td colspan="8">尚無資料</td></tr>

@@ -1,9 +1,12 @@
 import os
+import re
+import secrets
 import sqlite3
+import time
 from datetime import datetime
 from functools import wraps
 
-from flask import Flask, g, redirect, render_template, request, session, url_for, flash
+from flask import Flask, abort, g, redirect, render_template, request, session, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -11,6 +14,17 @@ DB_PATH = os.path.join(BASE_DIR, "crm.db")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("CRM_SECRET", "dev-secret-change-me")
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+)
+if os.environ.get("CRM_ENV", "dev").lower() in {"prod", "production"}:
+    app.config["SESSION_COOKIE_SECURE"] = True
+
+RATE_LIMIT_WINDOW_SECONDS = 300
+RATE_LIMIT_MAX_ATTEMPTS = 8
+_auth_attempts = {}
+ALLOWED_TICKET_STATUS = {"Open", "In Progress", "Pending", "Resolved", "Closed"}
 
 
 def get_db():
@@ -25,6 +39,59 @@ def close_db(_=None):
     db = g.pop("db", None)
     if db is not None:
         db.close()
+
+
+def _client_ip():
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.remote_addr or "unknown"
+
+
+def _check_rate_limit(scope: str):
+    key = f"{scope}:{_client_ip()}"
+    now = time.time()
+    attempts = [ts for ts in _auth_attempts.get(key, []) if now - ts <= RATE_LIMIT_WINDOW_SECONDS]
+    if len(attempts) >= RATE_LIMIT_MAX_ATTEMPTS:
+        return False
+    attempts.append(now)
+    _auth_attempts[key] = attempts
+    return True
+
+
+def _sanitize_text(value: str, max_len: int = 255):
+    return (value or "").strip()[:max_len]
+
+
+def _valid_email(value: str):
+    if not value:
+        return True
+    return bool(re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", value))
+
+
+def _hash_secret(value: str):
+    value = (value or "").strip()
+    return generate_password_hash(value) if value else ""
+
+
+def _ensure_csrf():
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+        token = session.get("csrf_token")
+        incoming = request.form.get("csrf_token") or request.headers.get("X-CSRF-Token")
+        if not token or not incoming or token != incoming:
+            abort(400)
+
+
+@app.before_request
+def ensure_csrf_token_and_validate():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_urlsafe(32)
+    _ensure_csrf()
+
+
+@app.context_processor
+def inject_globals():
+    return {"now": datetime.now(), "csrf_token": session.get("csrf_token")}
 
 
 def init_db():
@@ -100,11 +167,6 @@ def login_required(f):
     return wrapper
 
 
-@app.context_processor
-def inject_now():
-    return {"now": datetime.now()}
-
-
 @app.route("/init")
 def init_route():
     init_db()
@@ -118,13 +180,28 @@ def home():
     return redirect(url_for("login"))
 
 
+@app.errorhandler(400)
+def bad_request(_):
+    flash("請求無效，請重新送出表單")
+    return redirect(request.referrer or url_for("home"))
+
+
+@app.errorhandler(429)
+def too_many_requests(_):
+    flash("嘗試次數過多，請稍後再試")
+    return redirect(request.referrer or url_for("login"))
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     init_db()
     if request.method == "POST":
-        username = request.form["username"].strip()
-        password = request.form["password"]
-        role = request.form.get("role", "staff")
+        if not _check_rate_limit("register"):
+            abort(429)
+
+        username = _sanitize_text(request.form.get("username", ""), 64)
+        password = request.form.get("password", "")
+        role = _sanitize_text(request.form.get("role", "staff"), 20) or "staff"
         if not username or not password:
             flash("帳號與密碼不可空白")
             return redirect(url_for("register"))
@@ -147,8 +224,11 @@ def register():
 def login():
     init_db()
     if request.method == "POST":
-        username = request.form["username"].strip()
-        password = request.form["password"]
+        if not _check_rate_limit("login"):
+            abort(429)
+
+        username = _sanitize_text(request.form.get("username", ""), 64)
+        password = request.form.get("password", "")
         db = get_db()
         user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
         if user and check_password_hash(user["password_hash"], password):
@@ -191,16 +271,22 @@ def dashboard():
 def customers():
     db = get_db()
     if request.method == "POST":
-        data = (
-            request.form["customer_id"].strip(),
-            request.form["name"].strip(),
-            request.form.get("address", "").strip(),
-            request.form.get("phone", "").strip(),
-            request.form.get("line_id", "").strip(),
-            request.form.get("email", "").strip(),
-            request.form.get("login_password", "").strip(),
-            datetime.now().isoformat(),
-        )
+        customer_id = _sanitize_text(request.form.get("customer_id", ""), 40)
+        name = _sanitize_text(request.form.get("name", ""), 80)
+        address = _sanitize_text(request.form.get("address", ""), 200)
+        phone = _sanitize_text(request.form.get("phone", ""), 40)
+        line_id = _sanitize_text(request.form.get("line_id", ""), 80)
+        email = _sanitize_text(request.form.get("email", ""), 120)
+        login_password = _hash_secret(request.form.get("login_password", ""))
+
+        if not customer_id or not name:
+            flash("客戶ID與名稱不可空白")
+            return redirect(url_for("customers"))
+        if not _valid_email(email):
+            flash("Email 格式不正確")
+            return redirect(url_for("customers"))
+
+        data = (customer_id, name, address, phone, line_id, email, login_password, datetime.now().isoformat())
         try:
             db.execute(
                 """
@@ -224,17 +310,23 @@ def customers():
 def companies():
     db = get_db()
     if request.method == "POST":
-        data = (
-            request.form["company_id"].strip(),
-            request.form["name"].strip(),
-            request.form.get("address", "").strip(),
-            request.form.get("phone", "").strip(),
-            request.form.get("line_id", "").strip(),
-            request.form.get("email", "").strip(),
-            request.form.get("tax_id", "").strip(),
-            request.form.get("login_password", "").strip(),
-            datetime.now().isoformat(),
-        )
+        company_id = _sanitize_text(request.form.get("company_id", ""), 40)
+        name = _sanitize_text(request.form.get("name", ""), 80)
+        address = _sanitize_text(request.form.get("address", ""), 200)
+        phone = _sanitize_text(request.form.get("phone", ""), 40)
+        line_id = _sanitize_text(request.form.get("line_id", ""), 80)
+        email = _sanitize_text(request.form.get("email", ""), 120)
+        tax_id = _sanitize_text(request.form.get("tax_id", ""), 30)
+        login_password = _hash_secret(request.form.get("login_password", ""))
+
+        if not company_id or not name:
+            flash("公司ID與名稱不可空白")
+            return redirect(url_for("companies"))
+        if not _valid_email(email):
+            flash("Email 格式不正確")
+            return redirect(url_for("companies"))
+
+        data = (company_id, name, address, phone, line_id, email, tax_id, login_password, datetime.now().isoformat())
         try:
             db.execute(
                 """
@@ -258,10 +350,16 @@ def companies():
 def tickets():
     db = get_db()
     if request.method == "POST":
-        ticket_no = request.form["ticket_no"].strip()
-        customer_id = request.form["customer_id"].strip()
-        status = request.form["status"].strip()
-        issue_desc = request.form["issue_desc"].strip()
+        ticket_no = _sanitize_text(request.form.get("ticket_no", ""), 40)
+        customer_id = _sanitize_text(request.form.get("customer_id", ""), 40)
+        status = _sanitize_text(request.form.get("status", ""), 20)
+        issue_desc = _sanitize_text(request.form.get("issue_desc", ""), 2000)
+        if not ticket_no or not customer_id or not issue_desc:
+            flash("案件編號、客戶ID、問題描述不可空白")
+            return redirect(url_for("tickets"))
+        if status not in ALLOWED_TICKET_STATUS:
+            flash("案件狀態不合法")
+            return redirect(url_for("tickets"))
         now = datetime.now().isoformat()
         try:
             db.execute(
@@ -291,10 +389,17 @@ def ticket_detail(ticket_id):
         return redirect(url_for("tickets"))
 
     if request.method == "POST":
-        assignee = request.form["assignee"].strip()
-        status = request.form["status"].strip()
-        activity_time = request.form["activity_time"].strip() or datetime.now().isoformat(timespec="minutes")
-        note = request.form.get("note", "").strip()
+        assignee = _sanitize_text(request.form.get("assignee", ""), 80)
+        status = _sanitize_text(request.form.get("status", ""), 20)
+        activity_time = _sanitize_text(request.form.get("activity_time", ""), 32) or datetime.now().isoformat(timespec="minutes")
+        note = _sanitize_text(request.form.get("note", ""), 1000)
+
+        if not assignee:
+            flash("處理人員不可空白")
+            return redirect(url_for("ticket_detail", ticket_id=ticket_id))
+        if status not in ALLOWED_TICKET_STATUS:
+            flash("案件狀態不合法")
+            return redirect(url_for("ticket_detail", ticket_id=ticket_id))
 
         db.execute(
             """

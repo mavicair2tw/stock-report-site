@@ -3,6 +3,7 @@
 <h1>案件追蹤管理</h1>
 <div class="card">
   <form method="post" class="grid2 form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
     <label>案件編號<input name="ticket_no" required /></label>
     <label>客戶ID<input name="customer_id" required /></label>
     <label>狀態
