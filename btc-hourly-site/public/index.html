@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BTC 每小時績效報表</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root { --bg:#0b1020; --panel:#121a2f; --panel2:#18213a; --text:#e6edf3; --muted:#9fb0c3; --green:#22c55e; --red:#ef4444; }
+      *{box-sizing:border-box} body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:20px;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1100px;margin:0 auto} h1{margin:0 0 8px}.sub{color:var(--muted);margin-bottom:14px}
+      .status{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#253252;color:#c7d5e5;margin-bottom:16px}
+      .up{color:var(--green)} .down{color:var(--red)} .flat{color:var(--muted)}
+      .card{background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:12px;margin-bottom:14px}
+      table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:12px;overflow:hidden}
+      th,td{padding:12px;border-bottom:1px solid #1f2a44;text-align:left} th{background:var(--panel2)} tr:last-child td{border-bottom:none}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>BTC 每小時績效報表</h1>
+      <div class="sub" id="updated">載入中...</div>
+      <div class="status">綠色 = 上漲，紅色 = 下跌</div>
+
+      <div class="card"><canvas id="trendChart" height="90"></canvas></div>
+
+      <table>
+        <thead><tr><th>時間</th><th>價格</th><th>每小時漲跌</th><th>每小時漲幅</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <script>
+      function cls(v){if(v>0)return'up';if(v<0)return'down';return'flat'}
+      function fmt(v,s=''){if(v===null||v===undefined||Number.isNaN(v))return 'N/A';return `${v}${s}`}
+      function fmts(v,s=''){if(v===null||v===undefined||Number.isNaN(v))return 'N/A';const sign=v>0?'+':'';return `${sign}${v}${s}`}
+
+      fetch('./data/latest.json?ts='+Date.now())
+        .catch(()=>fetch('../data/latest.json?ts='+Date.now()))
+        .then(r=>r.json())
+        .then(data=>{
+          const l=data.latest||{};
+          document.getElementById('updated').innerHTML=`最後更新：${data.updatedAt} (${data.timezone}) ｜ 現價 <b>${fmt(l.price)}</b> ｜ <span class="${cls(l.change)}">${fmts(l.change)}</span> / <span class="${cls(l.changePercent)}">${fmts(l.changePercent,'%')}</span>`;
+
+          const rows=(data.performance24h||[]).slice().reverse().map(x=>`<tr><td>${x.time}</td><td>${fmt(x.price)}</td><td class="${cls(x.change)}">${fmts(x.change)}</td><td class="${cls(x.changePercent)}">${fmts(x.changePercent,'%')}</td></tr>`).join('');
+          document.getElementById('rows').innerHTML=rows;
+
+          const labels=(data.trend72h||[]).map(x=>x.time.slice(6));
+          const vals=(data.trend72h||[]).map(x=>x.close);
+          new Chart(document.getElementById('trendChart'),{type:'line',data:{labels,datasets:[{label:'BTC 72H',data:vals,borderColor:'rgba(88,166,255,1)',backgroundColor:'rgba(88,166,255,0.18)',tension:0.25,fill:true,pointRadius:0}]},options:{responsive:true,plugins:{legend:{labels:{color:'#e6edf3'}}},scales:{x:{ticks:{color:'#c7d5e5'}},y:{ticks:{color:'#c7d5e5'}}}}});
+        })
+        .catch(()=>{document.getElementById('updated').textContent='讀取資料失敗';});
+    </script>
+  </body>
+</html>

@@ -2,10 +2,12 @@ name: Stock report (TW 15-min update + GitHub Pages deploy)
 
 on:
   schedule:
-    # Asia/Taipei 09:00-12:45 (UTC 01:00-04:45), weekdays
+    # TW stock site: Asia/Taipei 09:00-12:45 (UTC 01:00-04:45), weekdays
     - cron: '*/15 1-4 * * 1-5'
-    # Asia/Taipei 13:00, 13:15, 13:30 (UTC 05:00,05:15,05:30), weekdays
+    # TW stock site: Asia/Taipei 13:00, 13:15, 13:30 (UTC 05:00,05:15,05:30), weekdays
     - cron: '0,15,30 5 * * 1-5'
+    # BTC site: every hour (UTC)
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -34,13 +36,22 @@ jobs:
           pip install -r stock-report-site/requirements.txt
 
       - name: Generate latest data
-        run: python stock-report-site/scripts/update_report.py
+        run: |
+          python stock-report-site/scripts/update_report.py
+          python btc-hourly-site/scripts/update_btc_report.py
 
       - name: Build static site
         run: |
           mkdir -p dist/data
+          mkdir -p dist/btc-hourly/data
+
+          # TW stock site (root)
           cp stock-report-site/public/index.html dist/index.html
           cp stock-report-site/data/latest.json dist/data/latest.json
+
+          # BTC hourly site (subpath)
+          cp btc-hourly-site/public/index.html dist/btc-hourly/index.html
+          cp btc-hourly-site/data/latest.json dist/btc-hourly/data/latest.json
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
