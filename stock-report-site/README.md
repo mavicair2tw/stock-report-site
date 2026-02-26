@@ -6,7 +6,7 @@ This site tracks these Taiwan market items:
 - 台積電 (`2330.TW`)
 - 富邦科技 (`0052.TW`)
 - 元大台灣50 (`0050.TW`)
-- 凱基台灣TOP50 (`00915.TW`) ← please verify if your preferred code differs
+- 凱基台灣TOP50 (`009816.TW`)
 - 群益台灣精選高息 (`00919.TW`)
 - 國泰數位支付服務 (`00909.TW`)
 

@@ -15,7 +15,7 @@ ASSETS = [
     {"label": "台積電", "symbol": "2330.TW", "type": "Stock"},
     {"label": "富邦科技", "symbol": "0052.TW", "type": "ETF"},
     {"label": "元大台灣50", "symbol": "0050.TW", "type": "ETF"},
-    {"label": "凱基台灣TOP50", "symbol": "00915.TW", "type": "ETF"},
+    {"label": "凱基台灣TOP50", "symbol": "009816.TW", "type": "ETF"},
     {"label": "群益台灣精選高息", "symbol": "00919.TW", "type": "ETF"},
     {"label": "國泰數位支付服務", "symbol": "00909.TW", "type": "ETF"},
 ]
