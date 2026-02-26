@@ -58,21 +58,33 @@ cat /Users/mavicair2tw/.openclaw/workspace/stock-report-site/logs/stockreport.ou
 cat /Users/mavicair2tw/.openclaw/workspace/stock-report-site/logs/stockreport.err.log
 ```
 
-## 5) Optional: deploy publicly (GitHub Pages / Cloudflare / Vercel)
+## 5) Deploy publicly (always available, no local terminal needed)
 
-### Option A: GitHub Pages
+### Option A: GitHub Pages (recommended)
 
-1. Push this folder to a GitHub repo.
-2. In repo settings, enable **Pages** and deploy from branch root (or your preferred static setup).
-3. Serve `public/index.html` and `data/latest.json` as static files.
+This repo already includes workflow:
 
-### Option B: Cloudflare Pages / Vercel
+- `.github/workflows/stock-report-pages.yml`
 
-- Framework preset: **None / Static site**
-- Output directory: repo root (or configure to include `public/` + `data/`)
+It runs daily at **06:00 Asia/Taipei**, regenerates `latest.json`, and deploys to Pages.
 
-> Note: static hosting only serves files; it does not run Python jobs by itself.
-> Use GitHub Actions (`.github/workflows/daily-update.yml`) to refresh `data/latest.json` daily and push updates.
+Steps:
+
+1. Create a GitHub repo and push this workspace.
+2. In GitHub repo settings:
+   - **Pages** → Source: **GitHub Actions**
+3. Trigger workflow once manually (Actions tab → run workflow).
+4. Your site URL will be:
+   - `https://<your-github-username>.github.io/<repo-name>/` (project pages)
+
+### Option B: Cloudflare Pages
+
+1. Connect the same GitHub repo to Cloudflare Pages.
+2. Build command: *(empty)*
+3. Output directory: `dist` (if using Pages workflow artifact route) or `stock-report-site/public` for static-only publish.
+4. Keep GitHub Actions as the scheduler to refresh data daily.
+
+> Note: static hosts do not run Python by themselves. The scheduled GitHub Action handles the daily data refresh.
 
 ## Notes
 

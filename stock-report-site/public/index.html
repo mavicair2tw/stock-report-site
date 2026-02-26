@@ -122,7 +122,8 @@
         return 'US Market: Closed';
       }
 
-      fetch('../data/latest.json?ts=' + Date.now())
+      fetch('./data/latest.json?ts=' + Date.now())
+        .catch(() => fetch('../data/latest.json?ts=' + Date.now()))
         .then(r => r.json())
         .then(data => {
           document.getElementById('updated').textContent = `Updated: ${data.updatedAt} (${data.timezone})`;
