@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>每日 5 則有趣故事</title>
+    <style>
+      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; }
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1000px;margin:0 auto}
+      .sub{color:var(--muted);margin-bottom:12px}
+      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
+      .story{padding:10px 0;border-bottom:1px dashed #2a3556}
+      .story:last-child{border-bottom:none}
+      h3{margin:0 0 6px}
+      p{margin:6px 0}
+      a{color:#93c5fd}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>每日 5 則有趣故事</h1>
+      <div class="sub" id="updated">載入中...</div>
+      <div class="card" id="list">載入故事中...</div>
+    </div>
+
+    <script>
+      fetch('./data/interesting_stories.json?ts='+Date.now())
+        .then(r=>r.json())
+        .then(d=>{
+          document.getElementById('updated').textContent = `更新時間：${d.updatedAt} (${d.timezone})`;
+          const list = document.getElementById('list');
+          const stories = (d.stories || []).slice(0, 5);
+          list.innerHTML = stories.length
+            ? stories.map((s, i) => `
+                <div class="story">
+                  <h3>${i+1}. ${s.titleEn || 'Untitled'}</h3>
+                  <p>${s.titleZh || ''}</p>
+                  ${s.summaryEn ? `<p>${s.summaryEn}</p>` : ''}
+                  ${s.summaryZh ? `<p>${s.summaryZh}</p>` : ''}
+                  ${s.url ? `<p><a href="${s.url}" target="_blank">Source</a></p>` : ''}
+                </div>
+              `).join('')
+            : '<p>目前無資料，請稍後再試。</p>';
+        })
+        .catch(()=>{
+          document.getElementById('updated').textContent = '載入失敗';
+          document.getElementById('list').innerHTML = '<p>讀取每日故事失敗。</p>';
+        });
+    </script>
+  </body>
+</html>

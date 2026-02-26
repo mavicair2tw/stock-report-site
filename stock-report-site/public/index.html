@@ -35,6 +35,7 @@
         <button class="tab" data-target="btc">BTC 每小時</button>
         <button class="tab" data-target="twnews">台股新聞</button>
         <button class="tab" data-target="usnews">美股新聞</button>
+        <button class="tab" data-target="stories">每日 5 則有趣故事</button>
       </div>
 
       <div id="spotifyWrap" class="spotify-wrap">
@@ -47,6 +48,7 @@
         <iframe id="btc" src="./btc-hourly/"></iframe>
         <iframe id="twnews" src="./tw-news/"></iframe>
         <iframe id="usnews" src="./us-news/"></iframe>
+        <iframe id="stories" src="./interesting-stories/"></iframe>
       </div>
 
       <div class="foot">提示：綠色 = 上漲，紅色 = 下跌。</div>
@@ -61,7 +63,7 @@
       if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
 
       const tabs = document.querySelectorAll('.tab');
-      const frames = { tw: document.getElementById('tw'), us: document.getElementById('us'), btc: document.getElementById('btc'), twnews: document.getElementById('twnews'), usnews: document.getElementById('usnews') };
+      const frames = { tw: document.getElementById('tw'), us: document.getElementById('us'), btc: document.getElementById('btc'), twnews: document.getElementById('twnews'), usnews: document.getElementById('usnews'), stories: document.getElementById('stories') };
       let currentTab = 'tw';
 
 
@@ -79,6 +81,7 @@
       else if (location.hash === '#btc') switchTab('btc');
       else if (location.hash === '#twnews') switchTab('twnews');
       else if (location.hash === '#usnews') switchTab('usnews');
+      else if (location.hash === '#stories') switchTab('stories');
       else switchTab('tw');
     </script>
   </body>

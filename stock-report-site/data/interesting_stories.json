@@ -1,0 +1,41 @@
+{
+  "updatedAt": "2026-02-26 21:25",
+  "timezone": "Asia/Taipei",
+  "stories": [
+    {
+      "titleEn": "Personalized CRISPR treatment saved a baby with a rare disease",
+      "titleZh": "個人化 CRISPR 基因編輯療法救了一名罹患罕見疾病的嬰兒",
+      "summaryEn": "Doctors created a custom gene-editing therapy for a specific mutation, opening a path for more ultra-rare disease treatments.",
+      "summaryZh": "醫療團隊針對特定突變設計客製化基因編輯療法，為更多超罕見疾病治療開啟新路。",
+      "url": "https://knowablemagazine.org/content/article/society/2025/top-science-stories-of-the-year-2025"
+    },
+    {
+      "titleEn": "Needle-free health sensors are getting real",
+      "titleZh": "免針式健康感測器正逐漸成真",
+      "summaryEn": "Wearables are moving toward real-time monitoring of glucose and hydration without finger-prick blood tests.",
+      "summaryZh": "穿戴裝置正朝向即時監測血糖與水分狀態，並減少指尖採血需求。",
+      "url": "https://huxley.media/en/scientific-forecast-2026-the-year-of-major-experiments/"
+    },
+    {
+      "titleEn": "AI agents are shifting from chat to action",
+      "titleZh": "AI 代理正從聊天走向實際執行",
+      "summaryEn": "New agentic systems can handle multi-step workflows like planning and bookings with less manual coordination.",
+      "summaryZh": "新一代 AI 代理可處理規劃與預訂等多步驟流程，減少人工協調負擔。",
+      "url": "https://medium.com/@blissinfonews/how-technology-actually-changes-daily-life-in-2026-the-era-of-invisible-utility-13a7515f2fc3"
+    },
+    {
+      "titleEn": "A blood test is being trialed to detect around 50 cancers early",
+      "titleZh": "一項血液檢測正進行試驗，目標及早發現約 50 種癌症",
+      "summaryEn": "Large clinical trials are testing whether early signal detection in blood can improve diagnosis timing and survival rates.",
+      "summaryZh": "大型臨床試驗正驗證血液早期訊號偵測能否提早診斷並提升存活率。",
+      "url": "https://huxley.media/en/scientific-forecast-2026-the-year-of-major-experiments/"
+    },
+    {
+      "titleEn": "3D-printed homes are becoming practical",
+      "titleZh": "3D 列印房屋正逐漸實用化",
+      "summaryEn": "Construction teams are using robotic printing to build houses faster and with less material waste.",
+      "summaryZh": "建築團隊使用機器人列印技術，加快房屋建造並降低材料浪費。",
+      "url": "https://medium.com/innovation-machine/2026-tech-innovation-trends-opportunities-risks-8970d24bfbb3"
+    }
+  ]
+}
