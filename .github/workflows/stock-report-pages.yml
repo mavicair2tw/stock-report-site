@@ -44,7 +44,6 @@ jobs:
           mkdir -p dist/tw/data
           mkdir -p dist/us/data
           mkdir -p dist/btc-hourly/data
-          mkdir -p dist/news
           mkdir -p dist/tw-news/data
           mkdir -p dist/us-news/data
 
@@ -62,9 +61,6 @@ jobs:
           # BTC hourly report (tab page)
           cp btc-hourly-site/public/index.html dist/btc-hourly/index.html
           cp btc-hourly-site/data/latest.json dist/btc-hourly/data/latest.json
-
-          # Daily news summary tag page
-          cp stock-report-site/public/news.html dist/news/index.html
 
           # TW stock news tag page
           cp stock-report-site/public/tw-news.html dist/tw-news/index.html
