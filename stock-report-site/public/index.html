@@ -9,7 +9,11 @@
       * { box-sizing: border-box; }
       body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%); color:var(--text); }
       .wrap { max-width:1200px; margin:0 auto; padding:20px; }
+      .topbar { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px; }
       h1 { margin:0 0 8px; }
+      .lang-switch { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+      .lang-btn { border:1px solid var(--line); background:var(--panel); color:var(--text); padding:6px 10px; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px; }
+      .lang-btn.active { border-color:var(--active); box-shadow:0 0 0 1px var(--active) inset; }
       .sub { color:var(--muted); margin-bottom:14px; }
       .tabs { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
       .tab { border:1px solid var(--line); background:var(--panel); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; }
@@ -25,19 +29,26 @@
   </head>
   <body>
     <div class="wrap">
-      <h1>Built to Collect. Designed to Scale. (Powered by OpenClaw)</h1>
-      <div class="sub">用分頁切換不同報表（台股 / 美股 / BTC）</div>
+      <div class="topbar">
+        <h1 id="mainTitle">Built to Collect. Designed to Scale. (Powered by OpenClaw)</h1>
+        <div class="lang-switch" aria-label="Language selector">
+          <button class="lang-btn active" data-lang="zh">中文</button>
+          <button class="lang-btn" data-lang="en">English</button>
+          <button class="lang-btn" data-lang="ja">日語</button>
+        </div>
+      </div>
+      <div class="sub" id="subTitle">用分頁切換不同報表（台股 / 美股 / BTC）</div>
       <div class="sub" id="viewCounter">點閱數：--</div>
 
       <div class="tabs">
-        <button class="tab active" data-target="tw">台股 15 分鐘</button>
-        <button class="tab" data-target="us">美股 15 分鐘</button>
-        <button class="tab" data-target="btc">BTC 每小時</button>
-        <button class="tab" data-target="twnews">台股新聞</button>
-        <button class="tab" data-target="usnews">美股新聞</button>
-        <button class="tab" data-target="stories">每日有趣故事</button>
-        <button class="tab" data-target="coffee">每日咖啡新聞</button>
-        <button class="tab" data-target="podcast">Podcast</button>
+        <button class="tab active" data-target="tw" data-i18n-key="tab_tw">台股 15 分鐘</button>
+        <button class="tab" data-target="us" data-i18n-key="tab_us">美股 15 分鐘</button>
+        <button class="tab" data-target="btc" data-i18n-key="tab_btc">BTC 每小時</button>
+        <button class="tab" data-target="twnews" data-i18n-key="tab_twnews">台股新聞</button>
+        <button class="tab" data-target="usnews" data-i18n-key="tab_usnews">美股新聞</button>
+        <button class="tab" data-target="stories" data-i18n-key="tab_stories">每日有趣故事</button>
+        <button class="tab" data-target="coffee" data-i18n-key="tab_coffee">每日咖啡新聞</button>
+        <button class="tab" data-target="podcast" data-i18n-key="tab_podcast">Podcast</button>
       </div>
 
       <div id="spotifyWrap" class="spotify-wrap">
@@ -55,21 +66,87 @@
         <iframe id="podcast" src="./podcast/"></iframe>
       </div>
 
-      <div class="foot">提示：綠色 = 上漲，紅色 = 下跌。</div>
+      <div class="foot" id="footNote">提示：綠色 = 上漲，紅色 = 下跌。</div>
     </div>
 
     <script>
 
+      const i18n = {
+        zh: {
+          title: 'Built to Collect. Designed to Scale. (Powered by OpenClaw)',
+          sub: '用分頁切換不同報表（台股 / 美股 / BTC）',
+          views: '點閱數',
+          foot: '提示：綠色 = 上漲，紅色 = 下跌。',
+          tab_tw: '台股 15 分鐘',
+          tab_us: '美股 15 分鐘',
+          tab_btc: 'BTC 每小時',
+          tab_twnews: '台股新聞',
+          tab_usnews: '美股新聞',
+          tab_stories: '每日有趣故事',
+          tab_coffee: '每日咖啡新聞',
+          tab_podcast: 'Podcast'
+        },
+        en: {
+          title: 'Built to Collect. Designed to Scale. (Powered by OpenClaw)',
+          sub: 'Switch tabs to view different reports (TW / US / BTC)',
+          views: 'Views',
+          foot: 'Tip: Green = Up, Red = Down.',
+          tab_tw: 'TW 15-min',
+          tab_us: 'US 15-min',
+          tab_btc: 'BTC Hourly',
+          tab_twnews: 'TW News',
+          tab_usnews: 'US News',
+          tab_stories: 'Daily Stories',
+          tab_coffee: 'Daily Coffee News',
+          tab_podcast: 'Podcast'
+        },
+        ja: {
+          title: 'Built to Collect. Designed to Scale. (Powered by OpenClaw)',
+          sub: 'タブで各レポートを切り替え（台湾株 / 米国株 / BTC）',
+          views: '閲覧数',
+          foot: 'ヒント：緑 = 上昇、赤 = 下落。',
+          tab_tw: '台湾株 15分',
+          tab_us: '米国株 15分',
+          tab_btc: 'BTC 毎時',
+          tab_twnews: '台湾株ニュース',
+          tab_usnews: '米国株ニュース',
+          tab_stories: '毎日の面白い話',
+          tab_coffee: '毎日コーヒーニュース',
+          tab_podcast: 'Podcast'
+        }
+      };
+
       const pageKey = `views:${location.pathname}`;
       const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
       localStorage.setItem(pageKey, String(pageViews));
+
+      const mainTitleEl = document.getElementById('mainTitle');
+      const subTitleEl = document.getElementById('subTitle');
       const viewCounterEl = document.getElementById('viewCounter');
-      if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
+      const footNoteEl = document.getElementById('footNote');
+      const langButtons = document.querySelectorAll('.lang-btn');
 
       const tabs = document.querySelectorAll('.tab');
       const frames = { tw: document.getElementById('tw'), us: document.getElementById('us'), btc: document.getElementById('btc'), twnews: document.getElementById('twnews'), usnews: document.getElementById('usnews'), stories: document.getElementById('stories'), coffee: document.getElementById('coffee'), podcast: document.getElementById('podcast') };
       let currentTab = 'tw';
+      let currentLang = localStorage.getItem('portalLang') || 'zh';
+      if (!i18n[currentLang]) currentLang = 'zh';
 
+      function applyLanguage(lang) {
+        const dict = i18n[lang] || i18n.zh;
+        if (mainTitleEl) mainTitleEl.textContent = dict.title;
+        if (subTitleEl) subTitleEl.textContent = dict.sub;
+        if (viewCounterEl) viewCounterEl.textContent = `${dict.views}：${pageViews}`;
+        if (footNoteEl) footNoteEl.textContent = dict.foot;
+
+        document.querySelectorAll('[data-i18n-key]').forEach(el => {
+          const key = el.dataset.i18nKey;
+          if (dict[key]) el.textContent = dict[key];
+        });
+
+        langButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+        localStorage.setItem('portalLang', lang);
+      }
 
       function switchTab(target) {
         currentTab = target;
@@ -80,6 +157,10 @@
       }
 
       tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.target)));
+      langButtons.forEach(btn => btn.addEventListener('click', () => {
+        currentLang = btn.dataset.lang;
+        applyLanguage(currentLang);
+      }));
 
       if (location.hash === '#us') switchTab('us');
       else if (location.hash === '#btc') switchTab('btc');
@@ -89,6 +170,8 @@
       else if (location.hash === '#coffee') switchTab('coffee');
       else if (location.hash === '#podcast') switchTab('podcast');
       else switchTab('tw');
+
+      applyLanguage(currentLang);
     </script>
   </body>
 </html>
