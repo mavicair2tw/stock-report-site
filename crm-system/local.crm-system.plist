@@ -9,7 +9,7 @@
   <array>
     <string>/bin/zsh</string>
     <string>-lc</string>
-    <string>cd /Users/mavicair2tw/.openclaw/workspace/crm-system &amp;&amp; source .venv/bin/activate &amp;&amp; export CRM_ENV=production &amp;&amp; export CRM_SECRET='CHANGE_ME_TO_A_STRONG_SECRET' &amp;&amp; exec gunicorn -c gunicorn.conf.py wsgi:app</string>
+    <string>cd /Users/mavicair2tw/.openclaw/workspace/crm-system &amp;&amp; source .venv/bin/activate &amp;&amp; export CRM_ENV=production &amp;&amp; export CRM_SECRET='rQY0d30hrQTsjao6oxoxacHGQg9UrjoH_hWjBY-ta0ded1bCg55Md7y5K0cRi7jP' &amp;&amp; exec gunicorn -c gunicorn.conf.py wsgi:app</string>
   </array>
 
   <key>RunAtLoad</key>
