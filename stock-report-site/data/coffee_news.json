@@ -1,0 +1,25 @@
+{
+  "updatedAt": "2026-02-26 22:00",
+  "timezone": "Asia/Taipei",
+  "summary": "今日咖啡新聞聚焦在全球咖啡價格、產地天氣與精品咖啡市場趨勢。",
+  "news": [
+    {
+      "title": "Arabica futures rise as Brazil weather concerns persist",
+      "titleZh": "因巴西天氣疑慮持續，阿拉比卡期貨上漲",
+      "note": "市場持續關注巴西降雨與產量變化對 2026 供給的影響。",
+      "url": "https://www.reuters.com/"
+    },
+    {
+      "title": "Specialty coffee demand grows in Asia urban markets",
+      "titleZh": "亞洲都會市場精品咖啡需求持續擴張",
+      "note": "新興咖啡品牌在即飲與手沖場景同步增長。",
+      "url": "https://www.scmp.com/"
+    },
+    {
+      "title": "Major roasters diversify sourcing beyond traditional origins",
+      "titleZh": "大型烘焙商擴大採購來源，降低傳統產地集中風險",
+      "note": "企業透過多產地策略對沖價格與供應波動。",
+      "url": "https://www.bloomberg.com/"
+    }
+  ]
+}

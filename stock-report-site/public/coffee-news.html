@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>每日咖啡新聞</title>
+    <style>
+      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; }
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1000px;margin:0 auto}
+      .sub{color:var(--muted);margin-bottom:12px}
+      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
+      .item{padding:10px 0;border-bottom:1px dashed #2a3556}
+      .item:last-child{border-bottom:none}
+      h3{margin:0 0 6px}
+      p{margin:6px 0}
+      a{color:#93c5fd}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>每日咖啡新聞</h1>
+      <div class="sub" id="updated">載入中...</div>
+      <div class="card" id="summary">載入摘要中...</div>
+      <div class="card" id="list">載入新聞中...</div>
+    </div>
+
+    <script>
+      fetch('./data/coffee_news.json?ts='+Date.now())
+        .then(r=>r.json())
+        .then(d=>{
+          document.getElementById('updated').textContent = `更新時間：${d.updatedAt} (${d.timezone})`;
+          document.getElementById('summary').innerHTML = `${d.summary || '今日咖啡市場與產業重點整理。'}`;
+          const list = document.getElementById('list');
+          const news = (d.news || []).slice(0, 10);
+          list.innerHTML = news.length
+            ? news.map((n, i) => `
+                <div class="item">
+                  <h3>${i+1}. ${n.title || 'Untitled'}</h3>
+                  ${n.titleZh ? `<p>${n.titleZh}</p>` : ''}
+                  ${n.note ? `<p>${n.note}</p>` : ''}
+                  ${n.url ? `<p><a href="${n.url}" target="_blank">Source</a></p>` : ''}
+                </div>
+              `).join('')
+            : '<p>目前無資料，請稍後再試。</p>';
+        })
+        .catch(()=>{
+          document.getElementById('updated').textContent = '載入失敗';
+          document.getElementById('summary').innerHTML = '讀取每日咖啡新聞失敗。';
+          document.getElementById('list').innerHTML = '<p>暫時無法讀取資料。</p>';
+        });
+    </script>
+  </body>
+</html>
