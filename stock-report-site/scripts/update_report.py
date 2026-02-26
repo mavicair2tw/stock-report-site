@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import yfinance as yf
@@ -86,10 +87,15 @@ def build_report():
 def main():
     report = build_report()
 
-    with open("data/latest.json", "w", encoding="utf-8") as f:
+    base_dir = Path(__file__).resolve().parent.parent
+    data_dir = base_dir / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    out_file = data_dir / "latest.json"
+
+    with open(out_file, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
 
-    print("Updated data/latest.json")
+    print(f"Updated {out_file}")
 
 
 if __name__ == "__main__":

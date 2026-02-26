@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-26T13:01:47.787609+08:00",
+  "updatedAt": "2026-02-26T13:15:17.139454+08:00",
   "timezone": "Asia/Taipei",
   "items": [
     {
@@ -42,9 +42,9 @@
       "label": "BTC",
       "symbol": "BTC-USD",
       "type": "Crypto",
-      "price": 68588.72,
-      "change": 4508.68,
-      "changePercent": 7.04,
+      "price": 68299.15,
+      "change": 4219.11,
+      "changePercent": 6.58,
       "currency": null
     },
     {
@@ -60,9 +60,9 @@
       "label": "Gold",
       "symbol": "GC=F",
       "type": "Commodity",
-      "price": 5206.9,
-      "change": 51.1,
-      "changePercent": 0.99,
+      "price": 5208.6,
+      "change": 2.2,
+      "changePercent": 0.04,
       "currency": null
     },
     {
