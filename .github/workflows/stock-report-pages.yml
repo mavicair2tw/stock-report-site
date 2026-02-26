@@ -42,6 +42,7 @@ jobs:
           mkdir -p dist/tw/data
           mkdir -p dist/us/data
           mkdir -p dist/btc-hourly/data
+          mkdir -p dist/news
 
           # Combined portal (root)
           cp stock-report-site/public/index.html dist/index.html
@@ -57,6 +58,9 @@ jobs:
           # BTC hourly report (tab page)
           cp btc-hourly-site/public/index.html dist/btc-hourly/index.html
           cp btc-hourly-site/data/latest.json dist/btc-hourly/data/latest.json
+
+          # Daily news summary tag page
+          cp stock-report-site/public/news.html dist/news/index.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

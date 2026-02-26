@@ -15,7 +15,6 @@
       th,td{padding:12px;border-bottom:1px solid #1f2a44;text-align:left} th{background:var(--panel2)} tr:last-child td{border-bottom:none}
       .chart{background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:12px;margin-bottom:14px}
       .summary{margin-top:14px;background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:14px;line-height:1.6}
-      .news{margin-top:14px;background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:14px;line-height:1.7}
     </style>
   </head>
   <body>
@@ -31,10 +30,6 @@
       <div class="summary">
         <h3 style="margin:0 0 8px;">中文摘要＋投資建議</h3>
         <div id="summary">載入摘要中...</div>
-      </div>
-      <div class="news">
-        <h3 style="margin:0 0 8px;">每日〈盤後〉新聞摘要</h3>
-        <div id="newsSummary">載入中...</div>
       </div>
     </div>
     <script>
@@ -65,24 +60,6 @@
           `【投資建議】${action}<br><span class="muted">※ 以上為程式自動摘要，僅供參考，非投資建議。</span>`;
       }
 
-      function renderNews(items, updatedAt){
-        const valid = items.filter(i=>typeof i.changePercent==='number');
-        if(!valid.length){
-          document.getElementById('newsSummary').innerHTML='今天無足夠行情資料可產生盤後重點。';
-          return;
-        }
-        const avg = valid.reduce((a,b)=>a+b.changePercent,0)/valid.length;
-        const topUp = valid.slice().sort((a,b)=>b.changePercent-a.changePercent)[0];
-        const topDown = valid.slice().sort((a,b)=>a.changePercent-b.changePercent)[0];
-        const tone = avg > 0.4 ? '偏多' : avg < -0.4 ? '偏空' : '震盪整理';
-
-        document.getElementById('newsSummary').innerHTML =
-          `• 盤後總結（${updatedAt.slice(0,16).replace('T',' ')}）：美股整體 ${tone}，平均漲跌幅 ${avg.toFixed(2)}%。<br>`+
-          `• 強勢焦點：<span class="up">${topUp.label} ${topUp.changePercent}%</span>；相對弱勢：<span class="down">${topDown.label} ${topDown.changePercent}%</span>。<br>`+
-          `• 操作提醒：留意隔夜消息與財報事件，建議部位分散、避免單一標的過度集中。<br>`+
-          `<span class="muted">※ 此區為程式化「盤後新聞風格摘要」，非即時新聞稿來源。</span>`;
-      }
-
       fetch('./data/us_latest.json?ts='+Date.now())
         .then(r=>r.json())
         .then(data=>{
@@ -90,7 +67,6 @@
           const rows = data.items.map(i=>`<tr><td>${i.label}</td><td>${i.symbol}</td><td>${i.type}</td><td>${fmt(i.price)}</td><td class="${cls(i.change)}">${fmts(i.change)}</td><td class="${cls(i.changePercent)}">${fmts(i.changePercent,'%')}</td></tr>`).join('');
           document.getElementById('rows').innerHTML = rows;
           renderSummary(data.items || []);
-          renderNews(data.items || [], data.updatedAt || '');
 
           const labels = data.items.map(i=>i.label);
           const vals = data.items.map(i=>typeof i.changePercent==='number'?i.changePercent:0);

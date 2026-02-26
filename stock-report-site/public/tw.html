@@ -49,14 +49,6 @@
         padding: 14px;
         line-height: 1.6;
       }
-      .news {
-        margin-top: 14px;
-        background: var(--panel);
-        border: 1px solid #1f2a44;
-        border-radius: 12px;
-        padding: 14px;
-        line-height: 1.7;
-      }
     </style>
   </head>
   <body>
@@ -88,10 +80,6 @@
         <div id="summary">載入摘要中...</div>
       </div>
 
-      <div class="news">
-        <h3 style="margin:0 0 8px;">每日〈盤後〉新聞摘要</h3>
-        <div id="newsSummary">載入中...</div>
-      </div>
     </div>
 
     <script>
@@ -154,25 +142,6 @@
           `【投資建議】${action}<br><span class="muted">※ 以上為程式自動摘要，僅供參考，非投資建議。</span>`;
       }
 
-      function renderNews(items, updatedAt) {
-        const valid = items.filter(i => typeof i.changePercent === 'number');
-        if (!valid.length) {
-          document.getElementById('newsSummary').innerHTML = '今天無足夠行情資料可產生盤後重點。';
-          return;
-        }
-        const avg = valid.reduce((a, b) => a + b.changePercent, 0) / valid.length;
-        const topUp = valid.slice().sort((a, b) => b.changePercent - a.changePercent)[0];
-        const topDown = valid.slice().sort((a, b) => a.changePercent - b.changePercent)[0];
-        const breadth = valid.filter(i => i.changePercent > 0).length - valid.filter(i => i.changePercent < 0).length;
-        const tone = avg > 0.4 ? '偏多' : avg < -0.4 ? '偏空' : '震盪整理';
-
-        document.getElementById('newsSummary').innerHTML =
-          `• 盤後總結（${updatedAt.slice(0, 16).replace('T', ' ')}）：市場氣氛 ${tone}，平均漲跌幅 ${avg.toFixed(2)}%。<br>` +
-          `• 強勢焦點：<span class="up">${topUp.label} ${topUp.changePercent}%</span>；相對弱勢：<span class="down">${topDown.label} ${topDown.changePercent}%</span>。<br>` +
-          `• 市場廣度：上漲家數與下跌家數差值 ${breadth}，建議明日以分批策略應對波動。<br>` +
-          `<span class="muted">※ 此區為程式化「盤後新聞風格摘要」，非即時新聞稿來源。</span>`;
-      }
-
       function loadData() {
         fetch('./data/latest.json?ts=' + Date.now())
           .catch(() => fetch('../data/latest.json?ts=' + Date.now()))
@@ -200,7 +169,6 @@
             const colors = vals.map(v => v > 0 ? 'rgba(63,185,80,0.8)' : v < 0 ? 'rgba(248,81,73,0.8)' : 'rgba(159,176,195,0.8)');
 
             renderSummary(data.items || []);
-            renderNews(data.items || [], data.updatedAt || '');
 
             if (window._changeChart) window._changeChart.destroy();
             window._changeChart = new Chart(document.getElementById('changeChart'), {
