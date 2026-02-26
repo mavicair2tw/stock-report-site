@@ -2,12 +2,8 @@ name: Stock report (TW 15-min update + GitHub Pages deploy)
 
 on:
   schedule:
-    # TW stock site: Asia/Taipei 09:00-12:45 (UTC 01:00-04:45), weekdays
-    - cron: '*/15 1-4 * * 1-5'
-    # TW stock site: Asia/Taipei 13:00, 13:15, 13:30 (UTC 05:00,05:15,05:30), weekdays
-    - cron: '0,15,30 5 * * 1-5'
-    # BTC site: every hour (UTC)
-    - cron: '0 * * * *'
+    # Rebuild all tabs every 15 minutes (UTC)
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -38,11 +34,13 @@ jobs:
       - name: Generate latest data
         run: |
           python stock-report-site/scripts/update_report.py
+          python stock-report-site/scripts/update_us_report.py
           python btc-hourly-site/scripts/update_btc_report.py
 
       - name: Build static site
         run: |
           mkdir -p dist/tw/data
+          mkdir -p dist/us/data
           mkdir -p dist/btc-hourly/data
 
           # Combined portal (root)
@@ -51,6 +49,10 @@ jobs:
           # TW stock report (tab page)
           cp stock-report-site/public/tw.html dist/tw/index.html
           cp stock-report-site/data/latest.json dist/tw/data/latest.json
+
+          # US stock report (tab page)
+          cp stock-report-site/public/us.html dist/us/index.html
+          cp stock-report-site/data/us_latest.json dist/us/data/us_latest.json
 
           # BTC hourly report (tab page)
           cp btc-hourly-site/public/index.html dist/btc-hourly/index.html

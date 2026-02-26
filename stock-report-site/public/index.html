@@ -56,11 +56,13 @@
 
       <div class="tabs">
         <button class="tab active" data-target="tw">台股 15 分鐘</button>
+        <button class="tab" data-target="us">美股 15 分鐘</button>
         <button class="tab" data-target="btc">BTC 每小時</button>
       </div>
 
       <div class="panel">
         <iframe id="tw" class="active" src="./tw/"></iframe>
+        <iframe id="us" src="./us/"></iframe>
         <iframe id="btc" src="./btc-hourly/"></iframe>
       </div>
 
@@ -71,6 +73,7 @@
       const tabs = document.querySelectorAll('.tab');
       const frames = {
         tw: document.getElementById('tw'),
+        us: document.getElementById('us'),
         btc: document.getElementById('btc'),
       };
 
@@ -81,6 +84,7 @@
 
       tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.target)));
 
+      if (location.hash === '#us') switchTab('us');
       if (location.hash === '#btc') switchTab('btc');
     </script>
   </body>
