@@ -5,54 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>市場報表中心</title>
     <style>
-      :root { --bg:#0b1020; --panel:#121a2f; --text:#e6edf3; --muted:#9fb0c3; --line:#253252; --active:#3b82f6; }
+      :root { --bg:#0b1020; --panel:#121a2f; --text:#e6edf3; --muted:#9fb0c3; --line:#253252; --active:#3b82f6; --green:#22c55e; --red:#ef4444; }
       * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background: linear-gradient(180deg, #0b1020 0%, #0a1226 100%);
-        color: var(--text);
-      }
-      .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
-      h1 { margin: 0 0 8px; }
-      .sub { color: var(--muted); margin-bottom: 14px; }
-      .tabs {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
-      }
-      .tab {
-        border: 1px solid var(--line);
-        background: var(--panel);
-        color: var(--text);
-        padding: 8px 12px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 600;
-      }
-      .tab.active { border-color: var(--active); box-shadow: 0 0 0 1px var(--active) inset; }
-      .panel {
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        overflow: hidden;
-        background: #0f1730;
-      }
-      iframe {
-        width: 100%;
-        height: calc(100vh - 210px);
-        min-height: 620px;
-        border: 0;
-        display: none;
-      }
-      iframe.active { display: block; }
-      .foot { margin-top: 10px; color: var(--muted); font-size: 13px; }
+      body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%); color:var(--text); }
+      .wrap { max-width:1200px; margin:0 auto; padding:20px; }
+      h1 { margin:0 0 8px; }
+      .sub { color:var(--muted); margin-bottom:14px; }
+      .tabs { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+      .tab { border:1px solid var(--line); background:var(--panel); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; }
+      .tab.active { border-color:var(--active); box-shadow:0 0 0 1px var(--active) inset; }
+      .panel { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#0f1730; }
+      iframe { width:100%; height:calc(100vh - 240px); min-height:620px; border:0; display:none; }
+      iframe.active { display:block; }
+      .summary { margin-top:12px; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; line-height:1.6; }
+      .up{color:var(--green)} .down{color:var(--red)}
+      .foot { margin-top:10px; color:var(--muted); font-size:13px; }
+      a { color:#93c5fd; }
     </style>
   </head>
   <body>
     <div class="wrap">
       <h1>市場報表中心</h1>
-      <div class="sub">用分頁切換不同報表（台股 / BTC 每小時）</div>
+      <div class="sub">用分頁切換不同報表（台股 / 美股 / BTC）</div>
 
       <div class="tabs">
         <button class="tab active" data-target="tw">台股 15 分鐘</button>
@@ -66,26 +40,60 @@
         <iframe id="btc" src="./btc-hourly/"></iframe>
       </div>
 
-      <div class="foot">提示：綠色 = 上漲，紅色 = 下跌</div>
+      <div class="summary" id="portalSummary">載入摘要中...</div>
+
+      <div class="foot">提示：綠色 = 上漲，紅色 = 下跌。若下方摘要未更新，請重新整理頁面。</div>
     </div>
 
     <script>
       const tabs = document.querySelectorAll('.tab');
-      const frames = {
-        tw: document.getElementById('tw'),
-        us: document.getElementById('us'),
-        btc: document.getElementById('btc'),
-      };
+      const frames = { tw: document.getElementById('tw'), us: document.getElementById('us'), btc: document.getElementById('btc') };
+      let currentTab = 'tw';
+
+      function fmt(v, d=2){ return (typeof v === 'number') ? v.toFixed(d) : 'N/A'; }
+      function cls(v){ if(v>0) return 'up'; if(v<0) return 'down'; return ''; }
+
+      async function updatePortalSummary(tab){
+        const el = document.getElementById('portalSummary');
+        try {
+          if(tab === 'tw'){
+            const r = await fetch('./tw/data/latest.json?ts=' + Date.now());
+            const d = await r.json();
+            const valid = (d.items||[]).filter(x=>typeof x.changePercent==='number');
+            const avg = valid.length ? valid.reduce((a,b)=>a+b.changePercent,0)/valid.length : 0;
+            const top = valid.slice().sort((a,b)=>b.changePercent-a.changePercent)[0];
+            el.innerHTML = `【台股摘要】平均漲幅 <span class="${cls(avg)}">${fmt(avg)}%</span>；強勢股：<span class="up">${top?.label||'N/A'} ${fmt(top?.changePercent)}%</span>。<br>【投資建議】偏向分批布局、嚴守停損。<br><span style="color:#9fb0c3">※ 僅供參考，非投資建議。</span>`;
+          } else if(tab === 'us'){
+            const r = await fetch('./us/data/us_latest.json?ts=' + Date.now());
+            const d = await r.json();
+            const valid = (d.items||[]).filter(x=>typeof x.changePercent==='number');
+            const avg = valid.length ? valid.reduce((a,b)=>a+b.changePercent,0)/valid.length : 0;
+            const top = valid.slice().sort((a,b)=>b.changePercent-a.changePercent)[0];
+            el.innerHTML = `【美股摘要】平均漲幅 <span class="${cls(avg)}">${fmt(avg)}%</span>；強勢股：<span class="up">${top?.label||'N/A'} ${fmt(top?.changePercent)}%</span>。<br>【投資建議】以龍頭與指數為主，避免過度追價。<br><span style="color:#9fb0c3">※ 僅供參考，非投資建議。</span>`;
+          } else {
+            const r = await fetch('./btc-hourly/data/latest.json?ts=' + Date.now());
+            const d = await r.json();
+            const h = d.latest?.changePercent ?? 0;
+            const avg = (d.performance24h||[]).filter(x=>typeof x.changePercent==='number').reduce((a,b)=>a+b.changePercent,0) / Math.max((d.performance24h||[]).filter(x=>typeof x.changePercent==='number').length,1);
+            el.innerHTML = `【BTC 摘要】最新一小時 <span class="${cls(h)}">${fmt(h,3)}%</span>；24h 小時均值 <span class="${cls(avg)}">${fmt(avg,3)}%</span>。<br>【投資建議】波動大，建議小部位分批與風險控管優先。<br><span style="color:#9fb0c3">※ 僅供參考，非投資建議。</span>`;
+          }
+        } catch (e) {
+          el.innerHTML = `摘要讀取失敗。你可直接開啟：<a href="./tw/" target="_blank">台股</a> / <a href="./us/" target="_blank">美股</a> / <a href="./btc-hourly/" target="_blank">BTC</a>`;
+        }
+      }
 
       function switchTab(target) {
+        currentTab = target;
         tabs.forEach(t => t.classList.toggle('active', t.dataset.target === target));
         Object.entries(frames).forEach(([k, el]) => el.classList.toggle('active', k === target));
+        updatePortalSummary(target);
       }
 
       tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.target)));
 
       if (location.hash === '#us') switchTab('us');
-      if (location.hash === '#btc') switchTab('btc');
+      else if (location.hash === '#btc') switchTab('btc');
+      else switchTab('tw');
     </script>
   </body>
 </html>
