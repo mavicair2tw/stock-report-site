@@ -14,6 +14,7 @@
       table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:12px;overflow:hidden}
       th,td{padding:12px;border-bottom:1px solid #1f2a44;text-align:left} th{background:var(--panel2)} tr:last-child td{border-bottom:none}
       .chart{background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:12px;margin-bottom:14px}
+      .summary{margin-top:14px;background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:14px;line-height:1.6}
     </style>
   </head>
   <body>
@@ -26,11 +27,35 @@
         <thead><tr><th>名稱</th><th>代號</th><th>類型</th><th>成交</th><th>漲跌</th><th>漲幅</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
+      <div class="summary" id="summary">載入摘要中...</div>
     </div>
     <script>
       function cls(v){if(v>0)return'up';if(v<0)return'down';return'flat'}
       function fmt(v,s=''){if(v===null||v===undefined||Number.isNaN(v))return '<span class="muted">N/A</span>'; return `${v}${s}`}
       function fmts(v,s=''){if(v===null||v===undefined||Number.isNaN(v))return '<span class="muted">N/A</span>'; const sign=v>0?'+':''; return `${sign}${v}${s}`}
+
+      function renderSummary(items){
+        const valid = items.filter(i=>typeof i.changePercent==='number');
+        if(!valid.length){
+          document.getElementById('summary').innerHTML='【美股摘要】目前資料不足，建議先觀察。<br><span class="muted">※ 僅供參考，非投資建議。</span>';
+          return;
+        }
+        const avg = valid.reduce((a,b)=>a+b.changePercent,0)/valid.length;
+        const up = valid.filter(i=>i.changePercent>0).length;
+        const down = valid.filter(i=>i.changePercent<0).length;
+        const topUp = valid.slice().sort((a,b)=>b.changePercent-a.changePercent)[0];
+        const topDown = valid.slice().sort((a,b)=>a.changePercent-b.changePercent)[0];
+
+        let tone='中性';
+        let action='建議以指數與大型權值股為主，分批進出。';
+        if(avg>0.5 && up>down){tone='偏多'; action='可偏向趨勢單，但仍建議控管槓桿與回撤。';}
+        else if(avg<-0.5 && down>=up){tone='偏空'; action='先防守，避免追高，等待反彈確認。';}
+
+        document.getElementById('summary').innerHTML =
+          `【美股摘要】整體氣氛：<b>${tone}</b>（平均漲幅 ${avg.toFixed(2)}% ，上漲 ${up} 檔 / 下跌 ${down} 檔）。<br>`+
+          `強勢：<span class="up">${topUp.label} (${topUp.changePercent}%)</span>；弱勢：<span class="down">${topDown.label} (${topDown.changePercent}%)</span>。<br>`+
+          `【投資建議】${action}<br><span class="muted">※ 以上為程式自動摘要，僅供參考，非投資建議。</span>`;
+      }
 
       fetch('./data/us_latest.json?ts='+Date.now())
         .then(r=>r.json())
@@ -38,6 +63,7 @@
           document.getElementById('updated').textContent = `最後更新：${data.updatedAt} (${data.timezone})`;
           const rows = data.items.map(i=>`<tr><td>${i.label}</td><td>${i.symbol}</td><td>${i.type}</td><td>${fmt(i.price)}</td><td class="${cls(i.change)}">${fmts(i.change)}</td><td class="${cls(i.changePercent)}">${fmts(i.changePercent,'%')}</td></tr>`).join('');
           document.getElementById('rows').innerHTML = rows;
+          renderSummary(data.items || []);
 
           const labels = data.items.map(i=>i.label);
           const vals = data.items.map(i=>typeof i.changePercent==='number'?i.changePercent:0);

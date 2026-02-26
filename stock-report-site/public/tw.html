@@ -41,6 +41,14 @@
         padding: 12px;
         margin-bottom: 14px;
       }
+      .summary {
+        margin-top: 14px;
+        background: var(--panel);
+        border: 1px solid #1f2a44;
+        border-radius: 12px;
+        padding: 14px;
+        line-height: 1.6;
+      }
     </style>
   </head>
   <body>
@@ -66,6 +74,8 @@
         </thead>
         <tbody id="rows"></tbody>
       </table>
+
+      <div class="summary" id="summary">載入摘要中...</div>
     </div>
 
     <script>
@@ -99,6 +109,35 @@
         return '台股非交易時段';
       }
 
+      function renderSummary(items) {
+        const valid = items.filter(i => typeof i.changePercent === 'number');
+        if (!valid.length) {
+          document.getElementById('summary').innerHTML = '【台股摘要】目前資料不足，建議先觀察。<br><span class="muted">※ 僅供參考，非投資建議。</span>';
+          return;
+        }
+
+        const avg = valid.reduce((a, b) => a + b.changePercent, 0) / valid.length;
+        const up = valid.filter(i => i.changePercent > 0).length;
+        const down = valid.filter(i => i.changePercent < 0).length;
+        const topUp = valid.slice().sort((a, b) => b.changePercent - a.changePercent)[0];
+        const topDown = valid.slice().sort((a, b) => a.changePercent - b.changePercent)[0];
+
+        let tone = '中性偏觀望';
+        let action = '建議分批、控制部位，等待方向更明確。';
+        if (avg > 0.6 && up > down) {
+          tone = '偏多';
+          action = '可優先關注強勢標的，採分批布局並設停利停損。';
+        } else if (avg < -0.6 && down >= up) {
+          tone = '偏空';
+          action = '建議降低追價，保留現金，等待止穩訊號。';
+        }
+
+        document.getElementById('summary').innerHTML =
+          `【台股摘要】整體氣氛：<b>${tone}</b>（平均漲幅 ${avg.toFixed(2)}% ，上漲 ${up} 檔 / 下跌 ${down} 檔）。<br>` +
+          `強勢：<span class="up">${topUp.label} (${topUp.changePercent}%)</span>；弱勢：<span class="down">${topDown.label} (${topDown.changePercent}%)</span>。<br>` +
+          `【投資建議】${action}<br><span class="muted">※ 以上為程式自動摘要，僅供參考，非投資建議。</span>`;
+      }
+
       function loadData() {
         fetch('./data/latest.json?ts=' + Date.now())
           .catch(() => fetch('../data/latest.json?ts=' + Date.now()))
@@ -124,6 +163,8 @@
             const labels = data.items.map(i => i.label);
             const vals = data.items.map(i => (typeof i.changePercent === 'number' ? i.changePercent : 0));
             const colors = vals.map(v => v > 0 ? 'rgba(63,185,80,0.8)' : v < 0 ? 'rgba(248,81,73,0.8)' : 'rgba(159,176,195,0.8)');
+
+            renderSummary(data.items || []);
 
             if (window._changeChart) window._changeChart.destroy();
             window._changeChart = new Chart(document.getElementById('changeChart'), {
