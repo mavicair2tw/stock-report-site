@@ -1,6 +1,16 @@
 name: Stock report (TW 15-min update + GitHub Pages deploy)
 
 on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/stock-report-pages.yml'
+      - 'stock-report-site/public/**'
+      - 'stock-report-site/data/**'
+      - 'stock-report-site/scripts/**'
+      - 'btc-hourly-site/public/**'
+      - 'btc-hourly-site/data/**'
+      - 'btc-hourly-site/scripts/**'
   schedule:
     # Rebuild all tabs every 15 minutes (UTC)
     - cron: '*/15 * * * *'
