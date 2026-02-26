@@ -55,6 +55,7 @@
     <div class="wrap">
       <h1>台股即時報表（15 分鐘更新）</h1>
       <div class="sub" id="updated">載入中...</div>
+      <div class="sub" id="viewCounter">點閱數：--</div>
       <div class="status" id="marketStatus">檢查交易時段中...</div>
       <div class="sub">顏色規則：<span class="up">綠色 = 正報酬/上漲</span>，<span class="down">紅色 = 負報酬/下跌</span></div>
 
@@ -82,6 +83,12 @@
     </div>
 
     <script>
+      const pageKey = `views:${location.pathname}`;
+      const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
+      localStorage.setItem(pageKey, String(pageViews));
+      const viewCounterEl = document.getElementById('viewCounter');
+      if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
+
       function cls(v) {
         if (v > 0) return 'up';
         if (v < 0) return 'down';

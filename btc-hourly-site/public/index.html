@@ -21,6 +21,7 @@
     <div class="wrap">
       <h1>BTC 每小時績效報表</h1>
       <div class="sub" id="updated">載入中...</div>
+      <div class="sub" id="viewCounter">點閱數：--</div>
       <div class="status">綠色 = 上漲，紅色 = 下跌</div>
 
       <div class="card"><canvas id="trendChart" height="90"></canvas></div>
@@ -35,6 +36,12 @@
     </div>
 
     <script>
+      const pageKey = `views:${location.pathname}`;
+      const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
+      localStorage.setItem(pageKey, String(pageViews));
+      const viewCounterEl = document.getElementById('viewCounter');
+      if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
+
       function cls(v){if(v>0)return'up';if(v<0)return'down';return'flat'}
       function fmt(v,s=''){if(v===null||v===undefined||Number.isNaN(v))return 'N/A';return `${v}${s}`}
       function fmts(v,s=''){if(v===null||v===undefined||Number.isNaN(v))return 'N/A';const sign=v>0?'+':'';return `${sign}${v}${s}`}

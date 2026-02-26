@@ -18,6 +18,7 @@
     <div class="wrap">
       <h1>台股新聞</h1>
       <div class="sub" id="updated">載入中...</div>
+      <div class="sub" id="viewCounter">點閱數：--</div>
       <div class="card" id="summary">載入摘要中...</div>
       <div class="card">
         <h3 style="margin-top:0">新聞清單</h3>
@@ -25,6 +26,12 @@
       </div>
     </div>
     <script>
+      const pageKey = `views:${location.pathname}`;
+      const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
+      localStorage.setItem(pageKey, String(pageViews));
+      const viewCounterEl = document.getElementById('viewCounter');
+      if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
+
       fetch('./data/tw_news.json?ts='+Date.now())
         .then(r=>r.json())
         .then(d=>{

@@ -25,6 +25,7 @@
     <div class="wrap">
       <h1>市場報表中心</h1>
       <div class="sub">用分頁切換不同報表（台股 / 美股 / BTC）</div>
+      <div class="sub" id="viewCounter">點閱數：--</div>
 
       <div class="tabs">
         <button class="tab active" data-target="tw">台股 15 分鐘</button>
@@ -46,6 +47,12 @@
     </div>
 
     <script>
+      const pageKey = `views:${location.pathname}`;
+      const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
+      localStorage.setItem(pageKey, String(pageViews));
+      const viewCounterEl = document.getElementById('viewCounter');
+      if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
+
       const tabs = document.querySelectorAll('.tab');
       const frames = { tw: document.getElementById('tw'), us: document.getElementById('us'), btc: document.getElementById('btc'), twnews: document.getElementById('twnews'), usnews: document.getElementById('usnews') };
       let currentTab = 'tw';
