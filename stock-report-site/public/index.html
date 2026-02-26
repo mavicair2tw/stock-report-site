@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daily US Market Report</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; margin: 24px; background: #0b1020; color: #e6edf3; }
+      h1 { margin-bottom: 8px; }
+      .sub { color: #9fb0c3; margin-bottom: 20px; }
+      table { width: 100%; border-collapse: collapse; background: #121a2f; border-radius: 10px; overflow: hidden; }
+      th, td { padding: 12px; border-bottom: 1px solid #1f2a44; text-align: left; }
+      th { background: #18213a; }
+      tr:last-child td { border-bottom: none; }
+      .up { color: #3fb950; }
+      .down { color: #f85149; }
+      .flat { color: #9fb0c3; }
+      .muted { color: #9fb0c3; }
+    </style>
+  </head>
+  <body>
+    <h1>Daily US Market Report</h1>
+    <div class="sub" id="updated">Loading...</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Symbol</th>
+          <th>Type</th>
+          <th>Price</th>
+          <th>Change</th>
+          <th>Change %</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+
+    <script>
+      function cls(v) {
+        if (v > 0) return 'up';
+        if (v < 0) return 'down';
+        return 'flat';
+      }
+
+      function fmt(v, suffix='') {
+        if (v === null || v === undefined || Number.isNaN(v)) return '<span class="muted">N/A</span>';
+        return `${v}${suffix}`;
+      }
+
+      fetch('../data/latest.json?ts=' + Date.now())
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('updated').textContent = `Updated: ${data.updatedAt} (${data.timezone})`;
+          const rows = data.items.map(item => {
+            const c = cls(item.change || 0);
+            return `
+              <tr>
+                <td>${item.label}</td>
+                <td>${item.symbol}</td>
+                <td>${item.type}</td>
+                <td>${fmt(item.price)} ${item.currency || ''}</td>
+                <td class="${c}">${fmt(item.change)}</td>
+                <td class="${c}">${fmt(item.changePercent, '%')}</td>
+              </tr>
+            `;
+          }).join('');
+          document.getElementById('rows').innerHTML = rows;
+        })
+        .catch(err => {
+          document.getElementById('updated').textContent = 'Failed to load report data';
+          console.error(err);
+        });
+    </script>
+  </body>
+</html>

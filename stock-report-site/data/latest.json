@@ -1,0 +1,87 @@
+{
+  "updatedAt": "2026-02-26T12:57:10.913008+08:00",
+  "timezone": "Asia/Taipei",
+  "items": [
+    {
+      "label": "TSM",
+      "symbol": "TSM",
+      "type": "Stock",
+      "price": 387.73,
+      "change": 1.98,
+      "changePercent": 0.51,
+      "currency": null
+    },
+    {
+      "label": "GOOG",
+      "symbol": "GOOG",
+      "type": "Stock",
+      "price": 313.03,
+      "change": 2.11,
+      "changePercent": 0.68,
+      "currency": null
+    },
+    {
+      "label": "AMD",
+      "symbol": "AMD",
+      "type": "Stock",
+      "price": 210.86,
+      "change": -2.98,
+      "changePercent": -1.39,
+      "currency": null
+    },
+    {
+      "label": "NVDA",
+      "symbol": "NVDA",
+      "type": "Stock",
+      "price": 195.56,
+      "change": 2.71,
+      "changePercent": 1.41,
+      "currency": null
+    },
+    {
+      "label": "BTC",
+      "symbol": "BTC-USD",
+      "type": "Crypto",
+      "price": 68655.59,
+      "change": 4575.55,
+      "changePercent": 7.14,
+      "currency": null
+    },
+    {
+      "label": "Tesla",
+      "symbol": "TSLA",
+      "type": "Stock",
+      "price": 417.4,
+      "change": 8.02,
+      "changePercent": 1.96,
+      "currency": null
+    },
+    {
+      "label": "Gold",
+      "symbol": "GC=F",
+      "type": "Commodity",
+      "price": 5208.5,
+      "change": 52.7,
+      "changePercent": 1.02,
+      "currency": null
+    },
+    {
+      "label": "S&P 500",
+      "symbol": "^GSPC",
+      "type": "Index",
+      "price": 6946.13,
+      "change": 56.06,
+      "changePercent": 0.81,
+      "currency": null
+    },
+    {
+      "label": "NASDAQ SOX",
+      "symbol": "^SOX",
+      "type": "Index",
+      "price": 8467.43,
+      "change": 135.09,
+      "changePercent": 1.62,
+      "currency": null
+    }
+  ]
+}
