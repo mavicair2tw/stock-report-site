@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>案件 {{ ticket['ticket_no'] }}</h1>
+<div class="card">
+  <p><strong>客戶ID：</strong>{{ ticket['customer_id'] }}</p>
+  <p><strong>狀態：</strong>{{ ticket['status'] }}</p>
+  <p><strong>問題敘述：</strong>{{ ticket['issue_desc'] }}</p>
+</div>
+
+<div class="card">
+  <h3>新增案件活動</h3>
+  <form method="post" class="grid2 form">
+    <label>處理人員<input name="assignee" required /></label>
+    <label>狀態
+      <select name="status">
+        <option>Open</option><option>In Progress</option><option>Pending</option><option>Resolved</option><option>Closed</option>
+      </select>
+    </label>
+    <label>時間<input name="activity_time" placeholder="2026-02-26T15:00" /></label>
+    <label>備註<textarea name="note"></textarea></label>
+    <div><button type="submit">新增活動</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h3>活動紀錄</h3>
+  <table>
+    <tr><th>處理人員</th><th>狀態</th><th>時間</th><th>備註</th></tr>
+    {% for a in activities %}
+      <tr><td>{{ a['assignee'] }}</td><td>{{ a['status'] }}</td><td>{{ a['activity_time'] }}</td><td>{{ a['note'] }}</td></tr>
+    {% else %}
+      <tr><td colspan="4">尚無活動</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

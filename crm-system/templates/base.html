@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title or 'CRM 系統' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="wrap nav">
+        <div class="brand">CRM Pro</div>
+        {% if session.get('user_id') %}
+        <nav>
+          <a href="{{ url_for('dashboard') }}">儀表板</a>
+          <a href="{{ url_for('customers') }}">客戶</a>
+          <a href="{{ url_for('companies') }}">公司</a>
+          <a href="{{ url_for('tickets') }}">案件</a>
+          <a href="{{ url_for('reports') }}">報表</a>
+          <a href="{{ url_for('logout') }}">登出</a>
+        </nav>
+        {% endif %}
+      </div>
+    </header>
+
+    <main class="wrap">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash-wrap">
+            {% for msg in messages %}
+            <div class="flash">{{ msg }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

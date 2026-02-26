@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>報表與報表管理</h1>
+<div class="grid2">
+  <div class="card">
+    <h3>案件狀態分佈</h3>
+    <table>
+      <tr><th>狀態</th><th>數量</th></tr>
+      {% for r in status_rows %}
+      <tr><td>{{ r['status'] }}</td><td>{{ r['cnt'] }}</td></tr>
+      {% else %}
+      <tr><td colspan="2">無資料</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>處理人員活動排行</h3>
+    <table>
+      <tr><th>人員</th><th>活動數</th></tr>
+      {% for r in assignee_rows %}
+      <tr><td>{{ r['assignee'] }}</td><td>{{ r['cnt'] }}</td></tr>
+      {% else %}
+      <tr><td colspan="2">無資料</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h3>最近 14 天案件量</h3>
+  <table>
+    <tr><th>日期</th><th>案件數</th></tr>
+    {% for r in daily_rows %}
+    <tr><td>{{ r['day'] }}</td><td>{{ r['cnt'] }}</td></tr>
+    {% else %}
+    <tr><td colspan="2">無資料</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

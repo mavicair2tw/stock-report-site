@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>CRM 儀表板</h1>
+<div class="grid4">
+  <div class="card stat"><div class="k">案件總數</div><div class="v">{{ total_tickets }}</div></div>
+  <div class="card stat"><div class="k">進行中案件</div><div class="v">{{ open_tickets }}</div></div>
+  <div class="card stat"><div class="k">客戶數</div><div class="v">{{ total_customers }}</div></div>
+  <div class="card stat"><div class="k">公司數</div><div class="v">{{ total_companies }}</div></div>
+</div>
+
+<div class="card">
+  <h3>最新案件</h3>
+  <table>
+    <tr><th>案件編號</th><th>客戶ID</th><th>狀態</th><th>更新時間</th></tr>
+    {% for r in latest_tickets %}
+      <tr>
+        <td><a href="{{ url_for('ticket_detail', ticket_id=r['id']) }}">{{ r['ticket_no'] }}</a></td>
+        <td>{{ r['customer_id'] }}</td><td>{{ r['status'] }}</td><td>{{ r['updated_at'] }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4">尚無資料</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

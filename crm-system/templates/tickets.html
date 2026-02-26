@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>案件追蹤管理</h1>
+<div class="card">
+  <form method="post" class="grid2 form">
+    <label>案件編號<input name="ticket_no" required /></label>
+    <label>客戶ID<input name="customer_id" required /></label>
+    <label>狀態
+      <select name="status">
+        <option>Open</option><option>In Progress</option><option>Pending</option><option>Resolved</option><option>Closed</option>
+      </select>
+    </label>
+    <label>問題敘述<textarea name="issue_desc" required></textarea></label>
+    <div><button type="submit">建立案件</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <tr><th>案件</th><th>客戶ID</th><th>狀態</th><th>建立時間</th><th>更新時間</th></tr>
+    {% for r in rows %}
+      <tr>
+        <td><a href="{{ url_for('ticket_detail', ticket_id=r['id']) }}">{{ r['ticket_no'] }}</a></td>
+        <td>{{ r['customer_id'] }}</td><td>{{ r['status'] }}</td><td>{{ r['created_at'] }}</td><td>{{ r['updated_at'] }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5">尚無案件</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}
