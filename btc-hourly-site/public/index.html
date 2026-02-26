@@ -13,6 +13,7 @@
       .up{color:var(--green)} .down{color:var(--red)} .flat{color:var(--muted)}
       .card{background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:12px;margin-bottom:14px}
       .summary{margin-top:14px;background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:14px;line-height:1.6}
+      .news{margin-top:14px;background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:14px;line-height:1.7}
       table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:12px;overflow:hidden}
       th,td{padding:12px;border-bottom:1px solid #1f2a44;text-align:left} th{background:var(--panel2)} tr:last-child td{border-bottom:none}
     </style>
@@ -32,6 +33,10 @@
       <div class="summary">
         <h3 style="margin:0 0 8px;">中文摘要＋投資建議</h3>
         <div id="summary">載入摘要中...</div>
+      </div>
+      <div class="news">
+        <h3 style="margin:0 0 8px;">每日市場新聞摘要</h3>
+        <div id="newsSummary">載入中...</div>
       </div>
     </div>
 
@@ -60,6 +65,23 @@
           `【投資建議】${action}<br><span style="color:#9fb0c3">※ 以上為程式自動摘要，僅供參考，非投資建議。</span>`;
       }
 
+      function renderNews(perf, latest, updatedAt){
+        const valid = (perf||[]).filter(x=>typeof x.changePercent==='number');
+        if(!valid.length){
+          document.getElementById('newsSummary').innerHTML = '今天無足夠資料可產生摘要。';
+          return;
+        }
+        const avg = valid.reduce((a,b)=>a+b.changePercent,0)/valid.length;
+        const top = valid.slice().sort((a,b)=>b.changePercent-a.changePercent)[0];
+        const low = valid.slice().sort((a,b)=>a.changePercent-b.changePercent)[0];
+        const tone = avg > 0.15 ? '偏多震盪' : avg < -0.15 ? '偏空震盪' : '區間震盪';
+        document.getElementById('newsSummary').innerHTML =
+          `• 每日重點（${(updatedAt||'').slice(0,16).replace('T',' ')}）：BTC 盤勢 ${tone}，24h 小時均值 ${avg.toFixed(3)}%。<br>`+
+          `• 高低波動：強勢時段 <span class="up">${top.time} (${top.changePercent}%)</span>；弱勢時段 <span class="down">${low.time} (${low.changePercent}%)</span>。<br>`+
+          `• 操作提醒：波動仍高，建議嚴格控管槓桿與單筆風險。<br>`+
+          `<span style="color:#9fb0c3">※ 此區為程式化「新聞風格摘要」，非即時新聞稿來源。</span>`;
+      }
+
       fetch('./data/latest.json?ts='+Date.now())
         .catch(()=>fetch('../data/latest.json?ts='+Date.now()))
         .then(r=>r.json())
@@ -70,6 +92,7 @@
           const rows=(data.performance24h||[]).slice().reverse().map(x=>`<tr><td>${x.time}</td><td>${fmt(x.price)}</td><td class="${cls(x.change)}">${fmts(x.change)}</td><td class="${cls(x.changePercent)}">${fmts(x.changePercent,'%')}</td></tr>`).join('');
           document.getElementById('rows').innerHTML=rows;
           renderSummary(data.performance24h || [], l);
+          renderNews(data.performance24h || [], l, data.updatedAt || '');
 
           const labels=(data.trend72h||[]).map(x=>x.time.slice(6));
           const vals=(data.trend72h||[]).map(x=>x.close);
