@@ -58,6 +58,22 @@ cat /Users/mavicair2tw/.openclaw/workspace/stock-report-site/logs/stockreport.ou
 cat /Users/mavicair2tw/.openclaw/workspace/stock-report-site/logs/stockreport.err.log
 ```
 
+## 5) Optional: deploy publicly (GitHub Pages / Cloudflare / Vercel)
+
+### Option A: GitHub Pages
+
+1. Push this folder to a GitHub repo.
+2. In repo settings, enable **Pages** and deploy from branch root (or your preferred static setup).
+3. Serve `public/index.html` and `data/latest.json` as static files.
+
+### Option B: Cloudflare Pages / Vercel
+
+- Framework preset: **None / Static site**
+- Output directory: repo root (or configure to include `public/` + `data/`)
+
+> Note: static hosting only serves files; it does not run Python jobs by itself.
+> Use GitHub Actions (`.github/workflows/daily-update.yml`) to refresh `data/latest.json` daily and push updates.
+
 ## Notes
 
 - Data source: Yahoo Finance via `yfinance`.

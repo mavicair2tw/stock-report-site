@@ -4,37 +4,98 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Daily US Market Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-      body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; margin: 24px; background: #0b1020; color: #e6edf3; }
-      h1 { margin-bottom: 8px; }
-      .sub { color: #9fb0c3; margin-bottom: 20px; }
-      table { width: 100%; border-collapse: collapse; background: #121a2f; border-radius: 10px; overflow: hidden; }
-      th, td { padding: 12px; border-bottom: 1px solid #1f2a44; text-align: left; }
-      th { background: #18213a; }
+      :root {
+        --bg: #0b1020;
+        --panel: #121a2f;
+        --panel-2: #18213a;
+        --text: #e6edf3;
+        --muted: #9fb0c3;
+        --green: #3fb950;
+        --red: #f85149;
+      }
+      * { box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+        margin: 20px;
+        background: linear-gradient(180deg, #0b1020 0%, #0a1226 100%);
+        color: var(--text);
+      }
+      .wrap { max-width: 1200px; margin: 0 auto; }
+      h1 { margin: 0 0 8px; }
+      .sub { color: var(--muted); margin-bottom: 14px; }
+      .status { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #253252; color: #c7d5e5; margin-bottom: 16px; }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid #1f2a44;
+        border-radius: 12px;
+        padding: 12px;
+      }
+      .card .k { color: var(--muted); font-size: 12px; }
+      .card .v { margin-top: 6px; font-size: 20px; font-weight: 700; }
+
+      .chart-wrap {
+        background: var(--panel);
+        border: 1px solid #1f2a44;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 14px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--panel);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      th, td {
+        padding: 12px;
+        border-bottom: 1px solid #1f2a44;
+        text-align: left;
+      }
+      th { background: var(--panel-2); }
       tr:last-child td { border-bottom: none; }
-      .up { color: #3fb950; }
-      .down { color: #f85149; }
-      .flat { color: #9fb0c3; }
-      .muted { color: #9fb0c3; }
+      .up { color: var(--green); }
+      .down { color: var(--red); }
+      .flat { color: var(--muted); }
+      .muted { color: var(--muted); }
     </style>
   </head>
   <body>
-    <h1>Daily US Market Report</h1>
-    <div class="sub" id="updated">Loading...</div>
+    <div class="wrap">
+      <h1>Daily US Market Report</h1>
+      <div class="sub" id="updated">Loading...</div>
+      <div class="status" id="marketStatus">Checking market status...</div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Asset</th>
-          <th>Symbol</th>
-          <th>Type</th>
-          <th>Price</th>
-          <th>Change</th>
-          <th>Change %</th>
-        </tr>
-      </thead>
-      <tbody id="rows"></tbody>
-    </table>
+      <div class="cards" id="cards"></div>
+
+      <div class="chart-wrap">
+        <canvas id="changeChart" height="90"></canvas>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Symbol</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Change</th>
+            <th>Change %</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
 
     <script>
       function cls(v) {
@@ -43,15 +104,43 @@
         return 'flat';
       }
 
-      function fmt(v, suffix='') {
+      function fmt(v, suffix = '') {
         if (v === null || v === undefined || Number.isNaN(v)) return '<span class="muted">N/A</span>';
         return `${v}${suffix}`;
+      }
+
+      function usMarketStatus() {
+        const now = new Date();
+        const ny = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+        const day = ny.getDay(); // 0 sun, 6 sat
+        const minutes = ny.getHours() * 60 + ny.getMinutes();
+        const open = 9 * 60 + 30;
+        const close = 16 * 60;
+
+        if (day === 0 || day === 6) return 'US Market: Closed (Weekend)';
+        if (minutes >= open && minutes < close) return 'US Market: Open';
+        return 'US Market: Closed';
       }
 
       fetch('../data/latest.json?ts=' + Date.now())
         .then(r => r.json())
         .then(data => {
           document.getElementById('updated').textContent = `Updated: ${data.updatedAt} (${data.timezone})`;
+          document.getElementById('marketStatus').textContent = usMarketStatus();
+
+          const valid = data.items.filter(i => typeof i.changePercent === 'number');
+          const gainers = valid.filter(i => i.changePercent > 0).length;
+          const losers = valid.filter(i => i.changePercent < 0).length;
+          const avg = valid.length ? (valid.reduce((a, b) => a + b.changePercent, 0) / valid.length).toFixed(2) : 'N/A';
+          const top = valid.slice().sort((a,b) => Math.abs(b.changePercent) - Math.abs(a.changePercent))[0];
+
+          document.getElementById('cards').innerHTML = `
+            <div class="card"><div class="k">Coverage</div><div class="v">${data.items.length} Assets</div></div>
+            <div class="card"><div class="k">Gainers / Losers</div><div class="v"><span class="up">${gainers}</span> / <span class="down">${losers}</span></div></div>
+            <div class="card"><div class="k">Average Move</div><div class="v ${cls(Number(avg))}">${avg}%</div></div>
+            <div class="card"><div class="k">Top Mover</div><div class="v ${top ? cls(top.changePercent) : 'flat'}">${top ? top.label + ' ' + top.changePercent + '%' : 'N/A'}</div></div>
+          `;
+
           const rows = data.items.map(item => {
             const c = cls(item.change || 0);
             return `
@@ -66,6 +155,26 @@
             `;
           }).join('');
           document.getElementById('rows').innerHTML = rows;
+
+          const labels = data.items.map(i => i.label);
+          const vals = data.items.map(i => (typeof i.changePercent === 'number' ? i.changePercent : 0));
+          const colors = vals.map(v => v > 0 ? 'rgba(63,185,80,0.8)' : v < 0 ? 'rgba(248,81,73,0.8)' : 'rgba(159,176,195,0.8)');
+
+          new Chart(document.getElementById('changeChart'), {
+            type: 'bar',
+            data: {
+              labels,
+              datasets: [{ label: 'Daily Change %', data: vals, backgroundColor: colors }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { labels: { color: '#e6edf3' } } },
+              scales: {
+                x: { ticks: { color: '#c7d5e5' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { ticks: { color: '#c7d5e5' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+              }
+            }
+          });
         })
         .catch(err => {
           document.getElementById('updated').textContent = 'Failed to load report data';
