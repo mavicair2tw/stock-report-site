@@ -17,6 +17,8 @@
       .panel { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#0f1730; }
       iframe { width:100%; height:calc(100vh - 240px); min-height:620px; border:0; display:none; }
       iframe.active { display:block; }
+      .spotify-wrap{display:none;margin:10px 0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
+      .spotify-wrap iframe{border-radius:10px}
       .foot { margin-top:10px; color:var(--muted); font-size:13px; }
       a { color:#93c5fd; }
     </style>
@@ -33,6 +35,10 @@
         <button class="tab" data-target="btc">BTC 每小時</button>
         <button class="tab" data-target="twnews">台股新聞</button>
         <button class="tab" data-target="usnews">美股新聞</button>
+      </div>
+
+      <div id="spotifyWrap" class="spotify-wrap">
+        <iframe src="https://open.spotify.com/embed/artist/3wNssuAFgx8ozrfBEsgCMs?utm_source=generator" width="100%" height="152" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
       </div>
 
       <div class="panel">
@@ -63,6 +69,8 @@
         currentTab = target;
         tabs.forEach(t => t.classList.toggle('active', t.dataset.target === target));
         Object.entries(frames).forEach(([k, el]) => el.classList.toggle('active', k === target));
+        const spotifyWrap = document.getElementById('spotifyWrap');
+        if (spotifyWrap) spotifyWrap.style.display = (target === 'twnews' || target === 'usnews') ? 'block' : 'none';
       }
 
       tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.target)));
