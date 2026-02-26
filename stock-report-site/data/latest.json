@@ -1,355 +1,563 @@
 {
-  "updatedAt": "2026-02-26T13:19:57.109886+08:00",
+  "updatedAt": "2026-02-26T13:26:27.989433+08:00",
   "timezone": "Asia/Taipei",
+  "market": {
+    "name": "TWSE",
+    "open": "09:00",
+    "close": "13:30",
+    "isTradingWindow": true
+  },
   "items": [
     {
-      "label": "TSM",
-      "symbol": "TSM",
-      "type": "Stock",
-      "price": 387.73,
-      "change": 1.98,
-      "changePercent": 0.51,
-      "currency": null,
-      "trend7d": [
-        {
-          "date": "2026-02-17",
-          "close": 364.2
-        },
-        {
-          "date": "2026-02-18",
-          "close": 362.26
-        },
-        {
-          "date": "2026-02-19",
-          "close": 360.39
-        },
-        {
-          "date": "2026-02-20",
-          "close": 370.54
-        },
-        {
-          "date": "2026-02-23",
-          "close": 370.04
-        },
-        {
-          "date": "2026-02-24",
-          "close": 385.75
-        },
-        {
-          "date": "2026-02-25",
-          "close": 387.73
-        }
-      ]
-    },
-    {
-      "label": "GOOG",
-      "symbol": "GOOG",
-      "type": "Stock",
-      "price": 313.03,
-      "change": 2.11,
-      "changePercent": 0.68,
-      "currency": null,
-      "trend7d": [
-        {
-          "date": "2026-02-17",
-          "close": 302.82
-        },
-        {
-          "date": "2026-02-18",
-          "close": 303.94
-        },
-        {
-          "date": "2026-02-19",
-          "close": 303.56
-        },
-        {
-          "date": "2026-02-20",
-          "close": 314.9
-        },
-        {
-          "date": "2026-02-23",
-          "close": 311.69
-        },
-        {
-          "date": "2026-02-24",
-          "close": 310.92
-        },
-        {
-          "date": "2026-02-25",
-          "close": 313.03
-        }
-      ]
-    },
-    {
-      "label": "AMD",
-      "symbol": "AMD",
-      "type": "Stock",
-      "price": 210.86,
-      "change": -2.98,
-      "changePercent": -1.39,
-      "currency": null,
-      "trend7d": [
-        {
-          "date": "2026-02-17",
-          "close": 203.08
-        },
-        {
-          "date": "2026-02-18",
-          "close": 200.12
-        },
-        {
-          "date": "2026-02-19",
-          "close": 203.37
-        },
-        {
-          "date": "2026-02-20",
-          "close": 200.15
-        },
-        {
-          "date": "2026-02-23",
-          "close": 196.6
-        },
-        {
-          "date": "2026-02-24",
-          "close": 213.84
-        },
-        {
-          "date": "2026-02-25",
-          "close": 210.86
-        }
-      ]
-    },
-    {
-      "label": "NVDA",
-      "symbol": "NVDA",
-      "type": "Stock",
-      "price": 195.56,
-      "change": 2.71,
-      "changePercent": 1.41,
-      "currency": null,
-      "trend7d": [
-        {
-          "date": "2026-02-17",
-          "close": 184.97
-        },
-        {
-          "date": "2026-02-18",
-          "close": 187.98
-        },
-        {
-          "date": "2026-02-19",
-          "close": 187.9
-        },
-        {
-          "date": "2026-02-20",
-          "close": 189.82
-        },
-        {
-          "date": "2026-02-23",
-          "close": 191.55
-        },
-        {
-          "date": "2026-02-24",
-          "close": 192.85
-        },
-        {
-          "date": "2026-02-25",
-          "close": 195.56
-        }
-      ]
-    },
-    {
-      "label": "BTC",
-      "symbol": "BTC-USD",
-      "type": "Crypto",
-      "price": 68168.7,
-      "change": 4088.66,
-      "changePercent": 6.38,
-      "currency": null,
-      "trend7d": [
-        {
-          "date": "2026-02-19",
-          "close": 66957.52
-        },
-        {
-          "date": "2026-02-20",
-          "close": 68005.42
-        },
-        {
-          "date": "2026-02-21",
-          "close": 68003.77
-        },
-        {
-          "date": "2026-02-22",
-          "close": 67659.39
-        },
-        {
-          "date": "2026-02-23",
-          "close": 64616.74
-        },
-        {
-          "date": "2026-02-24",
-          "close": 64080.04
-        },
-        {
-          "date": "2026-02-26",
-          "close": 68168.7
-        }
-      ]
-    },
-    {
-      "label": "Tesla",
-      "symbol": "TSLA",
-      "type": "Stock",
-      "price": 417.4,
-      "change": 8.02,
-      "changePercent": 1.96,
-      "currency": null,
-      "trend7d": [
-        {
-          "date": "2026-02-17",
-          "close": 410.63
-        },
-        {
-          "date": "2026-02-18",
-          "close": 411.32
-        },
-        {
-          "date": "2026-02-19",
-          "close": 411.71
-        },
-        {
-          "date": "2026-02-20",
-          "close": 411.82
-        },
-        {
-          "date": "2026-02-23",
-          "close": 399.83
-        },
-        {
-          "date": "2026-02-24",
-          "close": 409.38
-        },
-        {
-          "date": "2026-02-25",
-          "close": 417.4
-        }
-      ]
-    },
-    {
-      "label": "Gold",
-      "symbol": "GC=F",
-      "type": "Commodity",
-      "price": 5210.2,
-      "change": 3.8,
-      "changePercent": 0.07,
-      "currency": null,
-      "trend7d": [
-        {
-          "date": "2026-02-18",
-          "close": 4986.5
-        },
-        {
-          "date": "2026-02-19",
-          "close": 4975.9
-        },
-        {
-          "date": "2026-02-20",
-          "close": 5059.3
-        },
-        {
-          "date": "2026-02-23",
-          "close": 5204.7
-        },
-        {
-          "date": "2026-02-24",
-          "close": 5155.8
-        },
-        {
-          "date": "2026-02-25",
-          "close": 5206.4
-        },
-        {
-          "date": "2026-02-26",
-          "close": 5210.2
-        }
-      ]
-    },
-    {
-      "label": "S&P 500",
-      "symbol": "^GSPC",
+      "label": "加權指數",
+      "symbol": "^TWII",
       "type": "Index",
-      "price": 6946.13,
-      "change": 56.06,
-      "changePercent": 0.81,
-      "currency": null,
-      "trend7d": [
+      "price": 35445.68,
+      "change": 32.61,
+      "changePercent": 0.09,
+      "currency": "TWD",
+      "trend": [
         {
-          "date": "2026-02-17",
-          "close": 6843.22
+          "time": "09:00",
+          "close": 35291.96
         },
         {
-          "date": "2026-02-18",
-          "close": 6881.31
+          "time": "09:15",
+          "close": 35194.8
         },
         {
-          "date": "2026-02-19",
-          "close": 6861.89
+          "time": "09:30",
+          "close": 35394.08
         },
         {
-          "date": "2026-02-20",
-          "close": 6909.51
+          "time": "09:45",
+          "close": 35393.93
         },
         {
-          "date": "2026-02-23",
-          "close": 6837.75
+          "time": "10:00",
+          "close": 35400.44
         },
         {
-          "date": "2026-02-24",
-          "close": 6890.07
+          "time": "10:15",
+          "close": 35479.29
         },
         {
-          "date": "2026-02-25",
-          "close": 6946.13
+          "time": "10:30",
+          "close": 35439.69
+        },
+        {
+          "time": "10:45",
+          "close": 35569.85
+        },
+        {
+          "time": "11:00",
+          "close": 35503.16
+        },
+        {
+          "time": "11:15",
+          "close": 35507.1
+        },
+        {
+          "time": "11:30",
+          "close": 35446.03
+        },
+        {
+          "time": "11:45",
+          "close": 35486.32
+        },
+        {
+          "time": "12:00",
+          "close": 35445.91
+        },
+        {
+          "time": "12:15",
+          "close": 35435.83
+        },
+        {
+          "time": "12:30",
+          "close": 35474.17
+        },
+        {
+          "time": "12:45",
+          "close": 35441.89
+        },
+        {
+          "time": "13:00",
+          "close": 35445.68
         }
       ]
     },
     {
-      "label": "NASDAQ SOX",
-      "symbol": "^SOX",
-      "type": "Index",
-      "price": 8467.43,
-      "change": 135.09,
-      "changePercent": 1.62,
-      "currency": null,
-      "trend7d": [
+      "label": "台積電",
+      "symbol": "2330.TW",
+      "type": "Stock",
+      "price": 2000.0,
+      "change": -15.0,
+      "changePercent": -0.74,
+      "currency": "TWD",
+      "trend": [
         {
-          "date": "2026-02-17",
-          "close": 8136.05
+          "time": "09:00",
+          "close": 1995.0
         },
         {
-          "date": "2026-02-18",
-          "close": 8214.35
+          "time": "09:15",
+          "close": 1995.0
         },
         {
-          "date": "2026-02-19",
-          "close": 8173.3
+          "time": "09:30",
+          "close": 2000.0
         },
         {
-          "date": "2026-02-20",
-          "close": 8260.42
+          "time": "09:45",
+          "close": 1995.0
         },
         {
-          "date": "2026-02-23",
-          "close": 8213.46
+          "time": "10:00",
+          "close": 2000.0
         },
         {
-          "date": "2026-02-24",
-          "close": 8332.34
+          "time": "10:15",
+          "close": 2005.0
         },
         {
-          "date": "2026-02-25",
-          "close": 8467.43
+          "time": "10:30",
+          "close": 2005.0
+        },
+        {
+          "time": "10:45",
+          "close": 2010.0
+        },
+        {
+          "time": "11:00",
+          "close": 2005.0
+        },
+        {
+          "time": "11:15",
+          "close": 2005.0
+        },
+        {
+          "time": "11:30",
+          "close": 2000.0
+        },
+        {
+          "time": "11:45",
+          "close": 2005.0
+        },
+        {
+          "time": "12:00",
+          "close": 2000.0
+        },
+        {
+          "time": "12:15",
+          "close": 2000.0
+        },
+        {
+          "time": "12:30",
+          "close": 2000.0
+        },
+        {
+          "time": "12:45",
+          "close": 2005.0
+        },
+        {
+          "time": "13:00",
+          "close": 2000.0
+        }
+      ]
+    },
+    {
+      "label": "富邦科技",
+      "symbol": "0052.TW",
+      "type": "ETF",
+      "price": 48.46,
+      "change": 1.18,
+      "changePercent": 2.5,
+      "currency": "TWD",
+      "trend": [
+        {
+          "time": "09:00",
+          "close": 48.25
+        },
+        {
+          "time": "09:15",
+          "close": 48.1
+        },
+        {
+          "time": "09:30",
+          "close": 48.3
+        },
+        {
+          "time": "09:45",
+          "close": 48.34
+        },
+        {
+          "time": "10:00",
+          "close": 48.33
+        },
+        {
+          "time": "10:15",
+          "close": 48.4
+        },
+        {
+          "time": "10:30",
+          "close": 48.43
+        },
+        {
+          "time": "10:45",
+          "close": 48.56
+        },
+        {
+          "time": "11:00",
+          "close": 48.48
+        },
+        {
+          "time": "11:15",
+          "close": 48.51
+        },
+        {
+          "time": "11:30",
+          "close": 48.52
+        },
+        {
+          "time": "11:45",
+          "close": 48.49
+        },
+        {
+          "time": "12:00",
+          "close": 48.49
+        },
+        {
+          "time": "12:15",
+          "close": 48.5
+        },
+        {
+          "time": "12:30",
+          "close": 48.47
+        },
+        {
+          "time": "12:45",
+          "close": 48.49
+        },
+        {
+          "time": "13:00",
+          "close": 48.46
+        }
+      ]
+    },
+    {
+      "label": "元大台灣50",
+      "symbol": "0050.TW",
+      "type": "ETF",
+      "price": 81.2,
+      "change": -0.06,
+      "changePercent": -0.07,
+      "currency": "TWD",
+      "trend": [
+        {
+          "time": "09:00",
+          "close": 80.95
+        },
+        {
+          "time": "09:15",
+          "close": 80.85
+        },
+        {
+          "time": "09:30",
+          "close": 81.15
+        },
+        {
+          "time": "09:45",
+          "close": 81.2
+        },
+        {
+          "time": "10:00",
+          "close": 81.2
+        },
+        {
+          "time": "10:15",
+          "close": 81.35
+        },
+        {
+          "time": "10:30",
+          "close": 81.3
+        },
+        {
+          "time": "10:45",
+          "close": 81.5
+        },
+        {
+          "time": "11:00",
+          "close": 81.35
+        },
+        {
+          "time": "11:15",
+          "close": 81.4
+        },
+        {
+          "time": "11:30",
+          "close": 81.35
+        },
+        {
+          "time": "11:45",
+          "close": 81.35
+        },
+        {
+          "time": "12:00",
+          "close": 81.35
+        },
+        {
+          "time": "12:15",
+          "close": 81.35
+        },
+        {
+          "time": "12:30",
+          "close": 81.25
+        },
+        {
+          "time": "12:45",
+          "close": 81.25
+        },
+        {
+          "time": "13:00",
+          "close": 81.2
+        }
+      ]
+    },
+    {
+      "label": "凱基台灣TOP50",
+      "symbol": "00915.TW",
+      "type": "ETF",
+      "price": 24.79,
+      "change": 0.07,
+      "changePercent": 0.28,
+      "currency": "TWD",
+      "trend": [
+        {
+          "time": "09:00",
+          "close": 24.69
+        },
+        {
+          "time": "09:15",
+          "close": 24.75
+        },
+        {
+          "time": "09:30",
+          "close": 24.86
+        },
+        {
+          "time": "09:45",
+          "close": 24.88
+        },
+        {
+          "time": "10:00",
+          "close": 24.81
+        },
+        {
+          "time": "10:15",
+          "close": 24.85
+        },
+        {
+          "time": "10:30",
+          "close": 24.86
+        },
+        {
+          "time": "10:45",
+          "close": 24.88
+        },
+        {
+          "time": "11:00",
+          "close": 24.88
+        },
+        {
+          "time": "11:15",
+          "close": 24.86
+        },
+        {
+          "time": "11:30",
+          "close": 24.87
+        },
+        {
+          "time": "11:45",
+          "close": 24.83
+        },
+        {
+          "time": "12:00",
+          "close": 24.84
+        },
+        {
+          "time": "12:15",
+          "close": 24.79
+        },
+        {
+          "time": "12:30",
+          "close": 24.77
+        },
+        {
+          "time": "12:45",
+          "close": 24.76
+        },
+        {
+          "time": "13:00",
+          "close": 24.79
+        }
+      ]
+    },
+    {
+      "label": "群益台灣精選高息",
+      "symbol": "00919.TW",
+      "type": "ETF",
+      "price": 24.56,
+      "change": 0.26,
+      "changePercent": 1.07,
+      "currency": "TWD",
+      "trend": [
+        {
+          "time": "09:00",
+          "close": 24.36
+        },
+        {
+          "time": "09:15",
+          "close": 24.42
+        },
+        {
+          "time": "09:30",
+          "close": 24.6
+        },
+        {
+          "time": "09:45",
+          "close": 24.61
+        },
+        {
+          "time": "10:00",
+          "close": 24.57
+        },
+        {
+          "time": "10:15",
+          "close": 24.59
+        },
+        {
+          "time": "10:30",
+          "close": 24.61
+        },
+        {
+          "time": "10:45",
+          "close": 24.62
+        },
+        {
+          "time": "11:00",
+          "close": 24.61
+        },
+        {
+          "time": "11:15",
+          "close": 24.61
+        },
+        {
+          "time": "11:30",
+          "close": 24.59
+        },
+        {
+          "time": "11:45",
+          "close": 24.59
+        },
+        {
+          "time": "12:00",
+          "close": 24.58
+        },
+        {
+          "time": "12:15",
+          "close": 24.55
+        },
+        {
+          "time": "12:30",
+          "close": 24.51
+        },
+        {
+          "time": "12:45",
+          "close": 24.51
+        },
+        {
+          "time": "13:00",
+          "close": 24.56
+        }
+      ]
+    },
+    {
+      "label": "國泰數位支付服務",
+      "symbol": "00909.TW",
+      "type": "ETF",
+      "price": 39.2,
+      "change": 2.3,
+      "changePercent": 6.23,
+      "currency": "TWD",
+      "trend": [
+        {
+          "time": "09:00",
+          "close": 39.22
+        },
+        {
+          "time": "09:15",
+          "close": 39.15
+        },
+        {
+          "time": "09:30",
+          "close": 39.19
+        },
+        {
+          "time": "09:45",
+          "close": 39.19
+        },
+        {
+          "time": "10:00",
+          "close": 39.16
+        },
+        {
+          "time": "10:15",
+          "close": 39.1
+        },
+        {
+          "time": "10:30",
+          "close": 39.15
+        },
+        {
+          "time": "10:45",
+          "close": 39.15
+        },
+        {
+          "time": "11:00",
+          "close": 39.15
+        },
+        {
+          "time": "11:15",
+          "close": 39.15
+        },
+        {
+          "time": "11:30",
+          "close": 39.17
+        },
+        {
+          "time": "11:45",
+          "close": 39.16
+        },
+        {
+          "time": "12:00",
+          "close": 39.19
+        },
+        {
+          "time": "12:15",
+          "close": 39.18
+        },
+        {
+          "time": "12:30",
+          "close": 39.25
+        },
+        {
+          "time": "12:45",
+          "close": 39.21
+        },
+        {
+          "time": "13:00",
+          "close": 39.2
         }
       ]
     }
