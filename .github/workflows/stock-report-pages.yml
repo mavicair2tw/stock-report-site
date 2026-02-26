@@ -42,14 +42,17 @@ jobs:
 
       - name: Build static site
         run: |
-          mkdir -p dist/data
+          mkdir -p dist/tw/data
           mkdir -p dist/btc-hourly/data
 
-          # TW stock site (root)
+          # Combined portal (root)
           cp stock-report-site/public/index.html dist/index.html
-          cp stock-report-site/data/latest.json dist/data/latest.json
 
-          # BTC hourly site (subpath)
+          # TW stock report (tab page)
+          cp stock-report-site/public/tw.html dist/tw/index.html
+          cp stock-report-site/data/latest.json dist/tw/data/latest.json
+
+          # BTC hourly report (tab page)
           cp btc-hourly-site/public/index.html dist/btc-hourly/index.html
           cp btc-hourly-site/data/latest.json dist/btc-hourly/data/latest.json
 

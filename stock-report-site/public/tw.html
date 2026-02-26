@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>台股即時報表（15 分鐘更新）</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --panel: #121a2f;
+        --panel-2: #18213a;
+        --text: #e6edf3;
+        --muted: #9fb0c3;
+        --green: #3fb950;
+        --red: #f85149;
+      }
+      * { box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 20px;
+        background: linear-gradient(180deg, #0b1020 0%, #0a1226 100%);
+        color: var(--text);
+      }
+      .wrap { max-width: 1100px; margin: 0 auto; }
+      h1 { margin: 0 0 8px; }
+      .sub { color: var(--muted); margin-bottom: 14px; }
+      .status { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #253252; color: #c7d5e5; margin-bottom: 16px; }
+      table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 12px; overflow: hidden; }
+      th, td { padding: 12px; border-bottom: 1px solid #1f2a44; text-align: left; }
+      th { background: var(--panel-2); }
+      tr:last-child td { border-bottom: none; }
+      .up { color: #22c55e; }   /* positive = green */
+      .down { color: #ef4444; } /* negative = red */
+      .flat { color: var(--muted); }
+      .muted { color: var(--muted); }
+      .chart-wrap {
+        background: var(--panel);
+        border: 1px solid #1f2a44;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>台股即時報表（15 分鐘更新）</h1>
+      <div class="sub" id="updated">載入中...</div>
+      <div class="status" id="marketStatus">檢查交易時段中...</div>
+      <div class="sub">顏色規則：<span class="up">綠色 = 正報酬/上漲</span>，<span class="down">紅色 = 負報酬/下跌</span></div>
+
+      <div class="chart-wrap">
+        <canvas id="changeChart" height="90"></canvas>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>股名</th>
+            <th>代號</th>
+            <th>成交</th>
+            <th>漲跌</th>
+            <th>漲幅</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <script>
+      function cls(v) {
+        if (v > 0) return 'up';
+        if (v < 0) return 'down';
+        return 'flat';
+      }
+
+      function fmt(v, suffix = '') {
+        if (v === null || v === undefined || Number.isNaN(v)) return '<span class="muted">N/A</span>';
+        return `${v}${suffix}`;
+      }
+
+      function fmtSigned(v, suffix = '') {
+        if (v === null || v === undefined || Number.isNaN(v)) return '<span class="muted">N/A</span>';
+        const sign = v > 0 ? '+' : '';
+        return `${sign}${v}${suffix}`;
+      }
+
+      function twMarketStatus() {
+        const now = new Date();
+        const tw = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+        const day = tw.getDay(); // 0 Sun, 6 Sat
+        const minutes = tw.getHours() * 60 + tw.getMinutes();
+        const open = 9 * 60;
+        const close = 13 * 60 + 30;
+
+        if (day === 0 || day === 6) return '台股休市（週末）';
+        if (minutes >= open && minutes <= close) return '台股交易中（09:00-13:30）';
+        return '台股非交易時段';
+      }
+
+      function loadData() {
+        fetch('./data/latest.json?ts=' + Date.now())
+          .catch(() => fetch('../data/latest.json?ts=' + Date.now()))
+          .then(r => r.json())
+          .then(data => {
+            document.getElementById('updated').textContent = `最後更新：${data.updatedAt} (${data.timezone})｜頁面每 60 秒檢查一次新資料`;
+            document.getElementById('marketStatus').textContent = twMarketStatus();
+
+            const rows = data.items.map(item => {
+              const c = cls(item.change || 0);
+              return `
+                <tr>
+                  <td>${item.label}</td>
+                  <td>${item.symbol}</td>
+                  <td>${fmt(item.price)}</td>
+                  <td class="${c}">${fmtSigned(item.change)}</td>
+                  <td class="${c}">${fmtSigned(item.changePercent, '%')}</td>
+                </tr>
+              `;
+            }).join('');
+            document.getElementById('rows').innerHTML = rows;
+
+            const labels = data.items.map(i => i.label);
+            const vals = data.items.map(i => (typeof i.changePercent === 'number' ? i.changePercent : 0));
+            const colors = vals.map(v => v > 0 ? 'rgba(63,185,80,0.8)' : v < 0 ? 'rgba(248,81,73,0.8)' : 'rgba(159,176,195,0.8)');
+
+            if (window._changeChart) window._changeChart.destroy();
+            window._changeChart = new Chart(document.getElementById('changeChart'), {
+              type: 'bar',
+              data: { labels, datasets: [{ label: '漲跌幅 %', data: vals, backgroundColor: colors }] },
+              options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#e6edf3' } } },
+                scales: {
+                  x: { ticks: { color: '#c7d5e5' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                  y: { ticks: { color: '#c7d5e5' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+              }
+            });
+          })
+          .catch(err => {
+            document.getElementById('updated').textContent = '讀取資料失敗';
+            console.error(err);
+          });
+      }
+
+      loadData();
+      setInterval(loadData, 60 * 1000);
+    </script>
+  </body>
+</html>
