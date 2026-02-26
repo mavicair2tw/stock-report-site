@@ -1,9 +1,30 @@
 {
-  "updatedAt": "2026-02-26T14:42:55.149420+08:00",
+  "updatedAt": "2026-02-26T14:46:11.212713+08:00",
   "timezone": "Asia/Taipei",
-  "source": "https://www.cnyes.com/twstock",
+  "source": "https://news.cnyes.com/news/cat/tw_stock_news",
   "ok": true,
-  "summary": "目前無法抓取鉅亨網台股頁面內容，建議稍後再試。",
-  "headlines": [],
+  "summary": "今日台股新聞重點：1. 1.〈美股盤後〉輝達財報超預期 道瓊漲超300點 那指標普連二紅；2. 2.〈財報〉輝達Q4優預期 AI熱推動資料中心營收大增75% 盤後續揚；3. 3.美國全面圍堵中國晶片產業 封殺中芯國際、長鑫存儲、長江存儲；4. 4.比爾蓋茲向員工道歉 認了婚外情！；5. 5.記憶體漲價潮愈演愈烈！陸國產雙雄長鑫、長江存儲傳打入蘋果供應鏈 能否藉機破局？。建議優先關注權值股、ETF 資金流向與政策面消息。",
+  "headlines": [
+    {
+      "title": "1.〈美股盤後〉輝達財報超預期 道瓊漲超300點 那指標普連二紅",
+      "url": "https://www.cnyes.com/news/id/6353102"
+    },
+    {
+      "title": "2.〈財報〉輝達Q4優預期 AI熱推動資料中心營收大增75% 盤後續揚",
+      "url": "https://www.cnyes.com/news/id/6353630"
+    },
+    {
+      "title": "3.美國全面圍堵中國晶片產業 封殺中芯國際、長鑫存儲、長江存儲",
+      "url": "https://www.cnyes.com/news/id/6353647"
+    },
+    {
+      "title": "4.比爾蓋茲向員工道歉 認了婚外情！",
+      "url": "https://www.cnyes.com/news/id/6352847"
+    },
+    {
+      "title": "5.記憶體漲價潮愈演愈烈！陸國產雙雄長鑫、長江存儲傳打入蘋果供應鏈 能否藉機破局？",
+      "url": "https://www.cnyes.com/news/id/6352370"
+    }
+  ],
   "error": null
 }

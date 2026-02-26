@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 
 TZ = ZoneInfo("Asia/Taipei")
-URL = "https://www.cnyes.com/twstock"
+URL = "https://news.cnyes.com/news/cat/tw_stock_news"
 
 
 def fetch_headlines():
