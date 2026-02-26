@@ -12,6 +12,17 @@
       .sub{color:var(--muted);margin-bottom:12px}
       .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
       a{color:#93c5fd}
+    
+      .guestbook{margin-top:14px;background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:14px}
+      .guestbook h3{margin:0 0 8px}
+      .guestbook textarea{width:100%;min-height:90px;background:#0f1730;border:1px solid #253252;border-radius:8px;color:var(--text);padding:10px}
+      .guestbook .row{display:flex;gap:8px;align-items:center;margin-top:8px}
+      .guestbook button{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:8px 12px;cursor:pointer}
+      .guestbook .hint{color:var(--muted);font-size:12px}
+      .guestbook .error{color:#ef4444;font-size:13px;margin-top:6px}
+      .comment-list{margin-top:12px;display:grid;gap:8px}
+      .comment-item{background:#0f1730;border:1px solid #253252;border-radius:8px;padding:10px}
+      .comment-time{color:var(--muted);font-size:12px;margin-top:6px}
     </style>
   </head>
   <body>
@@ -25,7 +36,71 @@
         <ol id="list"></ol>
       </div>
     </div>
+    
+      <div class="guestbook">
+        <h3>留言板</h3>
+        <textarea id="guestInput" placeholder="請輸入留言（禁止連結、髒話、程式碼）"></textarea>
+        <div class="row">
+          <button id="guestSubmit">送出留言</button>
+          <span class="hint">每頁獨立留言，儲存在瀏覽器本機</span>
+        </div>
+        <div id="guestError" class="error"></div>
+        <div id="guestList" class="comment-list"></div>
+      </div>
+
     <script>
+      // Guestbook (client-side)
+      (function(){
+        const input = document.getElementById('guestInput');
+        const submit = document.getElementById('guestSubmit');
+        const errorEl = document.getElementById('guestError');
+        const listEl = document.getElementById('guestList');
+        if(!input || !submit || !listEl) return;
+
+        const key = `guestbook:${location.pathname}`;
+        const bannedWords = [
+          'fuck','shit','bitch','asshole','motherfucker','wtf',
+          '幹','靠北','靠杯','白癡','智障','垃圾','媽的','操你媽','幹你娘'
+        ];
+        const urlRegex = /(https?:\/\/|www\.|[a-z0-9.-]+\.(com|net|org|io|dev|app|ai|tw|co))(\/|\s|$)/i;
+        const codeRegex = /(<\/?[a-z][^>]*>|`{1,3}|\b(function|const|let|var|class|import|export|return)\b|if\s*\(|for\s*\(|while\s*\(|[{};<>])/i;
+
+        function load(){
+          try{return JSON.parse(localStorage.getItem(key)||'[]')}catch{return []}
+        }
+        function save(items){ localStorage.setItem(key, JSON.stringify(items.slice(0,50))); }
+        function esc(s){ return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function render(){
+          const items = load();
+          if(!items.length){ listEl.innerHTML = '<div class="hint">目前尚無留言</div>'; return; }
+          listEl.innerHTML = items.map(i => `<div class="comment-item">${esc(i.text)}<div class="comment-time">${i.time}</div></div>`).join('');
+        }
+        function validate(text){
+          const t = text.trim();
+          if(t.length < 2) return '留言太短';
+          if(t.length > 200) return '留言請勿超過 200 字';
+          if(urlRegex.test(t)) return '禁止張貼連結';
+          if(codeRegex.test(t)) return '禁止張貼程式碼';
+          const lower = t.toLowerCase();
+          if(bannedWords.some(w => lower.includes(w))) return '包含不當字詞，請修改';
+          return '';
+        }
+
+        submit.addEventListener('click', ()=>{
+          const text = input.value || '';
+          const err = validate(text);
+          errorEl.textContent = err;
+          if(err) return;
+          const items = load();
+          items.unshift({ text: text.trim(), time: new Date().toLocaleString('zh-TW', { hour12:false }) });
+          save(items);
+          input.value = '';
+          render();
+        });
+
+        render();
+      })();
+
       const pageKey = `views:${location.pathname}`;
       const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
       localStorage.setItem(pageKey, String(pageViews));
