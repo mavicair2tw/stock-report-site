@@ -42,6 +42,7 @@ jobs:
           mkdir -p dist/tw/data
           mkdir -p dist/us/data
           mkdir -p dist/btc-hourly/data
+          mkdir -p dist/googselect-shop
 
           # Combined portal (root)
           cp stock-report-site/public/index.html dist/index.html
@@ -57,6 +58,11 @@ jobs:
           # BTC hourly report (tab page)
           cp btc-hourly-site/public/index.html dist/btc-hourly/index.html
           cp btc-hourly-site/data/latest.json dist/btc-hourly/data/latest.json
+
+          # GoogSelect-style shopping demo
+          cp googselect-shop/index.html dist/googselect-shop/index.html
+          cp googselect-shop/styles.css dist/googselect-shop/styles.css
+          cp googselect-shop/script.js dist/googselect-shop/script.js
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
