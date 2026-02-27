@@ -59,6 +59,7 @@ jobs:
           mkdir -p dist/interesting-stories/data
           mkdir -p dist/coffee-news/data
           mkdir -p dist/podcast
+          mkdir -p dist/search
           mkdir -p dist/guestbook
           mkdir -p dist/music
           mkdir -p dist/forum
@@ -101,7 +102,9 @@ jobs:
           # Podcast tag page
           cp stock-report-site/public/podcast.html dist/podcast/index.html
 
-          # Guestbook tag page
+          # Search tag page
+          cp stock-report-site/public/guestbook.html dist/search/index.html
+          # Backward compatible route
           cp stock-report-site/public/guestbook.html dist/guestbook/index.html
 
           # Music tag page
