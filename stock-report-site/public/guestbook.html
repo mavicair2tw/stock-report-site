@@ -117,8 +117,7 @@
         const msg = String(fallback || '');
         if(status === 404) return 'API 路徑不存在：請設定 Worker Route（openai-tw.com/api/*）。';
         if(status === 401 || status === 403) return 'API 金鑰驗證失敗：請檢查 OPENAI_API_KEY。';
-        if(status === 429 && /quota|billing|exceeded/i.test(msg)) return 'OpenAI API 額度不足或帳單未啟用，請到 OpenAI Billing 開通後再試。';
-        if(status === 429) return '請求過多：已觸發限流，請稍後再試。';
+        if(status === 429) return '【固定提示】目前 Chat 暫時不可用：OpenAI API 額度不足或帳單未啟用。請至 OpenAI Billing 開通後再試。';
         if(status >= 500) return '伺服器暫時異常，請稍後再試。';
         return fallback || '連線失敗，請稍後再試。';
       }
