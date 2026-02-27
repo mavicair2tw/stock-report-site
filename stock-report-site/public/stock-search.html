@@ -4,151 +4,185 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>股市 Search</title>
-  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
-  <style>
-    :root{--bg:#0b1020;--panel:#0f172a;--line:#334155;--text:#e5e7eb;--muted:#94a3b8}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-    .wrap{max-width:1200px;margin:0 auto;padding:20px}
-    .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
-    .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
-    input,button{font-size:14px}
-    input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:#111827;color:var(--text)}
-    button{padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:#1f2937;color:var(--text);cursor:pointer}
-    .grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:10px}
-    .cell{background:#111827;border:1px solid #1f2937;border-radius:8px;padding:8px}
-    .lab{color:var(--muted);font-size:12px}.val{font-weight:700}
-    #ranges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-    #suggest{position:absolute;z-index:9;left:0;right:0;top:44px;background:#0f172a;border:1px solid var(--line);border-radius:8px;display:none}
-    #suggest button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #1f2937;border-radius:0;background:transparent;padding:8px 10px}
-    #suggest button:last-child{border-bottom:0}
-    #err{color:#fca5a5;margin-top:10px}
-    @media (max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://s3.tradingview.com/tv.js"></script>
+  <style>body{background:#0b1020;color:#e5e7eb}</style>
 </head>
-<body>
-  <div class="wrap">
-    <div class="row" style="margin-bottom:10px">
-      <h1 style="margin:0;font-size:30px">股市 Search</h1>
-      <a href="/" style="color:#7dd3fc">返回首頁</a>
+<body class="min-h-screen">
+  <main class="max-w-7xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-3xl font-bold">股市 Search</h1>
+      <a href="/" class="text-sky-300 hover:underline">返回首頁</a>
     </div>
 
-    <div class="card" style="margin-bottom:12px">
-      <div style="position:relative">
-        <input id="q" value="AAPL" placeholder="輸入股票代號 (AAPL, NVDA, TSLA...)" />
-        <div id="suggest"></div>
+    <section class="bg-slate-900 border border-slate-700 rounded-xl p-4 mb-4">
+      <div class="relative">
+        <input id="q" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-slate-100" placeholder="輸入股票代號（AAPL、NVDA、2330.TW）" value="AAPL" />
+        <div id="suggest" class="absolute z-20 mt-2 w-full bg-slate-900 border border-slate-700 rounded-lg overflow-hidden hidden"></div>
       </div>
-      <div class="grid" id="meta"></div>
-      <div id="ranges"></div>
-      <div id="err"></div>
-    </div>
 
-    <div class="card">
-      <div id="loading" style="display:none;color:var(--muted);margin-bottom:8px">載入中...</div>
-      <div id="chart" style="height:460px"></div>
-    </div>
-  </div>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4 text-sm" id="meta"></div>
+
+      <div class="flex flex-wrap gap-2 mt-4" id="ranges"></div>
+      <div class="text-red-400 text-sm mt-3" id="err"></div>
+    </section>
+
+    <section class="bg-slate-900 border border-slate-700 rounded-xl p-2">
+      <div id="tvchart" style="height:520px"></div>
+    </section>
+  </main>
 
 <script>
-const RANGES={ '1D':['1d','5m'],'5D':['5d','15m'],'1M':['1mo','1d'],'3M':['3mo','1d'],'1Y':['1y','1d'],'5Y':['5y','1wk']};
-let symbol='AAPL', range='1M', candles=[];
-const qEl=document.getElementById('q'), suggestEl=document.getElementById('suggest');
-const metaEl=document.getElementById('meta'), rangesEl=document.getElementById('ranges');
-const errEl=document.getElementById('err'), loadingEl=document.getElementById('loading'), chartEl=document.getElementById('chart');
-let chart;
+const COMMON = ['AAPL','MSFT','NVDA','TSLA','AMZN','META','GOOGL','AMD','NFLX','INTC','2330.TW','2317.TW','0050.TW'];
+const RANGES = {
+  '1D': { interval: '5' },
+  '5D': { interval: '15' },
+  '1M': { interval: 'D' },
+  '3M': { interval: 'D' },
+  '1Y': { interval: 'W' },
+  '5Y': { interval: 'M' }
+};
+let symbol='AAPL', activeRange='1M', tvWidget=null;
 
-function showErr(s=''){errEl.textContent=s}
-function setLoading(v){loadingEl.style.display=v?'block':'none'}
-function fmtNum(v){return v==null?'N/A':Number(v).toLocaleString()}
-function fmtPct(v){return v==null?'N/A':`${v>=0?'+':''}${Number(v).toFixed(2)}%`}
-function fmtCap(v){if(v==null)return'N/A';const n=Number(v);if(n>=1e12)return(n/1e12).toFixed(2)+'T';if(n>=1e9)return(n/1e9).toFixed(2)+'B';return fmtNum(n)}
-function cell(l,v,c=''){return `<div class='cell'><div class='lab'>${l}</div><div class='val ${c}'>${v}</div></div>`}
-function ma(n){const o=[];for(let i=0;i<candles.length;i++){if(i<n-1)continue;let s=0;for(let j=i-n+1;j<=i;j++)s+=candles[j].close;o.push({time:candles[i].time,value:s/n});}return o}
+const qEl=document.getElementById('q');
+const suggestEl=document.getElementById('suggest');
+const metaEl=document.getElementById('meta');
+const rangesEl=document.getElementById('ranges');
+const errEl=document.getElementById('err');
 
-async function fetchJson(url){
-  try { const r=await fetch(url); if(r.ok) return r.json(); } catch {}
-  const p='https://r.jina.ai/http://'+url.replace(/^https?:\/\//,'');
-  const r2=await fetch(p); if(!r2.ok) throw new Error('fetch failed');
-  const t=await r2.text(); const s=t.indexOf('{'), e=t.lastIndexOf('}');
-  if(s<0||e<=s) throw new Error('invalid payload');
-  return JSON.parse(t.slice(s,e+1));
+function info(label, value, cls='text-slate-100'){
+  return `<div class="bg-slate-800 rounded-lg p-3 border border-slate-700"><div class="text-slate-400">${label}</div><div class="font-semibold ${cls}">${value}</div></div>`;
+}
+function fmtNum(v){ return v==null ? 'N/A' : Number(v).toLocaleString(); }
+function fmtPct(v){ return v==null ? 'N/A' : `${Number(v)>=0?'+':''}${Number(v).toFixed(2)}%`; }
+function fmtCap(v){ if(v==null)return 'N/A'; const n=Number(v); if(n>=1e12)return `${(n/1e12).toFixed(2)}T`; if(n>=1e9)return `${(n/1e9).toFixed(2)}B`; if(n>=1e6)return `${(n/1e6).toFixed(2)}M`; return fmtNum(n); }
+
+function tvSymbolFromInput(raw){
+  const s = String(raw||'').trim().toUpperCase();
+  if (!s) return 'NASDAQ:AAPL';
+  if (s.includes(':')) return s;
+  if (s.endsWith('.TW')) return `TWSE:${s.replace('.TW','')}`;
+  if (/^\d{4}$/.test(s)) return `TWSE:${s}`;
+  return `NASDAQ:${s}`;
 }
 
-async function suggest(q){
-  if(!q) return [];
+function candidates(raw){
+  const s = String(raw||'').trim().toUpperCase();
+  if(!s) return [];
+  if (s.includes(':')) return [s];
+  if (s.endsWith('.TW')) return [`TWSE:${s.replace('.TW','')}`];
+  if (/^\d{4}$/.test(s)) return [`TWSE:${s}`];
+  return [`NASDAQ:${s}`, `NYSE:${s}`];
+}
+
+async function loadQuote(raw){
+  const ticks = candidates(raw);
+  const body = {
+    symbols: { tickers: ticks, query: { types: [] } },
+    columns: ['name','close','change','volume','market_cap_basic']
+  };
+  const res = await fetch('https://scanner.tradingview.com/global/scan', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if(!res.ok) throw new Error('quote fetch failed');
+  const d = await res.json();
+  const row = d?.data?.find(x => Array.isArray(x.d) && x.d.some(v => v != null));
+  if(!row) throw new Error('symbol not found');
+  const [name, close, change, volume, mcap] = row.d;
+  return { name, close, change, volume, mcap, tv: row.s || tvSymbolFromInput(raw) };
+}
+
+function renderMeta(q){
+  const cls = (q.change||0) >= 0 ? 'text-emerald-400' : 'text-red-400';
+  metaEl.innerHTML = [
+    info('公司', q.name || symbol),
+    info('價格', q.close ?? 'N/A'),
+    info('漲跌幅', fmtPct(q.change), cls),
+    info('成交量', fmtNum(q.volume)),
+    info('市值', fmtCap(q.mcap)),
+  ].join('');
+}
+
+function renderTV(tvSymbol){
+  const interval = RANGES[activeRange].interval;
+  document.getElementById('tvchart').innerHTML = '';
+  tvWidget = new TradingView.widget({
+    container_id: 'tvchart',
+    autosize: true,
+    symbol: tvSymbol,
+    interval,
+    timezone: 'Asia/Taipei',
+    theme: 'dark',
+    style: '1',
+    locale: 'zh_TW',
+    toolbar_bg: '#0f172a',
+    enable_publishing: false,
+    allow_symbol_change: true,
+    hide_top_toolbar: false,
+    hide_legend: false,
+    studies: ['Volume@tv-basicstudies','MASimple@tv-basicstudies','MASimple@tv-basicstudies','MASimple@tv-basicstudies'],
+    studies_overrides: {
+      'volume.volume.color.0': '#ef4444',
+      'volume.volume.color.1': '#22c55e',
+      'masimple.plot.color': '#60a5fa'
+    }
+  });
+}
+
+async function loadAll(){
+  errEl.textContent='';
   try{
-    const u=`https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&lang=en-US&region=US&quotesCount=8&newsCount=0`;
-    const d=await fetchJson(u);
-    return (d.quotes||[]).filter(x=>x.symbol&&x.shortname).slice(0,8).map(x=>({symbol:x.symbol,name:x.shortname}));
-  }catch{return []}
-}
-
-function renderChart(){
-  if(typeof LightweightCharts==='undefined'){showErr('圖表元件載入失敗');return}
-  if(chart) chart.remove();
-  chart=LightweightCharts.createChart(chartEl,{layout:{background:{color:'#0f172a'},textColor:'#cbd5e1'},grid:{vertLines:{color:'#1e293b'},horzLines:{color:'#1e293b'}},rightPriceScale:{borderColor:'#334155'},timeScale:{borderColor:'#334155'},width:chartEl.clientWidth,height:460});
-  const c=chart.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderVisible:false,wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
-  c.setData(candles.map(x=>({time:x.time,open:x.open,high:x.high,low:x.low,close:x.close})));
-  const v=chart.addHistogramSeries({priceFormat:{type:'volume'},priceScaleId:''});
-  v.priceScale().applyOptions({scaleMargins:{top:0.8,bottom:0}});
-  v.setData(candles.map(x=>({time:x.time,value:x.volume||0,color:x.close>=x.open?'rgba(34,197,94,.5)':'rgba(239,68,68,.5)'})));
-  chart.addLineSeries({color:'#60a5fa',lineWidth:2}).setData(ma(5));
-  chart.addLineSeries({color:'#f59e0b',lineWidth:2}).setData(ma(20));
-  chart.addLineSeries({color:'#a78bfa',lineWidth:2}).setData(ma(60));
-  chart.timeScale().fitContent();
-}
-
-async function load(){
-  showErr(''); setLoading(true);
-  try{
-    const [rg,it]=RANGES[range];
-    const cu=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${rg}&interval=${it}`;
-    const qu=`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbol)}`;
-    const [cj,qj]=await Promise.all([fetchJson(cu),fetchJson(qu)]);
-    const q=qj?.quoteResponse?.result?.[0]||{};
-    const color=(q.regularMarketChangePercent||0)>=0?'style="color:#34d399"':'style="color:#f87171"';
-    metaEl.innerHTML=[
-      cell('公司',q.shortName||q.longName||symbol),
-      cell('價格',q.regularMarketPrice??'N/A'),
-      `<div class='cell'><div class='lab'>漲跌幅</div><div class='val' ${color}>${fmtPct(q.regularMarketChangePercent)}</div></div>`,
-      cell('成交量',fmtNum(q.regularMarketVolume)),
-      cell('市值',fmtCap(q.marketCap))
-    ].join('');
-
-    const r=cj?.chart?.result?.[0]; const ts=r?.timestamp||[]; const qq=r?.indicators?.quote?.[0]||{};
-    candles=ts.map((t,i)=>({time:t,open:qq.open?.[i],high:qq.high?.[i],low:qq.low?.[i],close:qq.close?.[i],volume:qq.volume?.[i]})).filter(x=>[x.open,x.high,x.low,x.close].every(n=>Number.isFinite(n)));
-    if(!candles.length) throw new Error('no candles');
-    renderChart();
+    const q = await loadQuote(symbol);
+    renderMeta(q);
+    renderTV(q.tv);
   }catch(e){
-    metaEl.innerHTML=[cell('公司',symbol),cell('價格','N/A'),cell('漲跌幅','N/A'),cell('成交量','N/A'),cell('市值','N/A')].join('');
-    showErr('資料讀取失敗，請換股票代號或稍後再試。');
-  }finally{ setLoading(false); }
+    metaEl.innerHTML = [
+      info('公司', symbol),
+      info('價格', 'N/A'),
+      info('漲跌幅', 'N/A'),
+      info('成交量', 'N/A'),
+      info('市值', 'N/A')
+    ].join('');
+    errEl.textContent = '資料讀取失敗，請換代號（例：AAPL、MSFT、2330.TW）';
+    renderTV(tvSymbolFromInput(symbol));
+  }
 }
 
 function renderRanges(){
   rangesEl.innerHTML='';
-  Object.keys(RANGES).forEach(k=>{
-    const b=document.createElement('button'); b.textContent=k;
-    b.style.background=k===range?'#0369a1':'#1f2937';
-    b.onclick=()=>{range=k;renderRanges();load();};
+  Object.keys(RANGES).forEach(r=>{
+    const b=document.createElement('button');
+    b.className=`px-3 py-1 rounded-lg border ${activeRange===r?'bg-sky-600 border-sky-400':'bg-slate-800 border-slate-600'}`;
+    b.textContent=r;
+    b.onclick=()=>{ activeRange=r; renderRanges(); loadAll(); };
     rangesEl.appendChild(b);
   });
 }
 
-let timer;
-qEl.addEventListener('input',()=>{
-  clearTimeout(timer);
-  timer=setTimeout(async()=>{
-    const arr=await suggest(qEl.value.trim());
-    if(!arr.length){suggestEl.style.display='none';suggestEl.innerHTML='';return;}
-    suggestEl.innerHTML=arr.map(x=>`<button data-s='${x.symbol}'><b>${x.symbol}</b> <span style='color:#94a3b8'>${x.name}</span></button>`).join('');
-    suggestEl.style.display='block';
-    suggestEl.querySelectorAll('button').forEach(b=>b.onclick=()=>{symbol=b.dataset.s;qEl.value=symbol;suggestEl.style.display='none';load();});
-  },220);
+let tt;
+qEl.addEventListener('input', ()=>{
+  clearTimeout(tt);
+  tt=setTimeout(()=>{
+    const v=qEl.value.trim().toUpperCase();
+    const arr=COMMON.filter(x=>x.includes(v)).slice(0,8);
+    if(!arr.length){ suggestEl.classList.add('hidden'); suggestEl.innerHTML=''; return; }
+    suggestEl.innerHTML = arr.map(s=>`<button class="w-full text-left px-4 py-2 hover:bg-slate-800" data-s="${s}">${s}</button>`).join('');
+    suggestEl.classList.remove('hidden');
+    suggestEl.querySelectorAll('button').forEach(b=>b.onclick=()=>{ symbol=b.dataset.s; qEl.value=symbol; suggestEl.classList.add('hidden'); loadAll(); });
+  },150);
 });
-qEl.addEventListener('keydown',e=>{if(e.key==='Enter'){symbol=(qEl.value.trim()||'AAPL').toUpperCase();suggestEl.style.display='none';load();}});
-window.addEventListener('resize',()=>{if(chart)chart.applyOptions({width:chartEl.clientWidth})});
+qEl.addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    symbol=(qEl.value.trim()||'AAPL').toUpperCase();
+    suggestEl.classList.add('hidden');
+    loadAll();
+  }
+});
 
-renderRanges(); load();
+renderRanges();
+loadAll();
 </script>
 </body>
 </html>
