@@ -181,7 +181,14 @@
           pos => loadWeatherByLocation(pos.coords.latitude, pos.coords.longitude).catch(() => {
             meta.textContent = '天氣資料讀取失敗，請稍後再試。';
           }),
-          () => { meta.textContent = '未授權位置存取，無法顯示當地天氣。'; },
+          () => {
+            loadWeatherByLocation(25.0330, 121.5654)
+              .then(() => {
+                const m = document.getElementById('weatherMeta');
+                if (m) m.textContent = `[台北預設] ${m.textContent}`;
+              })
+              .catch(() => { meta.textContent = '未授權位置存取，且台北天氣讀取失敗。'; });
+          },
           { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
         );
       })();
