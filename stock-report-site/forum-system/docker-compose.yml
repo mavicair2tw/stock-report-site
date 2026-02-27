@@ -1,0 +1,49 @@
+version: '3.9'
+services:
+  api:
+    image: node:20
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev"
+    volumes:
+      - ./api:/app
+    environment:
+      - DATABASE_URL=postgres://forum:forum@postgres:5432/forum
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=change_me
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+
+  worker:
+    image: node:20
+    working_dir: /app
+    command: sh -c "npm ci && npm run worker"
+    volumes:
+      - ./api:/app
+    environment:
+      - DATABASE_URL=postgres://forum:forum@postgres:5432/forum
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=forum
+      - POSTGRES_PASSWORD=forum
+      - POSTGRES_DB=forum
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:
