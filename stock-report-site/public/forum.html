@@ -65,8 +65,8 @@
       let data=[];
 
       function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-      function linkify(s){
-        return esc(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>').replace(/\n/g,'<br>');
+      function visibleText(s){
+        return esc(String(s).replace(/https?:\/\/[^\s]+/g, '').trim()).replace(/\n/g,'<br>');
       }
       function firstUrl(s){
         const m = String(s).match(/https?:\/\/[^\s]+/i);
@@ -96,7 +96,7 @@
       }
       function render(){
         if(!data.length){ list.innerHTML='<div class="meta">目前沒有留言，歡迎第一則！</div>'; return; }
-        list.innerHTML=data.slice().reverse().map(x=>`<div class="item"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${linkify(x.text)}</div>${renderEmbed(x.text)}</div>`).join('');
+        list.innerHTML=data.slice().reverse().map(x=>`<div class="item"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}</div>`).join('');
       }
 
       async function refresh(){
