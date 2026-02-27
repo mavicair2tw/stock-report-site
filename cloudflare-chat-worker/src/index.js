@@ -1,6 +1,6 @@
 const buckets = new Map();
 const WINDOW_MS = 60_000;
-const LIMIT_PER_MIN = 20;
+const LIMIT_PER_MIN = 120;
 
 export default {
   async fetch(request, env) {
