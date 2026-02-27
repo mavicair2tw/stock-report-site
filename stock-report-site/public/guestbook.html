@@ -55,7 +55,7 @@
       </div>
 
       <h1>Chat</h1>
-      <div class="sub">網站內嵌聊天（本地 Q&A + Google 關鍵字搜尋）</div>
+      <div class="sub">網站內嵌聊天（ChatGPT + 本地 Q&A + Google 關鍵字搜尋）</div>
 
       <div class="card">
         <div id="chat" class="chat-box"></div>
@@ -213,6 +213,7 @@
         sendBtn.disabled = true;
         let ans = '';
         const m = text.match(/^google\s*:?\s*(.+)$/i);
+
         if (m) {
           const g = googleReply(m[1], 'web');
           ans = g.text;
@@ -221,10 +222,27 @@
           if (local) {
             ans = local;
           } else {
-            const g = googleReply(text, 'web');
-            ans = `${g.text}\n\n如果要直接搜全網，請輸入：google: 你的關鍵字`;
+            // Try ChatGPT first
+            try {
+              const res = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: history })
+              });
+              const data = await res.json().catch(() => ({}));
+              if (res.ok && data?.reply) {
+                ans = data.reply;
+              } else {
+                const g = googleReply(text, 'web');
+                ans = `${g.text}\n\n（ChatGPT 暫時不可用，已改用 Google 搜尋）`;
+              }
+            } catch {
+              const g = googleReply(text, 'web');
+              ans = `${g.text}\n\n（ChatGPT 連線失敗，已改用 Google 搜尋）`;
+            }
           }
         }
+
         history.push({ role:'assistant', content: ans });
         addMsg('bot', ans);
         saveHistory();
