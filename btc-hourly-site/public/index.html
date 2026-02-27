@@ -8,7 +8,15 @@
     <style>
       :root { --bg:#0b1020; --panel:#121a2f; --panel2:#18213a; --text:#e6edf3; --muted:#9fb0c3; --green:#22c55e; --red:#ef4444; }
       *{box-sizing:border-box} body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:20px;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
-      .wrap{max-width:1100px;margin:0 auto} h1{margin:0 0 8px}.sub{color:var(--muted);margin-bottom:14px}
+      .wrap{max-width:1100px;margin:0 auto}
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      h1{margin:0 0 8px}.sub{color:var(--muted);margin-bottom:14px}
       .status{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#253252;color:#c7d5e5;margin-bottom:16px}
       .up{color:var(--green)} .down{color:var(--red)} .flat{color:var(--muted)}
       .card{background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:12px;margin-bottom:14px}
@@ -20,6 +28,15 @@
   </head>
   <body>
     <div class="wrap">
+      <div class="top-bar">
+        <div class="logo">🧭 OpenClaw Market Hub</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="/stock-report-site/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag" href="/stock-report-site/tw/">台股</a><span class="tag-sub">TW Market</span></div>
+          <div class="nav-item"><a class="tag" href="/stock-report-site/us/">美股</a><span class="tag-sub">US Market</span></div>
+          <div class="nav-item"><a class="tag active" href="/stock-report-site/btc-hourly/">BTC</a><span class="tag-sub">Hourly</span></div>
+        </div>
+      </div>
       <h1>BTC 每小時績效報表</h1>
       <div class="sub" id="updated">載入中...</div>
       <div class="sub" id="viewCounter">點閱數：--</div>

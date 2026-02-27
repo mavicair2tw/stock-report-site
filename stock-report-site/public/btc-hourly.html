@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BTC 每小時</title>
+    <title>BTC 每小時績效報表</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; }
-      *{box-sizing:border-box}
-      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
-      .wrap{max-width:1000px;margin:0 auto}
+      :root { --bg:#0b1020; --panel:#121a2f; --panel2:#18213a; --text:#e6edf3; --muted:#9fb0c3; --green:#22c55e; --red:#ef4444; }
+      *{box-sizing:border-box} body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:20px;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1100px;margin:0 auto}
       .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
       .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
       .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
@@ -16,8 +16,14 @@
       .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
       .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
       .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
-      .sub{color:var(--muted);margin-bottom:12px}
-      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
+      h1{margin:0 0 8px}.sub{color:var(--muted);margin-bottom:14px}
+      .status{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#253252;color:#c7d5e5;margin-bottom:16px}
+      .up{color:var(--green)} .down{color:var(--red)} .flat{color:var(--muted)}
+      .card{background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:12px;margin-bottom:14px}
+      .summary{margin-top:14px;background:var(--panel);border:1px solid #1f2a44;border-radius:12px;padding:14px;line-height:1.6}
+      table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:12px;overflow:hidden}
+      th,td{padding:12px;border-bottom:1px solid #1f2a44;text-align:left} th{background:var(--panel2)} tr:last-child td{border-bottom:none}
+
     </style>
   </head>
   <body>
@@ -31,10 +37,72 @@
           <div class="nav-item"><a class="tag active" href="/stock-report-site/btc-hourly/">BTC</a><span class="tag-sub">Hourly</span></div>
         </div>
       </div>
+      <h1>BTC 每小時績效報表</h1>
+      <div class="sub" id="updated">載入中...</div>
+      <div class="sub" id="viewCounter">點閱數：--</div>
+      <div class="status">綠色 = 上漲，紅色 = 下跌</div>
 
-      <h1>BTC 每小時</h1>
-      <div class="sub">此頁已建立，避免 404。下一步可接入即時 BTC 資料來源。</div>
-      <div class="card">🚧 BTC 即時圖表建置中。</div>
+      <div class="card"><canvas id="trendChart" height="90"></canvas></div>
+
+      <table>
+        <thead><tr><th>時間</th><th>價格</th><th>每小時漲跌</th><th>每小時漲幅</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="summary">
+        <div id="summary">載入摘要中...</div>
+      </div>
+
+
     </div>
+
+    <script>
+
+      const pageKey = `views:${location.pathname}`;
+      const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
+      localStorage.setItem(pageKey, String(pageViews));
+      const viewCounterEl = document.getElementById('viewCounter');
+      if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
+
+      function cls(v){if(v>0)return'up';if(v<0)return'down';return'flat'}
+      function fmt(v,s=''){if(v===null||v===undefined||Number.isNaN(v))return 'N/A';return `${v}${s}`}
+      function fmts(v,s=''){if(v===null||v===undefined||Number.isNaN(v))return 'N/A';const sign=v>0?'+':'';return `${sign}${v}${s}`}
+
+      function renderSummary(perf, latest){
+        const valid = (perf||[]).filter(x=>typeof x.changePercent==='number');
+        if(!valid.length){
+          document.getElementById('summary').innerHTML='【BTC 摘要】目前資料不足，建議先觀察。<br><span style="color:#9fb0c3">※ 僅供參考，非投資建議。</span>';
+          return;
+        }
+        const avg = valid.reduce((a,b)=>a+b.changePercent,0)/valid.length;
+        const up = valid.filter(x=>x.changePercent>0).length;
+        const down = valid.filter(x=>x.changePercent<0).length;
+        let tone='震盪';
+        let action='建議小倉位、分批進出，避免追漲殺跌。';
+        if(avg>0.15 && up>down){tone='偏多'; action='可沿趨勢分批佈局，但務必設定止損。';}
+        else if(avg<-0.15 && down>=up){tone='偏空'; action='以防守為主，等待止跌結構再考慮加碼。';}
+
+        document.getElementById('summary').innerHTML =
+          `【BTC 摘要】24 小時每小時平均變動 <b>${avg.toFixed(3)}%</b>，上漲時段 ${up} / 下跌時段 ${down}。<br>`+
+          `最新一小時：<span class="${cls(latest?.changePercent||0)}">${fmts(latest?.changePercent,'%')}</span>，盤勢判讀：<b>${tone}</b>。<br>`+
+          `【投資建議】${action}<br><span style="color:#9fb0c3">※ 以上為程式自動摘要，僅供參考，非投資建議。</span>`;
+      }
+
+      fetch('./data/latest.json?ts='+Date.now())
+        .catch(()=>fetch('../data/latest.json?ts='+Date.now()))
+        .then(r=>r.json())
+        .then(data=>{
+          const l=data.latest||{};
+          document.getElementById('updated').innerHTML=`最後更新：${data.updatedAt} (${data.timezone}) ｜ 現價 <b>${fmt(l.price)}</b> ｜ <span class="${cls(l.change)}">${fmts(l.change)}</span> / <span class="${cls(l.changePercent)}">${fmts(l.changePercent,'%')}</span>`;
+
+          const rows=(data.performance24h||[]).slice().reverse().map(x=>`<tr><td>${x.time}</td><td>${fmt(x.price)}</td><td class="${cls(x.change)}">${fmts(x.change)}</td><td class="${cls(x.changePercent)}">${fmts(x.changePercent,'%')}</td></tr>`).join('');
+          document.getElementById('rows').innerHTML=rows;
+          renderSummary(data.performance24h || [], l);
+
+          const labels=(data.trend72h||[]).map(x=>x.time.slice(6));
+          const vals=(data.trend72h||[]).map(x=>x.close);
+          new Chart(document.getElementById('trendChart'),{type:'line',data:{labels,datasets:[{label:'BTC 72H',data:vals,borderColor:'rgba(88,166,255,1)',backgroundColor:'rgba(88,166,255,0.18)',tension:0.25,fill:true,pointRadius:0}]},options:{responsive:true,plugins:{legend:{labels:{color:'#e6edf3'}}},scales:{x:{ticks:{color:'#c7d5e5'}},y:{ticks:{color:'#c7d5e5'}}}}});
+        })
+        .catch(()=>{document.getElementById('updated').textContent='讀取資料失敗';});
+    </script>
   </body>
 </html>
