@@ -150,14 +150,7 @@ async function loadAll(){
     q = await loadQuote(symbol);
     renderMeta(q);
   }catch(e){
-    metaEl.innerHTML = [
-      info('公司', symbol),
-      info('名稱', 'N/A'),
-      info('價格', 'N/A'),
-      info('漲跌幅', 'N/A'),
-      info('成交量', 'N/A'),
-      info('市值', 'N/A')
-    ].join('');
+    metaEl.innerHTML = '';
     errEl.textContent = '報價資料讀取失敗，請換代號（例：AAPL、MSFT、2330.TW）';
   }
 
