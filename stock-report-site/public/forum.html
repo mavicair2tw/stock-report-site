@@ -49,32 +49,49 @@
       </div>
 
       <div class="card list" id="forumList"></div>
+      <div class="meta" style="margin-top:8px;">雲端留言板（Cloudflare Worker）</div>
       <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
     </div>
 
     <script>
-      const KEY='openai-tw-forum-v1';
+      const API='https://openai-tw-forum.googselect.workers.dev/api/forum';
       const input=document.getElementById('forumInput');
       const btn=document.getElementById('postBtn');
       const list=document.getElementById('forumList');
-      const data=[];
+      let data=[];
 
-      function load(){
-        try{const raw=localStorage.getItem(KEY); if(!raw) return; const arr=JSON.parse(raw); if(Array.isArray(arr)) data.push(...arr);}catch{}
-      }
-      function save(){ localStorage.setItem(KEY, JSON.stringify(data.slice(-200))); }
+      function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
       function render(){
         if(!data.length){ list.innerHTML='<div class="meta">目前沒有留言，歡迎第一則！</div>'; return; }
-        list.innerHTML=data.slice().reverse().map(x=>`<div class="item"><div class="meta">訪客 · ${x.time}</div><div class="text">${x.text.replace(/</g,'&lt;')}</div></div>`).join('');
+        list.innerHTML=data.slice().reverse().map(x=>`<div class="item"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${esc(x.text)}</div></div>`).join('');
       }
 
-      btn.addEventListener('click',()=>{
+      async function refresh(){
+        try{
+          const r=await fetch(API);
+          const j=await r.json();
+          data=Array.isArray(j?.posts)?j.posts:[];
+          render();
+        }catch{
+          list.innerHTML='<div class="meta">讀取留言失敗，請稍後再試。</div>';
+        }
+      }
+
+      btn.addEventListener('click', async ()=>{
         const t=input.value.trim(); if(!t) return;
-        data.push({text:t, time:new Date().toLocaleString('zh-Hant-TW',{hour12:false})});
-        input.value=''; save(); render();
+        btn.disabled=true;
+        try{
+          const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t})});
+          if(!r.ok) throw new Error('post failed');
+          input.value='';
+          await refresh();
+        }catch{
+          alert('留言失敗，請稍後再試');
+        }finally{ btn.disabled=false; }
       });
 
-      load(); render();
+      refresh();
+      setInterval(refresh, 15000);
     </script>
   </body>
 </html>
