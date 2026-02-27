@@ -234,11 +234,11 @@
                 ans = data.reply;
               } else {
                 const g = googleReply(text, 'web');
-                ans = `${g.text}\n\n（ChatGPT 暫時不可用，已改用 Google 搜尋）`;
+                ans = g.text;
               }
             } catch {
               const g = googleReply(text, 'web');
-              ans = `${g.text}\n\n（ChatGPT 連線失敗，已改用 Google 搜尋）`;
+              ans = g.text;
             }
           }
         }
