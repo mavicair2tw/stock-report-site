@@ -81,17 +81,27 @@ async function loadQuote(raw){
     symbols: { tickers: ticks, query: { types: [] } },
     columns: ['name','close','change','volume','market_cap_basic']
   };
-  const res = await fetch('https://scanner.tradingview.com/global/scan', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if(!res.ok) throw new Error('quote fetch failed');
-  const d = await res.json();
-  const row = d?.data?.find(x => Array.isArray(x.d) && x.d.some(v => v != null));
-  if(!row) throw new Error('symbol not found');
-  const [name, close, change, volume, mcap] = row.d;
-  return { name, close, change, volume, mcap, tv: row.s || tvSymbolFromInput(raw) };
+
+  let lastErr;
+  for (let i=0; i<3; i++) {
+    try {
+      const res = await fetch('https://scanner.tradingview.com/global/scan', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if(!res.ok) throw new Error('quote fetch failed');
+      const d = await res.json();
+      const row = d?.data?.find(x => Array.isArray(x.d) && x.d.some(v => v != null));
+      if(!row) throw new Error('symbol not found');
+      const [name, close, change, volume, mcap] = row.d;
+      return { name, close, change, volume, mcap, tv: row.s || tvSymbolFromInput(raw) };
+    } catch (e) {
+      lastErr = e;
+      await new Promise(r => setTimeout(r, 220 * (i + 1)));
+    }
+  }
+  throw lastErr || new Error('quote unavailable');
 }
 
 function renderMeta(q){
@@ -133,10 +143,10 @@ function renderTV(tvSymbol){
 
 async function loadAll(){
   errEl.textContent='';
+  let q = null;
   try{
-    const q = await loadQuote(symbol);
+    q = await loadQuote(symbol);
     renderMeta(q);
-    renderTV(q.tv);
   }catch(e){
     metaEl.innerHTML = [
       info('公司', symbol),
@@ -145,8 +155,13 @@ async function loadAll(){
       info('成交量', 'N/A'),
       info('市值', 'N/A')
     ].join('');
-    errEl.textContent = '資料讀取失敗，請換代號（例：AAPL、MSFT、2330.TW）';
-    renderTV(tvSymbolFromInput(symbol));
+    errEl.textContent = '報價資料讀取失敗，請換代號（例：AAPL、MSFT、2330.TW）';
+  }
+
+  try{
+    renderTV((q && q.tv) ? q.tv : tvSymbolFromInput(symbol));
+  }catch{
+    if (!errEl.textContent) errEl.textContent = '圖表載入失敗，請稍後再試';
   }
 }
 
