@@ -136,8 +136,15 @@
         return null;
       }
 
+      function normalizeGoogleQuery(raw){
+        return String(raw || '')
+          .replace(/^google\s*:?\s*/i, '')
+          .trim();
+      }
+
       function googleReply(q, scope='web'){
-        const query = scope === 'site' ? `${q} site:openai-tw.com` : q;
+        const base = normalizeGoogleQuery(q);
+        const query = scope === 'site' ? `${base} site:openai-tw.com` : base;
         const encoded = encodeURIComponent(query);
         const link = `https://www.google.com/search?q=${encoded}`;
         const frameLink = `https://r.jina.ai/http://www.google.com/search?q=${encoded}`;
@@ -149,7 +156,18 @@
         try {
           const res = await fetch(g.frameLink);
           const txt = await res.text();
-          const clean = txt.replace(/SECURITY NOTICE:[\s\S]*?<<<EXTERNAL_UNTRUSTED_CONTENT[^>]*>>>\n?/,'').replace(/<<<END_EXTERNAL_UNTRUSTED_CONTENT[^>]*>>>/g,'').trim();
+
+          // r.jina.ai occasionally returns JSON anti-abuse errors
+          if (/"name"\s*:\s*"SecurityPromiseError"|"code"\s*:\s*451|blocked until/i.test(txt)) {
+            searchContent.textContent = `目前搜尋內文暫時無法載入（被反濫用機制阻擋）。\n請直接使用下方 Google 連結：\n${g.link}`;
+            return;
+          }
+
+          const clean = txt
+            .replace(/SECURITY NOTICE:[\s\S]*?<<<EXTERNAL_UNTRUSTED_CONTENT[^>]*>>>\n?/,'')
+            .replace(/<<<END_EXTERNAL_UNTRUSTED_CONTENT[^>]*>>>/g,'')
+            .trim();
+
           searchContent.textContent = clean || `（已開啟搜尋）\n${g.link}`;
         } catch {
           searchContent.textContent = `無法載入搜尋內文。\n請改用連結：${g.link}`;
@@ -167,7 +185,7 @@
 
         sendBtn.disabled = true;
         let ans = '';
-        const m = text.match(/^google\s*:\s*(.+)$/i);
+        const m = text.match(/^google\s*:?\s*(.+)$/i);
         if (m) {
           const g = googleReply(m[1], 'web');
           ans = g.text;
