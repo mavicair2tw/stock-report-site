@@ -106,11 +106,16 @@ async function loadQuote(raw){
 }
 
 function renderMeta(q){
+  // hide all summary cards when key quote data is unavailable
+  if (q == null || q.close == null || q.change == null || q.volume == null || q.mcap == null) {
+    metaEl.innerHTML = '';
+    return;
+  }
   const cls = (q.change||0) >= 0 ? 'text-emerald-400' : 'text-red-400';
   metaEl.innerHTML = [
     info('公司', symbol),
-    info('名稱', q.name || 'N/A'),
-    info('價格', q.close ?? 'N/A'),
+    info('名稱', q.name || symbol),
+    info('價格', q.close),
     info('漲跌幅', fmtPct(q.change), cls),
     info('成交量', fmtNum(q.volume)),
     info('市值', fmtCap(q.mcap)),
