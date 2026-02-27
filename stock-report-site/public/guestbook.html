@@ -166,7 +166,7 @@
             ans = local;
           } else {
             const g = googleReply(text, 'site');
-            ans = `我目前找不到精準的本地答案。\n${g.text}\n\n如果要直接搜全網，請輸入：google: 你的關鍵字`;
+            ans = `${g.text}\n\n如果要直接搜全網，請輸入：google: 你的關鍵字`;
             searchFrame.src = g.frameLink;
           }
         }
