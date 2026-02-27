@@ -160,16 +160,10 @@
         const data = await res.json();
 
         const current = data.current || {};
-        const hTimes = data.hourly?.time || [];
-        const hRain = data.hourly?.precipitation_probability || [];
-        const idx = hTimes.indexOf(current.time);
-        const rain = idx >= 0 ? hRain[idx] : null;
-
         const meta = document.getElementById('weatherMeta');
         if (!meta) return;
         const parts = [
           `溫度 ${current.temperature_2m ?? 'N/A'}°C`,
-          ...(rain !== null && rain !== undefined ? [`天氣預報 ${rain}%`] : []),
           `風向 ${windDir(current.wind_direction_10m ?? 0)} (${current.wind_direction_10m ?? 'N/A'}°)`,
           `濕氣 ${current.relative_humidity_2m ?? 'N/A'}%`
         ];
