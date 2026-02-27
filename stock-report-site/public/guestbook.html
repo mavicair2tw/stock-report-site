@@ -157,9 +157,17 @@
           const res = await fetch(g.frameLink);
           const txt = await res.text();
 
-          // r.jina.ai occasionally returns JSON anti-abuse errors
-          if (/"name"\s*:\s*"SecurityPromiseError"|"code"\s*:\s*451|blocked until/i.test(txt)) {
-            searchContent.textContent = `目前搜尋內文暫時無法載入（被反濫用機制阻擋）。\n請直接使用下方 Google 連結：\n${g.link}`;
+          // r.jina.ai may return anti-abuse errors in JSON/plain text
+          const blockedPattern = /"code"\s*:\s*451|Security(?:Promise|Compromise)Error|blocked until|DDoS attack suspected|Too many requests/i;
+          if (blockedPattern.test(txt)) {
+            searchContent.textContent = `目前搜尋內文暫時無法載入（來源站點防濫用限制）。\n請直接使用 Google 連結：\n${g.link}`;
+            return;
+          }
+
+          // If response looks like raw JSON, avoid dumping it to UI
+          const trimmed = txt.trim();
+          if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+            searchContent.textContent = `目前搜尋內文暫時無法解析。\n請直接使用 Google 連結：\n${g.link}`;
             return;
           }
 
