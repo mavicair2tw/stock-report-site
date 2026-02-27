@@ -24,6 +24,9 @@
       .bubble{max-width:78%;padding:10px 12px;border-radius:12px;white-space:pre-wrap;line-height:1.5}
       .msg.user .bubble{background:#1e3a6b;color:#dbeafe}
       .msg.bot .bubble{background:#1b243f;color:#e6edf3;border:1px solid #2a365c}
+      .bubble .embed{margin-top:8px;max-width:640px}
+      .bubble .embed img{max-width:640px;max-height:360px;width:auto;height:auto;border-radius:10px;border:1px solid #2a3556;display:block}
+      .bubble .embed iframe{width:640px;max-width:100%;height:360px;border:0;border-radius:10px}
       .row{display:flex;gap:8px;margin-top:10px}
       textarea{flex:1;min-height:64px;max-height:180px;background:#0f1730;color:var(--text);border:1px solid #223055;border-radius:10px;padding:10px;resize:vertical}
       button{padding:10px 14px;border-radius:10px;border:1px solid #35558d;background:#1a315f;color:#fff;font-weight:700;cursor:pointer}
@@ -97,12 +100,39 @@
           .replace(/\n/g, '<br>');
       }
 
+      function firstUrl(s){
+        const m = String(s).match(/https?:\/\/[^\s]+/i);
+        return m ? m[0] : '';
+      }
+      function youtubeEmbed(url){
+        try {
+          const u = new URL(url);
+          if (u.hostname.includes('youtu.be')) return `https://www.youtube.com/embed/${u.pathname.replace('/','')}`;
+          if (u.hostname.includes('youtube.com')) {
+            const v = u.searchParams.get('v');
+            if (v) return `https://www.youtube.com/embed/${v}`;
+          }
+        } catch {}
+        return '';
+      }
+      function isImageUrl(url){
+        return /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/i.test(url);
+      }
+      function renderEmbed(text){
+        const url = firstUrl(text);
+        if (!url) return '';
+        const yt = youtubeEmbed(url);
+        if (yt) return `<div class="embed"><iframe src="${yt}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+        if (isImageUrl(url)) return `<div class="embed"><img src="${url}" alt="embed image" loading="lazy"/></div>`;
+        return '';
+      }
+
       function addMsg(role, text){
         const wrap = document.createElement('div');
         wrap.className = `msg ${role === 'user' ? 'user' : 'bot'}`;
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
-        bubble.innerHTML = linkify(text);
+        bubble.innerHTML = `${linkify(text)}${renderEmbed(text)}`;
         wrap.appendChild(bubble);
         chatEl.appendChild(wrap);
         chatEl.scrollTop = chatEl.scrollHeight;
