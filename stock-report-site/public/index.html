@@ -28,7 +28,6 @@
       .weather-box{min-width:280px;max-width:360px;padding:10px 12px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-size:13px}
       .weather-title{font-weight:700;margin-bottom:6px}
       .weather-meta{color:#b9cae6;line-height:1.45}
-      .weather-source{color:#8fa3bf;font-size:12px;margin-top:4px}
       .top-tags{display:flex;flex-wrap:wrap;gap:10px}
       .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
       .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #35558d;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
@@ -92,7 +91,6 @@
         <div class="weather-box" id="weatherBox">
           <div class="weather-title">天氣</div>
           <div class="weather-meta" id="weatherMeta">讀取裝置位置中…</div>
-          <div class="weather-source" id="weatherSource">來源：讀取中</div>
         </div>
       </div>
       <div class="hero-image-wrap">
@@ -187,11 +185,6 @@
         }
       }
 
-      function setWeatherSource(s){
-        const el = document.getElementById('weatherSource');
-        if (el) el.textContent = `來源：${s}`;
-      }
-
       async function loadWeatherByLocation(lat, lon, areaHint = ''){
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_direction_10m&timezone=auto`;
         const res = await fetch(url);
@@ -211,7 +204,6 @@
       }
 
       async function loadWeatherByIP(){
-        setWeatherSource('IP 網路定位');
         const r = await fetch('https://ipapi.co/json/');
         const d = await r.json();
         const lat = d?.latitude;
@@ -226,7 +218,6 @@
         if (!meta) return;
         if (!navigator.geolocation) {
           loadWeatherByIP().catch(() => {
-            setWeatherSource('台北預設');
             loadWeatherByLocation(25.0330, 121.5654, '台北市').catch(() => {
               meta.textContent = '無法讀取天氣資料。';
             });
@@ -235,14 +226,12 @@
         }
         navigator.geolocation.getCurrentPosition(
           pos => {
-            setWeatherSource('GPS 裝置定位');
             loadWeatherByLocation(pos.coords.latitude, pos.coords.longitude).catch(() => {
               meta.textContent = '天氣資料讀取失敗，請稍後再試。';
             });
           },
           () => {
             loadWeatherByIP().catch(() => {
-              setWeatherSource('台北預設');
               loadWeatherByLocation(25.0330, 121.5654, '台北市').catch(() => {
                 meta.textContent = '未授權位置存取，且無法讀取替代天氣資料。';
               });
