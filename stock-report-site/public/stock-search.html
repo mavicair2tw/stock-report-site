@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>股市 Search</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>body{background:#0b1020;color:#e5e7eb}</style>
+  </head>
+  <body class="min-h-screen">
+    <div id="app"></div>
+
+    <script type="text/babel">
+      const { useEffect, useMemo, useRef, useState } = React;
+
+      const RANGES = {
+        '1D': { range: '1d', interval: '5m' },
+        '5D': { range: '5d', interval: '15m' },
+        '1M': { range: '1mo', interval: '1d' },
+        '3M': { range: '3mo', interval: '1d' },
+        '1Y': { range: '1y', interval: '1d' },
+        '5Y': { range: '5y', interval: '1wk' },
+      };
+
+      const fmtNum = (v) => (v == null ? 'N/A' : Number(v).toLocaleString());
+      const fmtPct = (v) => (v == null ? 'N/A' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`);
+      const fmtCap = (v) => {
+        if (v == null) return 'N/A';
+        const n = Number(v);
+        if (n >= 1e12) return `${(n/1e12).toFixed(2)}T`;
+        if (n >= 1e9) return `${(n/1e9).toFixed(2)}B`;
+        if (n >= 1e6) return `${(n/1e6).toFixed(2)}M`;
+        return fmtNum(n);
+      };
+
+      function StockSearchPage() {
+        const [query, setQuery] = useState('AAPL');
+        const [symbol, setSymbol] = useState('AAPL');
+        const [suggestions, setSuggestions] = useState([]);
+        const [range, setRange] = useState('1M');
+        const [meta, setMeta] = useState(null);
+        const [candles, setCandles] = useState([]);
+        const [loading, setLoading] = useState(false);
+        const chartRef = useRef(null);
+        const chartObj = useRef(null);
+
+        useEffect(() => {
+          const t = setTimeout(async () => {
+            if (!query || query.length < 1) return setSuggestions([]);
+            try {
+              const r = await fetch(`https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&lang=en-US&region=US&quotesCount=8&newsCount=0`);
+              const d = await r.json();
+              const list = (d.quotes || []).filter(q => q.symbol && q.shortname).slice(0,8)
+                .map(q => ({ symbol: q.symbol, name: q.shortname }));
+              setSuggestions(list);
+            } catch {
+              setSuggestions([]);
+            }
+          }, 220);
+          return () => clearTimeout(t);
+        }, [query]);
+
+        async function loadData(target = symbol, r = range) {
+          setLoading(true);
+          try {
+            const cfg = RANGES[r];
+            const chartUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(target)}?range=${cfg.range}&interval=${cfg.interval}`;
+            const quoteUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(target)}`;
+
+            const [chartRes, quoteRes] = await Promise.all([fetch(chartUrl), fetch(quoteUrl)]);
+            const chartJson = await chartRes.json();
+            const quoteJson = await quoteRes.json();
+
+            const q = quoteJson?.quoteResponse?.result?.[0] || null;
+            setMeta(q);
+
+            const result = chartJson?.chart?.result?.[0];
+            const ts = result?.timestamp || [];
+            const o = result?.indicators?.quote?.[0]?.open || [];
+            const h = result?.indicators?.quote?.[0]?.high || [];
+            const l = result?.indicators?.quote?.[0]?.low || [];
+            const c = result?.indicators?.quote?.[0]?.close || [];
+            const v = result?.indicators?.quote?.[0]?.volume || [];
+
+            const rows = ts.map((t, i) => ({
+              time: t,
+              open: o[i], high: h[i], low: l[i], close: c[i], volume: v[i]
+            })).filter(x => [x.open,x.high,x.low,x.close].every(n => Number.isFinite(n)));
+
+            setCandles(rows);
+          } finally {
+            setLoading(false);
+          }
+        }
+
+        useEffect(() => { loadData(symbol, range); }, [symbol, range]);
+
+        const ma = (len) => candles.map((r, i, arr) => {
+          if (i < len - 1) return null;
+          const seg = arr.slice(i - len + 1, i + 1).map(x => x.close);
+          const avg = seg.reduce((a,b) => a+b, 0)/len;
+          return { time: r.time, value: avg };
+        }).filter(Boolean);
+
+        useEffect(() => {
+          if (!chartRef.current) return;
+          if (chartObj.current) {
+            chartObj.current.remove();
+            chartObj.current = null;
+          }
+
+          const chart = LightweightCharts.createChart(chartRef.current, {
+            layout: { background: { color: '#0f172a' }, textColor: '#cbd5e1' },
+            grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
+            rightPriceScale: { borderColor: '#334155' },
+            timeScale: { borderColor: '#334155' },
+            width: chartRef.current.clientWidth,
+            height: 460,
+          });
+          chartObj.current = chart;
+
+          const cs = chart.addCandlestickSeries({
+            upColor: '#22c55e', downColor: '#ef4444', borderVisible: false,
+            wickUpColor: '#22c55e', wickDownColor: '#ef4444'
+          });
+          cs.setData(candles.map(x => ({ time: x.time, open: x.open, high: x.high, low: x.low, close: x.close })));
+
+          const vol = chart.addHistogramSeries({
+            priceFormat: { type: 'volume' },
+            priceScaleId: '',
+            color: '#334155',
+          });
+          vol.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+          vol.setData(candles.map(x => ({
+            time: x.time,
+            value: x.volume || 0,
+            color: x.close >= x.open ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)'
+          })));
+
+          const ma5 = chart.addLineSeries({ color: '#60a5fa', lineWidth: 2, title: 'MA5' });
+          const ma20 = chart.addLineSeries({ color: '#f59e0b', lineWidth: 2, title: 'MA20' });
+          const ma60 = chart.addLineSeries({ color: '#a78bfa', lineWidth: 2, title: 'MA60' });
+          ma5.setData(ma(5));
+          ma20.setData(ma(20));
+          ma60.setData(ma(60));
+
+          chart.timeScale().fitContent();
+          const onResize = () => chart.applyOptions({ width: chartRef.current.clientWidth });
+          window.addEventListener('resize', onResize);
+          return () => window.removeEventListener('resize', onResize);
+        }, [candles]);
+
+        const quoteColor = useMemo(() => (meta?.regularMarketChangePercent >= 0 ? 'text-emerald-400' : 'text-red-400'), [meta]);
+
+        return (
+          <main className="max-w-7xl mx-auto p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-3xl font-bold">股市 Search</h1>
+              <a href="/" className="text-sky-300 hover:underline">返回首頁</a>
+            </div>
+
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 mb-4">
+              <div className="relative">
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { setSymbol(query.toUpperCase()); setSuggestions([]); } }}
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-slate-100"
+                  placeholder="輸入股票代號或公司名稱 (例: TSLA, NVDA, 台積電)"
+                />
+                {suggestions.length > 0 && (
+                  <div className="absolute z-20 mt-2 w-full bg-slate-900 border border-slate-700 rounded-lg overflow-hidden">
+                    {suggestions.map(s => (
+                      <button
+                        key={s.symbol}
+                        onClick={() => { setQuery(s.symbol); setSymbol(s.symbol); setSuggestions([]); }}
+                        className="w-full text-left px-4 py-2 hover:bg-slate-800"
+                      >
+                        <span className="font-semibold mr-2">{s.symbol}</span>
+                        <span className="text-slate-400">{s.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4 text-sm">
+                <Info label="公司" value={meta?.shortName || meta?.longName || symbol} />
+                <Info label="價格" value={meta?.regularMarketPrice ?? 'N/A'} />
+                <Info label="漲跌幅" value={fmtPct(meta?.regularMarketChangePercent)} valueClass={quoteColor} />
+                <Info label="成交量" value={fmtNum(meta?.regularMarketVolume)} />
+                <Info label="市值" value={fmtCap(meta?.marketCap)} />
+              </div>
+
+              <div className="flex flex-wrap gap-2 mt-4">
+                {Object.keys(RANGES).map(r => (
+                  <button key={r} onClick={() => setRange(r)} className={`px-3 py-1 rounded-lg border ${range===r?'bg-sky-600 border-sky-400':'bg-slate-800 border-slate-600'}`}>{r}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-2">
+              {loading && <div className="p-3 text-slate-400">載入中...</div>}
+              <div ref={chartRef} />
+            </div>
+          </main>
+        );
+      }
+
+      function Info({ label, value, valueClass = 'text-slate-100' }) {
+        return (
+          <div className="bg-slate-800 rounded-lg p-3 border border-slate-700">
+            <div className="text-slate-400">{label}</div>
+            <div className={`font-semibold ${valueClass}`}>{value}</div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('app')).render(<StockSearchPage />);
+    </script>
+  </body>
+</html>
