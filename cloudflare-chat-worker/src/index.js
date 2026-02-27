@@ -1,6 +1,6 @@
 const buckets = new Map();
 const WINDOW_MS = 60_000;
-const LIMIT_PER_MIN = 120;
+const LIMIT_PER_MIN = 1000000; // temporary: effectively disable rate limiting
 
 export default {
   async fetch(request, env) {
