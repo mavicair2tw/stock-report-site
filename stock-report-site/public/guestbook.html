@@ -49,7 +49,7 @@
       </div>
 
       <h1>Chat</h1>
-      <div class="sub">網站內嵌聊天（本地 Q&A + Google 搜尋）</div>
+      <div class="sub">網站內嵌聊天（本地 Q&A + Google 關鍵字搜尋）</div>
 
       <div class="card">
         <div id="chat" class="chat-box"></div>
@@ -58,7 +58,7 @@
           <button id="send">送出</button>
           <button id="clear" class="btn-ghost" type="button">清除</button>
         </div>
-        <div class="hint">優先使用本地 Q&A 回答；找不到答案時，提供 Google 搜尋捷徑。</div>
+        <div class="hint">優先使用本地 Q&A；也可輸入「google: 關鍵字」直接做 Google 搜尋。</div>
         <div class="error" id="error"></div>
       </div>
 
@@ -130,10 +130,11 @@
         return null;
       }
 
-      function googleReply(q){
-        const encoded = encodeURIComponent(q + ' site:openai-tw.com');
+      function googleReply(q, scope='web'){
+        const query = scope === 'site' ? `${q} site:openai-tw.com` : q;
+        const encoded = encodeURIComponent(query);
         const link = `https://www.google.com/search?q=${encoded}`;
-        return `我目前找不到精準的本地答案。\n你可以用 Google 搜尋：${link}`;
+        return `Google 搜尋連結：${link}`;
       }
 
       async function send(){
@@ -146,7 +147,13 @@
         saveHistory();
 
         sendBtn.disabled = true;
-        const ans = localAnswer(text) || googleReply(text);
+        let ans = '';
+        const m = text.match(/^google\s*:\s*(.+)$/i);
+        if (m) {
+          ans = googleReply(m[1], 'web');
+        } else {
+          ans = localAnswer(text) || `我目前找不到精準的本地答案。\n${googleReply(text, 'site')}\n\n如果要直接搜全網，請輸入：google: 你的關鍵字`;
+        }
         history.push({ role:'assistant', content: ans });
         addMsg('bot', ans);
         saveHistory();
