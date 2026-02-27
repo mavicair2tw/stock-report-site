@@ -202,7 +202,7 @@
         if (!meta) return;
         const area = areaHint || await reverseArea(lat, lon);
         const parts = [
-          ...(area ? [`地區 ${area}`] : []),
+          ...(area ? [`City ${area}`] : []),
           `溫度 ${current.temperature_2m ?? 'N/A'}°C`,
           `風向 ${windDir(current.wind_direction_10m ?? 0)} (${current.wind_direction_10m ?? 'N/A'}°)`,
           `濕氣 ${current.relative_humidity_2m ?? 'N/A'}%`
