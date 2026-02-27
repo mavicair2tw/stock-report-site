@@ -222,7 +222,7 @@
           if (local) {
             ans = local;
           } else {
-            const g = googleReply(text, 'site');
+            const g = googleReply(text, 'web');
             ans = `${g.text}\n\n如果要直接搜全網，請輸入：google: 你的關鍵字`;
             await showSearchText(g);
           }
