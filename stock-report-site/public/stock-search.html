@@ -70,16 +70,19 @@ function candidates(raw){
   const s = String(raw||'').trim().toUpperCase();
   if(!s) return [];
   if (s.includes(':')) return [s];
-  if (s.endsWith('.TW')) return [`TWSE:${s.replace('.TW','')}`];
-  if (/^\d{4}$/.test(s)) return [`TWSE:${s}`];
-  return [`NASDAQ:${s}`, `NYSE:${s}`];
+  if (s.endsWith('.TW')) {
+    const t = s.replace('.TW','');
+    return [`TWSE:${t}`, `TPEX:${t}`];
+  }
+  if (/^\d{4}$/.test(s)) return [`TWSE:${s}`, `TPEX:${s}`];
+  return [`NASDAQ:${s}`, `NYSE:${s}`, `AMEX:${s}`];
 }
 
 async function loadQuote(raw){
   const ticks = candidates(raw);
   const body = {
     symbols: { tickers: ticks, query: { types: [] } },
-    columns: ['name','close','change','volume','market_cap_basic']
+    columns: ['name','description','close','change','volume','market_cap_basic']
   };
 
   let lastErr;
@@ -94,8 +97,8 @@ async function loadQuote(raw){
       const d = await res.json();
       const row = d?.data?.find(x => Array.isArray(x.d) && x.d.some(v => v != null));
       if(!row) throw new Error('symbol not found');
-      const [name, close, change, volume, mcap] = row.d;
-      return { name, close, change, volume, mcap, tv: row.s || tvSymbolFromInput(raw) };
+      const [name, description, close, change, volume, mcap] = row.d;
+      return { name: name || description || raw, close, change, volume, mcap, tv: row.s || tvSymbolFromInput(raw) };
     } catch (e) {
       lastErr = e;
       await new Promise(r => setTimeout(r, 220 * (i + 1)));
