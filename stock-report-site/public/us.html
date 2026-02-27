@@ -26,7 +26,7 @@
       <div class="status">綠色 = 上漲，紅色 = 下跌</div>
       <div class="chart"><canvas id="changeChart" height="90"></canvas></div>
       <table>
-        <thead><tr><th>名稱</th><th>漲跌</th><th>漲幅</th><th>代號</th><th>成交</th></tr></thead>
+        <thead><tr><th>名稱</th><th>漲跌</th><th>漲幅</th><th>成交</th><th>代號</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
       <div class="summary">
@@ -75,7 +75,7 @@
         .then(r=>r.json())
         .then(data=>{
           document.getElementById('updated').textContent = `最後更新：${data.updatedAt} (${data.timezone})`;
-          const rows = data.items.map(i=>`<tr><td>${i.label}</td><td class="${cls(i.change)}">${fmts(i.change)}</td><td class="${cls(i.changePercent)}">${fmts(i.changePercent,'%')}</td><td>${i.symbol}</td><td>${fmt(i.price)}</td></tr>`).join('');
+          const rows = data.items.map(i=>`<tr><td>${i.label}</td><td class="${cls(i.change)}">${fmts(i.change)}</td><td class="${cls(i.changePercent)}">${fmts(i.changePercent,'%')}</td><td>${fmt(i.price)}</td><td>${i.symbol}</td></tr>`).join('');
           document.getElementById('rows').innerHTML = rows;
           renderSummary(data.items || []);
 
