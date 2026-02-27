@@ -25,6 +25,9 @@
       .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px; }
       .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
       .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #35558d;background:linear-gradient(135deg,#132547 0%,#1c3563 100%);color:#dbeafe;font-weight:800;font-size:13px}
+      .weather-box{min-width:280px;max-width:360px;padding:10px 12px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-size:13px}
+      .weather-title{font-weight:700;margin-bottom:6px}
+      .weather-meta{color:#b9cae6;line-height:1.45}
       .top-tags{display:flex;flex-wrap:wrap;gap:10px}
       .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
       .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #35558d;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
@@ -85,6 +88,10 @@
       <h1>Built to Collect. Designed to Scale.</h1>
       <div class="top-bar">
         <div class="logo">openai-tw.com</div>
+        <div class="weather-box" id="weatherBox">
+          <div class="weather-title">天氣</div>
+          <div class="weather-meta" id="weatherMeta">讀取裝置位置中…</div>
+        </div>
       </div>
       <div class="hero-image-wrap">
         <img class="hero-image" src="/assets/hero.jpg" alt="Main page visual" />
@@ -141,6 +148,43 @@
       localStorage.setItem(pageKey, String(pageViews));
       const el = document.getElementById('viewCounter');
       if (el) el.textContent = `點閱數：${pageViews}`;
+
+      function windDir(deg){
+        const dirs = ['北','東北','東','東南','南','西南','西','西北'];
+        return dirs[Math.round((((deg % 360) + 360) % 360) / 45) % 8];
+      }
+
+      async function loadWeatherByLocation(lat, lon){
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_direction_10m&hourly=precipitation_probability&timezone=auto`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        const current = data.current || {};
+        const hTimes = data.hourly?.time || [];
+        const hRain = data.hourly?.precipitation_probability || [];
+        const idx = hTimes.indexOf(current.time);
+        const rain = idx >= 0 ? hRain[idx] : null;
+
+        const meta = document.getElementById('weatherMeta');
+        if (!meta) return;
+        meta.textContent = `溫度 ${current.temperature_2m ?? 'N/A'}°C ｜ 降雨率 ${rain ?? 'N/A'}% ｜ 風向 ${windDir(current.wind_direction_10m ?? 0)} (${current.wind_direction_10m ?? 'N/A'}°) ｜ 濕氣 ${current.relative_humidity_2m ?? 'N/A'}%`;
+      }
+
+      (function initWeather(){
+        const meta = document.getElementById('weatherMeta');
+        if (!meta) return;
+        if (!navigator.geolocation) {
+          meta.textContent = '此裝置不支援定位，無法讀取當地天氣。';
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          pos => loadWeatherByLocation(pos.coords.latitude, pos.coords.longitude).catch(() => {
+            meta.textContent = '天氣資料讀取失敗，請稍後再試。';
+          }),
+          () => { meta.textContent = '未授權位置存取，無法顯示當地天氣。'; },
+          { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+        );
+      })();
     </script>
   </body>
 </html>
