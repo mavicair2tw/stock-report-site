@@ -180,6 +180,7 @@
 
           // Avoid generic/airport-like names
           if (/airport|機場/i.test(area) && candidates[1]) area = String(candidates[1]).trim();
+          if (/^songshan$/i.test(area)) area = '台北';
           return area;
         } catch {
           return '';
