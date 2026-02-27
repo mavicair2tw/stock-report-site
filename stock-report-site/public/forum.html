@@ -25,6 +25,8 @@
       .item:last-child{border-bottom:none}
       .meta{font-size:12px;color:var(--muted)}
       .text{margin-top:6px;white-space:pre-wrap}
+      .actions{display:flex;gap:8px;margin-top:8px}
+      .action-btn{padding:6px 10px;font-size:12px;border-radius:8px;border:1px solid #35558d;background:#162443;color:#dbeafe;cursor:pointer}
       .embed{margin-top:8px;max-width:640px}
       .embed img{max-width:640px;max-height:360px;width:auto;height:auto;border-radius:10px;border:1px solid #2a3556;display:block}
       .embed iframe{width:640px;max-width:100%;height:360px;border:0;border-radius:10px}
@@ -75,6 +77,8 @@
       let data=[];
       let currentPage=1;
       const PAGE_SIZE=200;
+      const LIKE_KEY='openai-tw-forum-likes-v1';
+      let likes = {};
 
       function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
       function visibleText(s){
@@ -106,7 +110,12 @@
         if (isImageUrl(url)) return `<div class="embed"><img src="${url}" alt="forum image" loading="lazy"/></div>`;
         return '';
       }
+      function postKey(x){ return btoa(unescape(encodeURIComponent(`${x.time}|${x.text}`))).slice(0,24); }
+      function loadLikes(){ try{ likes = JSON.parse(localStorage.getItem(LIKE_KEY)||'{}')||{}; }catch{ likes={}; } }
+      function saveLikes(){ localStorage.setItem(LIKE_KEY, JSON.stringify(likes)); }
+      function shareUrl(k){ return `${location.origin}${location.pathname}#post-${k}`; }
       function render(){
+
         const total = data.length;
         const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
         if (currentPage > totalPages) currentPage = totalPages;
@@ -124,7 +133,11 @@
         const newestFirst = data.slice().reverse();
         const start = (currentPage - 1) * PAGE_SIZE;
         const pageItems = newestFirst.slice(start, start + PAGE_SIZE);
-        list.innerHTML=pageItems.map(x=>`<div class="item"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}</div>`).join('');
+        list.innerHTML=pageItems.map(x=>{
+          const k = postKey(x);
+          const likeCount = Number(likes[k]||0);
+          return `<div class="item" id="post-${k}"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}<div class="actions"><button class="action-btn like-btn" data-k="${k}">👍 Like (${likeCount})</button><button class="action-btn share-btn" data-k="${k}">🔗 Share</button></div></div>`;
+        }).join('');
       }
 
       async function refresh(){
@@ -155,6 +168,31 @@
       prevPageBtn.addEventListener('click', () => { currentPage -= 1; render(); });
       nextPageBtn.addEventListener('click', () => { currentPage += 1; render(); });
 
+      list.addEventListener('click', async (e) => {
+        const likeBtn = e.target.closest('.like-btn');
+        const shareBtn = e.target.closest('.share-btn');
+        if (likeBtn) {
+          const k = likeBtn.dataset.k;
+          likes[k] = Number(likes[k] || 0) + 1;
+          saveLikes();
+          render();
+          return;
+        }
+        if (shareBtn) {
+          const k = shareBtn.dataset.k;
+          const url = shareUrl(k);
+          try {
+            if (navigator.share) {
+              await navigator.share({ title: 'Forum Post', url });
+            } else {
+              await navigator.clipboard.writeText(url);
+              alert('已複製分享連結');
+            }
+          } catch {}
+        }
+      });
+
+      loadLikes();
       refresh();
       setInterval(refresh, 15000);
     </script>
