@@ -3,7 +3,7 @@ services:
   api:
     image: node:20
     working_dir: /app
-    command: sh -c "npm ci && npm run dev"
+    command: sh -c "npm install && npm run dev"
     volumes:
       - ./api:/app
     environment:
@@ -19,7 +19,7 @@ services:
   worker:
     image: node:20
     working_dir: /app
-    command: sh -c "npm ci && npm run worker"
+    command: sh -c "npm install && npm run worker"
     volumes:
       - ./api:/app
     environment:

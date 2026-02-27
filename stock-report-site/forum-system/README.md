@@ -145,4 +145,29 @@ Features:
 - Horizontal API scaling behind load balancer
 - queue workers autoscaling
 
+## 12) Real Backend Skeleton Included
+
+Path: `forum-system/api`
+
+Implemented now:
+- Express app + Helmet/CORS/Morgan
+- Auth routes (register/verify/login) with bcrypt + JWT
+- Posting cooldown + API rate limit middleware
+- Trust-level permission gate (link/post limits)
+- Report/auto-hide after 5 reports
+- Moderation queue producer + BullMQ worker
+- Admin/mod routes
+
+Run locally:
+```bash
+cd forum-system
+cp api/.env.example api/.env
+docker compose up -d postgres redis
+cd api
+npm install
+npm run dev
+# optional worker
+npm run worker
+```
+
 See `schema.sql` and `docker-compose.yml` in this folder.
