@@ -158,12 +158,32 @@
 
       async function reverseArea(lat, lon){
         try {
-          const r = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=zh&count=1`);
+          // Prefer OSM reverse geocoding for district/city names (zh-TW)
+          const u = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=zh-TW`;
+          const r = await fetch(u, { headers: { 'Accept': 'application/json' } });
           const d = await r.json();
-          const x = d?.results?.[0];
-          if (!x) return '';
-          return x.name || x.admin2 || x.admin1 || '';
-        } catch { return ''; }
+          const a = d?.address || {};
+
+          const candidates = [
+            a.suburb,
+            a.city_district,
+            a.town,
+            a.city,
+            a.county,
+            a.state,
+            d?.name,
+            d?.display_name,
+          ].filter(Boolean);
+
+          let area = String(candidates[0] || '').split(',')[0].trim();
+          if (!area) return '';
+
+          // Avoid generic/airport-like names
+          if (/airport|機場/i.test(area) && candidates[1]) area = String(candidates[1]).trim();
+          return area;
+        } catch {
+          return '';
+        }
       }
 
       function setWeatherSource(s){
