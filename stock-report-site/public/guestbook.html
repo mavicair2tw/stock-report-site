@@ -58,7 +58,7 @@
           <button id="send">送出</button>
           <button id="clear" class="btn-ghost" type="button">清除</button>
         </div>
-        <div class="hint">若出現錯誤，請確認 Cloudflare Worker 已部署且已設定 OPENAI_API_KEY。</div>
+        <div class="hint">若出現錯誤，請確認 Cloudflare Worker 已部署且已設定 OPENAI_API_KEY（目前走 workers.dev 端點）。</div>
         <div class="error" id="error"></div>
       </div>
 
@@ -138,7 +138,7 @@
         sendBtn.disabled = true;
 
         try {
-          const res = await fetch('/api/chat', {
+          const res = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ messages: history })
