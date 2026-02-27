@@ -37,19 +37,25 @@
         return fmtNum(n);
       };
 
-      function jsonp(url){
-        return new Promise((resolve, reject) => {
-          const cb = `__jp_${Math.random().toString(36).slice(2)}`;
-          const s = document.createElement('script');
-          const cleanup = () => {
-            delete window[cb];
-            s.remove();
-          };
-          window[cb] = (data) => { cleanup(); resolve(data); };
-          s.onerror = () => { cleanup(); reject(new Error('jsonp failed')); };
-          s.src = `${url}${url.includes('?') ? '&' : '?'}callback=${cb}`;
-          document.body.appendChild(s);
-        });
+      function proxyUrl(url){
+        return `https://r.jina.ai/http://${url.replace(/^https?:\/\//,'')}`;
+      }
+
+      async function fetchJson(url){
+        // try direct first
+        try {
+          const r = await fetch(url);
+          if (r.ok) return r.json();
+        } catch {}
+
+        // fallback via proxy text -> JSON extraction
+        const r2 = await fetch(proxyUrl(url));
+        if(!r2.ok) throw new Error('proxy fetch failed');
+        const txt = await r2.text();
+        const start = txt.indexOf('{');
+        const end = txt.lastIndexOf('}');
+        if (start < 0 || end <= start) throw new Error('invalid json payload');
+        return JSON.parse(txt.slice(start, end + 1));
       }
 
       function StockSearchPage() {
@@ -67,7 +73,7 @@
           const t = setTimeout(async () => {
             if (!query || query.length < 1) return setSuggestions([]);
             try {
-              const d = await jsonp(`https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&lang=en-US&region=US&quotesCount=8&newsCount=0`);
+              const d = await fetchJson(`https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&lang=en-US&region=US&quotesCount=8&newsCount=0`);
               const list = (d.quotes || []).filter(q => q.symbol && q.shortname).slice(0,8)
                 .map(q => ({ symbol: q.symbol, name: q.shortname }));
               setSuggestions(list);
@@ -85,7 +91,7 @@
             const chartUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(target)}?range=${cfg.range}&interval=${cfg.interval}`;
             const quoteUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(target)}`;
 
-            const [chartJson, quoteJson] = await Promise.all([jsonp(chartUrl), jsonp(quoteUrl)]);
+            const [chartJson, quoteJson] = await Promise.all([fetchJson(chartUrl), fetchJson(quoteUrl)]);
 
             const q = quoteJson?.quoteResponse?.result?.[0] || null;
             setMeta(q);
