@@ -156,7 +156,7 @@ async function loadAll(){
     renderMeta(q);
   }catch(e){
     metaEl.innerHTML = '';
-    errEl.textContent = '報價資料讀取失敗，請換代號（例：AAPL、MSFT、2330.TW）';
+    errEl.textContent = '請輸入有效股票代號（例：AAPL、MSFT、2330.TW）。';
   }
 
   try{
