@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chat</title>
     <style>
-      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; }
+      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; --accent:#60a5fa; }
       *{box-sizing:border-box}
       body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
       .wrap{max-width:1000px;margin:0 auto}
@@ -18,11 +18,20 @@
       .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
       .sub{color:var(--muted);margin-bottom:12px}
       .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
+      .chat-box{height:420px;overflow:auto;padding:12px;border-radius:10px;background:#0f1730;border:1px solid #223055}
+      .msg{margin:10px 0;display:flex}
+      .msg.user{justify-content:flex-end}
+      .bubble{max-width:78%;padding:10px 12px;border-radius:12px;white-space:pre-wrap;line-height:1.5}
+      .msg.user .bubble{background:#1e3a6b;color:#dbeafe}
+      .msg.bot .bubble{background:#1b243f;color:#e6edf3;border:1px solid #2a365c}
+      .row{display:flex;gap:8px;margin-top:10px}
+      textarea{flex:1;min-height:64px;max-height:180px;background:#0f1730;color:var(--text);border:1px solid #223055;border-radius:10px;padding:10px;resize:vertical}
+      button{padding:10px 14px;border-radius:10px;border:1px solid #35558d;background:#1a315f;color:#fff;font-weight:700;cursor:pointer}
+      button:disabled{opacity:.6;cursor:not-allowed}
+      .hint{font-size:12px;color:var(--muted);margin-top:8px}
       .site-link{margin-top:18px;color:var(--muted);font-size:13px}
       .site-link a{color:#93c5fd;text-decoration:none}
       .site-link a:hover{text-decoration:underline}
-      .chat-btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid #35558d;background:#1a315f;color:#fff;text-decoration:none;font-weight:700}
-      .chat-btn:hover{filter:brightness(1.08)}
     </style>
   </head>
   <body>
@@ -36,12 +45,82 @@
           <div class="nav-item"><a class="tag active" href="/guestbook/">Chat</a><span class="tag-sub">Guestbook</span></div>
         </div>
       </div>
+
       <h1>Chat</h1>
-      <div class="sub">Chat 功能已整合 ChatGPT（新分頁開啟）。</div>
+      <div class="sub">網站內嵌聊天（Cloudflare Worker + ChatGPT）</div>
+
       <div class="card">
-        <a class="chat-btn" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">開啟 ChatGPT</a>
+        <div id="chat" class="chat-box"></div>
+        <div class="row">
+          <textarea id="input" placeholder="輸入訊息，Shift+Enter 換行，Enter 送出"></textarea>
+          <button id="send">送出</button>
+        </div>
+        <div class="hint">若出現錯誤，請確認 Cloudflare Worker 已部署且已設定 OPENAI_API_KEY。</div>
       </div>
+
       <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
     </div>
+
+    <script>
+      const chatEl = document.getElementById('chat');
+      const inputEl = document.getElementById('input');
+      const sendBtn = document.getElementById('send');
+      const history = [];
+
+      function addMsg(role, text){
+        const wrap = document.createElement('div');
+        wrap.className = `msg ${role === 'user' ? 'user' : 'bot'}`;
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.textContent = text;
+        wrap.appendChild(bubble);
+        chatEl.appendChild(wrap);
+        chatEl.scrollTop = chatEl.scrollHeight;
+      }
+
+      addMsg('bot', '嗨，我是你的 Chat 助手。');
+
+      async function send(){
+        const text = inputEl.value.trim();
+        if(!text) return;
+        inputEl.value = '';
+        history.push({ role:'user', content:text });
+        addMsg('user', text);
+
+        const loading = document.createElement('div');
+        loading.className = 'msg bot';
+        loading.innerHTML = '<div class="bubble">思考中…</div>';
+        chatEl.appendChild(loading);
+        chatEl.scrollTop = chatEl.scrollHeight;
+        sendBtn.disabled = true;
+
+        try {
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: history })
+          });
+          const data = await res.json();
+          loading.remove();
+          const reply = data?.reply || data?.error || '回應失敗';
+          history.push({ role:'assistant', content: reply });
+          addMsg('bot', reply);
+        } catch (e) {
+          loading.remove();
+          addMsg('bot', '連線失敗，請稍後再試。');
+        } finally {
+          sendBtn.disabled = false;
+          inputEl.focus();
+        }
+      }
+
+      sendBtn.addEventListener('click', send);
+      inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          send();
+        }
+      });
+    </script>
   </body>
 </html>
