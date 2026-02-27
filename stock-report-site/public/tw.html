@@ -68,10 +68,10 @@
         <thead>
           <tr>
             <th>股名</th>
-            <th>代號</th>
-            <th>成交</th>
             <th>漲跌</th>
             <th>漲幅</th>
+            <th>代號</th>
+            <th>成交</th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
@@ -165,10 +165,10 @@
               return `
                 <tr>
                   <td>${item.label}</td>
-                  <td>${item.symbol}</td>
-                  <td>${fmt(item.price)}</td>
                   <td class="${c}">${fmtSigned(item.change)}</td>
                   <td class="${c}">${fmtSigned(item.changePercent, '%')}</td>
+                  <td>${item.symbol}</td>
+                  <td>${fmt(item.price)}</td>
                 </tr>
               `;
             }).join('');
