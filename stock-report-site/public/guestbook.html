@@ -31,11 +31,6 @@
       .btn-ghost{background:transparent;border-color:#2b3b5f;color:#bcd0ef}
       .hint{font-size:12px;color:var(--muted);margin-top:8px}
       .error{font-size:12px;color:#fca5a5;margin-top:8px;min-height:18px}
-      .search-frame-wrap{margin-top:12px}
-      .search-content{width:100%;height:420px;overflow:auto;border:1px solid #223055;border-radius:10px;background:#0f1730;padding:12px;white-space:pre-wrap;line-height:1.5}
-      .search-link{margin-top:8px;font-size:13px}
-      .search-link a{color:#93c5fd;text-decoration:none}
-      .search-link a:hover{text-decoration:underline}
       .site-link{margin-top:18px;color:var(--muted);font-size:13px}
       .site-link a{color:#93c5fd;text-decoration:none}
       .site-link a:hover{text-decoration:underline}
@@ -67,10 +62,6 @@
         <div class="error" id="error"></div>
       </div>
 
-      <div class="search-frame-wrap">
-        <div id="searchContent" class="search-content"></div>
-        <div class="search-link" id="searchLinkWrap" style="display:none;">來源連結：<a id="searchLink" href="#" target="_blank" rel="noopener noreferrer"></a></div>
-      </div>
       <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
     </div>
 
@@ -80,9 +71,6 @@
       const sendBtn = document.getElementById('send');
       const clearBtn = document.getElementById('clear');
       const errorEl = document.getElementById('error');
-      const searchContent = document.getElementById('searchContent');
-      const searchLinkWrap = document.getElementById('searchLinkWrap');
-      const searchLink = document.getElementById('searchLink');
       const STORAGE_KEY = 'openai-tw-chat-history-v1';
       const history = [];
 
@@ -167,39 +155,6 @@
         return { query, link, frameLink, text: `Google 搜尋連結：${link}` };
       }
 
-      async function showSearchText(g){
-        searchContent.textContent = `正在載入搜尋內文：${g.query} ...`;
-        searchLinkWrap.style.display = 'block';
-        searchLink.href = g.link;
-        searchLink.textContent = g.link;
-        try {
-          const res = await fetch(g.frameLink);
-          const txt = await res.text();
-
-          // r.jina.ai may return anti-abuse errors in JSON/plain text
-          const blockedPattern = /"code"\s*:\s*451|Security(?:Promise|Compromise)Error|blocked until|DDoS attack suspected|Too many requests/i;
-          if (blockedPattern.test(txt)) {
-            searchContent.textContent = `目前搜尋內文暫時無法載入（來源站點防濫用限制）。\n請直接使用 Google 連結：\n${g.link}`;
-            return;
-          }
-
-          // If response looks like raw JSON, avoid dumping it to UI
-          const trimmed = txt.trim();
-          if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
-            searchContent.textContent = `目前搜尋內文暫時無法解析。\n請直接使用 Google 連結：\n${g.link}`;
-            return;
-          }
-
-          const clean = txt
-            .replace(/SECURITY NOTICE:[\s\S]*?<<<EXTERNAL_UNTRUSTED_CONTENT[^>]*>>>\n?/,'')
-            .replace(/<<<END_EXTERNAL_UNTRUSTED_CONTENT[^>]*>>>/g,'')
-            .trim();
-
-          searchContent.textContent = clean || `（已開啟搜尋）\n${g.link}`;
-        } catch {
-          searchContent.textContent = `無法載入搜尋內文。\n請改用連結：${g.link}`;
-        }
-      }
 
       async function send(){
         const text = inputEl.value.trim();
@@ -216,7 +171,6 @@
         if (m) {
           const g = googleReply(m[1], 'web');
           ans = g.text;
-          await showSearchText(g);
         } else {
           const local = localAnswer(text);
           if (local) {
@@ -224,7 +178,6 @@
           } else {
             const g = googleReply(text, 'web');
             ans = `${g.text}\n\n如果要直接搜全網，請輸入：google: 你的關鍵字`;
-            await showSearchText(g);
           }
         }
         history.push({ role:'assistant', content: ans });
