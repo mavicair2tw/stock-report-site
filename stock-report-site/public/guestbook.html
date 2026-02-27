@@ -32,7 +32,7 @@
       .hint{font-size:12px;color:var(--muted);margin-top:8px}
       .error{font-size:12px;color:#fca5a5;margin-top:8px;min-height:18px}
       .search-frame-wrap{margin-top:12px}
-      .search-frame{width:100%;height:420px;border:1px solid #223055;border-radius:10px;background:#0f1730}
+      .search-content{width:100%;height:420px;overflow:auto;border:1px solid #223055;border-radius:10px;background:#0f1730;padding:12px;white-space:pre-wrap;line-height:1.5}
       .site-link{margin-top:18px;color:var(--muted);font-size:13px}
       .site-link a{color:#93c5fd;text-decoration:none}
       .site-link a:hover{text-decoration:underline}
@@ -65,7 +65,7 @@
       </div>
 
       <div class="search-frame-wrap">
-        <iframe id="searchFrame" class="search-frame" title="Google Search"></iframe>
+        <div id="searchContent" class="search-content">搜尋內文會顯示在這裡。</div>
       </div>
       <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
     </div>
@@ -76,7 +76,7 @@
       const sendBtn = document.getElementById('send');
       const clearBtn = document.getElementById('clear');
       const errorEl = document.getElementById('error');
-      const searchFrame = document.getElementById('searchFrame');
+      const searchContent = document.getElementById('searchContent');
       const STORAGE_KEY = 'openai-tw-chat-history-v1';
       const history = [];
 
@@ -141,7 +141,19 @@
         const encoded = encodeURIComponent(query);
         const link = `https://www.google.com/search?q=${encoded}`;
         const frameLink = `https://r.jina.ai/http://www.google.com/search?q=${encoded}`;
-        return { link, frameLink, text: `Google 搜尋連結：${link}` };
+        return { query, link, frameLink, text: `Google 搜尋連結：${link}` };
+      }
+
+      async function showSearchText(g){
+        searchContent.textContent = `正在載入搜尋內文：${g.query} ...`;
+        try {
+          const res = await fetch(g.frameLink);
+          const txt = await res.text();
+          const clean = txt.replace(/SECURITY NOTICE:[\s\S]*?<<<EXTERNAL_UNTRUSTED_CONTENT[^>]*>>>\n?/,'').replace(/<<<END_EXTERNAL_UNTRUSTED_CONTENT[^>]*>>>/g,'').trim();
+          searchContent.textContent = clean || `（已開啟搜尋）\n${g.link}`;
+        } catch {
+          searchContent.textContent = `無法載入搜尋內文。\n請改用連結：${g.link}`;
+        }
       }
 
       async function send(){
@@ -159,7 +171,7 @@
         if (m) {
           const g = googleReply(m[1], 'web');
           ans = g.text;
-          searchFrame.src = g.frameLink;
+          await showSearchText(g);
         } else {
           const local = localAnswer(text);
           if (local) {
@@ -167,7 +179,7 @@
           } else {
             const g = googleReply(text, 'site');
             ans = `${g.text}\n\n如果要直接搜全網，請輸入：google: 你的關鍵字`;
-            searchFrame.src = g.frameLink;
+            await showSearchText(g);
           }
         }
         history.push({ role:'assistant', content: ans });
