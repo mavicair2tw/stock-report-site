@@ -28,6 +28,8 @@
       .embed{margin-top:8px;max-width:640px}
       .embed img{max-width:640px;max-height:360px;width:auto;height:auto;border-radius:10px;border:1px solid #2a3556;display:block}
       .embed iframe{width:640px;max-width:100%;height:360px;border:0;border-radius:10px}
+      .pager{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:10px;color:var(--muted);font-size:13px}
+      .pager button{padding:6px 10px;font-size:12px}
       .site-link{margin-top:18px;color:var(--muted);font-size:13px}
       .site-link a{color:#93c5fd;text-decoration:none}
     </style>
@@ -53,6 +55,11 @@
       </div>
 
       <div class="card list" id="forumList"></div>
+      <div class="pager">
+        <button id="prevPage" type="button">上一頁</button>
+        <span id="pageInfo">第 1 / 1 頁</span>
+        <button id="nextPage" type="button">下一頁</button>
+      </div>
       <div class="meta" style="margin-top:8px;">雲端留言板（Cloudflare Worker）</div>
       <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
     </div>
@@ -62,7 +69,12 @@
       const input=document.getElementById('forumInput');
       const btn=document.getElementById('postBtn');
       const list=document.getElementById('forumList');
+      const prevPageBtn=document.getElementById('prevPage');
+      const nextPageBtn=document.getElementById('nextPage');
+      const pageInfo=document.getElementById('pageInfo');
       let data=[];
+      let currentPage=1;
+      const PAGE_SIZE=200;
 
       function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
       function visibleText(s){
@@ -95,8 +107,24 @@
         return '';
       }
       function render(){
-        if(!data.length){ list.innerHTML='<div class="meta">目前沒有留言，歡迎第一則！</div>'; return; }
-        list.innerHTML=data.slice().reverse().map(x=>`<div class="item"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}</div>`).join('');
+        const total = data.length;
+        const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        pageInfo.textContent = `第 ${currentPage} / ${totalPages} 頁`;
+        prevPageBtn.disabled = currentPage <= 1;
+        nextPageBtn.disabled = currentPage >= totalPages;
+
+        if(!total){
+          list.innerHTML='<div class="meta">目前沒有留言，歡迎第一則！</div>';
+          return;
+        }
+
+        const newestFirst = data.slice().reverse();
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageItems = newestFirst.slice(start, start + PAGE_SIZE);
+        list.innerHTML=pageItems.map(x=>`<div class="item"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}</div>`).join('');
       }
 
       async function refresh(){
@@ -117,11 +145,15 @@
           const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t})});
           if(!r.ok) throw new Error('post failed');
           input.value='';
+          currentPage = 1;
           await refresh();
         }catch{
           alert('留言失敗，請稍後再試');
         }finally{ btn.disabled=false; }
       });
+
+      prevPageBtn.addEventListener('click', () => { currentPage -= 1; render(); });
+      nextPageBtn.addEventListener('click', () => { currentPage += 1; render(); });
 
       refresh();
       setInterval(refresh, 15000);
