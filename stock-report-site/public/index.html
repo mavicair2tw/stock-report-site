@@ -3,93 +3,100 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>市場報表中心</title>
+    <title>Built to Collect. Designed to Scale. (Powered by OpenClaw)</title>
     <style>
-      :root { --bg:#0b1020; --panel:#121a2f; --text:#e6edf3; --muted:#9fb0c3; --line:#253252; --active:#3b82f6; --green:#22c55e; --red:#ef4444; }
+      :root {
+        --bg: #0b1020;
+        --bg2: #0a1226;
+        --panel: #121a2f;
+        --line: #253252;
+        --text: #e6edf3;
+        --muted: #9fb0c3;
+        --accent: #60a5fa;
+      }
       * { box-sizing: border-box; }
-      body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%); color:var(--text); }
-      .wrap { max-width:1200px; margin:0 auto; padding:20px; }
-      h1 { margin:0 0 8px; }
-      .sub { color:var(--muted); margin-bottom:14px; }
-      .tabs { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-      .tab { border:1px solid var(--line); background:var(--panel); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; }
-      .tab.active { border-color:var(--active); box-shadow:0 0 0 1px var(--active) inset; }
-      .panel { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#0f1730; }
-      iframe { width:100%; height:calc(100vh - 240px); min-height:620px; border:0; display:none; }
-      iframe.active { display:block; }
-      .spotify-wrap{display:none;margin:10px 0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
-      .spotify-wrap iframe{border-radius:10px}
-      .foot { margin-top:10px; color:var(--muted); font-size:13px; }
-      a { color:#93c5fd; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+        color: var(--text);
+      }
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px; }
+      h1 { margin: 0 0 10px; font-size: 34px; line-height: 1.2; }
+      .sub { margin: 0 0 20px; color: var(--muted); }
+      .counter { color: var(--muted); margin-bottom: 20px; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        display: block;
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+        background: var(--panel);
+        transition: transform .12s ease, border-color .12s ease;
+      }
+      .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+      .name { font-weight: 700; margin-bottom: 6px; }
+      .desc { color: var(--muted); font-size: 14px; }
+      .foot { margin-top: 20px; color: var(--muted); font-size: 13px; }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <h1 id="mainTitle">Built to Collect. Designed to Scale. (Powered by OpenClaw)</h1>
-      <div class="sub" id="subTitle">用分頁切換不同報表（台股 / 美股 / BTC）</div>
-      <div class="sub" id="viewCounter">點閱數：--</div>
+    <main class="wrap">
+      <h1>Built to Collect. Designed to Scale. (Powered by OpenClaw)</h1>
+      <p class="sub">主入口：選擇你要看的報表與內容。</p>
+      <div class="counter" id="viewCounter">點閱數：--</div>
 
-      <div class="tabs">
-        <button class="tab active" data-target="tw" data-i18n-key="tab_tw">台股 15 分鐘</button>
-        <button class="tab" data-target="us" data-i18n-key="tab_us">美股 15 分鐘</button>
-        <button class="tab" data-target="btc" data-i18n-key="tab_btc">BTC 每小時</button>
-        <button class="tab" data-target="twnews" data-i18n-key="tab_twnews">台股新聞</button>
-        <button class="tab" data-target="usnews" data-i18n-key="tab_usnews">美股新聞</button>
-        <button class="tab" data-target="stories" data-i18n-key="tab_stories">每日有趣故事</button>
-        <button class="tab" data-target="coffee" data-i18n-key="tab_coffee">每日咖啡新聞</button>
-        <button class="tab" data-target="podcast" data-i18n-key="tab_podcast">Podcast</button>
-      </div>
+      <section class="grid">
+        <a class="card" href="./tw/">
+          <div class="name">台股 15 分鐘</div>
+          <div class="desc">台股即時報表、漲跌與摘要</div>
+        </a>
+        <a class="card" href="./us/">
+          <div class="name">美股 15 分鐘</div>
+          <div class="desc">美股即時報表、漲跌與摘要</div>
+        </a>
+        <a class="card" href="./btc-hourly/">
+          <div class="name">BTC 每小時</div>
+          <div class="desc">比特幣價格與變化</div>
+        </a>
+        <a class="card" href="./tw-news/">
+          <div class="name">台股新聞</div>
+          <div class="desc">台股新聞整理</div>
+        </a>
+        <a class="card" href="./us-news/">
+          <div class="name">美股新聞</div>
+          <div class="desc">美股新聞整理</div>
+        </a>
+        <a class="card" href="./interesting-stories/">
+          <div class="name">每日有趣故事</div>
+          <div class="desc">每日輕鬆閱讀內容</div>
+        </a>
+        <a class="card" href="./coffee-news/">
+          <div class="name">每日咖啡新聞</div>
+          <div class="desc">咖啡相關資訊與趨勢</div>
+        </a>
+        <a class="card" href="./podcast/">
+          <div class="name">Podcast</div>
+          <div class="desc">音訊內容入口</div>
+        </a>
+      </section>
 
-      <div id="spotifyWrap" class="spotify-wrap">
-        <iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/artist/3wNssuAFgx8ozrfBEsgCMs?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-      </div>
-
-      <div class="panel">
-        <iframe id="tw" class="active" data-base="./tw/" src="./tw/"></iframe>
-        <iframe id="us" data-base="./us/" src="./us/"></iframe>
-        <iframe id="btc" data-base="./btc-hourly/" src="./btc-hourly/"></iframe>
-        <iframe id="twnews" data-base="./tw-news/" src="./tw-news/"></iframe>
-        <iframe id="usnews" data-base="./us-news/" src="./us-news/"></iframe>
-        <iframe id="stories" data-base="./interesting-stories/" src="./interesting-stories/"></iframe>
-        <iframe id="coffee" data-base="./coffee-news/" src="./coffee-news/"></iframe>
-        <iframe id="podcast" data-base="./podcast/" src="./podcast/"></iframe>
-      </div>
-
-      <div class="foot" id="footNote">提示：綠色 = 上漲，紅色 = 下跌。</div>
-    </div>
+      <div class="foot">提示：綠色 = 上漲，紅色 = 下跌。</div>
+    </main>
 
     <script>
-
       const pageKey = `views:${location.pathname}`;
       const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
       localStorage.setItem(pageKey, String(pageViews));
-      const viewCounterEl = document.getElementById('viewCounter');
-      if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
-
-      const tabs = document.querySelectorAll('.tab');
-      const frames = { tw: document.getElementById('tw'), us: document.getElementById('us'), btc: document.getElementById('btc'), twnews: document.getElementById('twnews'), usnews: document.getElementById('usnews'), stories: document.getElementById('stories'), coffee: document.getElementById('coffee'), podcast: document.getElementById('podcast') };
-      let currentTab = 'tw';
-
-      function switchTab(target) {
-        currentTab = target;
-        tabs.forEach(t => t.classList.toggle('active', t.dataset.target === target));
-        Object.entries(frames).forEach(([k, el]) => el.classList.toggle('active', k === target));
-        const spotifyWrap = document.getElementById('spotifyWrap');
-        if (spotifyWrap) spotifyWrap.style.display = (target === 'twnews' || target === 'usnews') ? 'block' : 'none';
-      }
-
-      tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.target)));
-
-      if (location.hash === '#us') switchTab('us');
-      else if (location.hash === '#btc') switchTab('btc');
-      else if (location.hash === '#twnews') switchTab('twnews');
-      else if (location.hash === '#usnews') switchTab('usnews');
-      else if (location.hash === '#stories') switchTab('stories');
-      else if (location.hash === '#coffee') switchTab('coffee');
-      else if (location.hash === '#podcast') switchTab('podcast');
-      else switchTab('tw');
-
-
+      const el = document.getElementById('viewCounter');
+      if (el) el.textContent = `點閱數：${pageViews}`;
     </script>
   </body>
 </html>
