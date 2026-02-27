@@ -58,8 +58,6 @@
           <button id="send">送出</button>
           <button id="clear" class="btn-ghost" type="button">清除</button>
         </div>
-        <div class="hint">優先使用本地 Q&A；也可輸入「google: 關鍵字」直接做 Google 搜尋。</div>
-        <div class="error" id="error"></div>
       </div>
 
       <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
@@ -74,7 +72,7 @@
       const STORAGE_KEY = 'openai-tw-chat-history-v1';
       const history = [];
 
-      function setError(msg = '') { errorEl.textContent = msg; }
+      function setError(msg = '') { if (errorEl) errorEl.textContent = msg; }
 
       function saveHistory(){
         localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(-40)));
