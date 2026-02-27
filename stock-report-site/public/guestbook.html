@@ -31,6 +31,12 @@
       .btn-ghost{background:transparent;border-color:#2b3b5f;color:#bcd0ef}
       .hint{font-size:12px;color:var(--muted);margin-top:8px}
       .error{font-size:12px;color:#fca5a5;margin-top:8px;min-height:18px}
+      .guestbook{margin-top:14px}
+      .guest-list{max-height:260px;overflow:auto;border:1px solid #223055;border-radius:10px;padding:10px;background:#0f1730}
+      .guest-item{border-bottom:1px dashed #2a3556;padding:8px 0}
+      .guest-item:last-child{border-bottom:none}
+      .guest-meta{font-size:12px;color:#9fb0c3}
+      .guest-text{margin-top:4px;white-space:pre-wrap}
       .site-link{margin-top:18px;color:var(--muted);font-size:13px}
       .site-link a{color:#93c5fd;text-decoration:none}
       .site-link a:hover{text-decoration:underline}
@@ -60,6 +66,15 @@
         </div>
       </div>
 
+      <div class="card guestbook">
+        <h3 style="margin:0 0 10px;">留言板</h3>
+        <div class="row">
+          <textarea id="guestInput" placeholder="留下你的留言（支援換行）"></textarea>
+          <button id="guestSend">留言</button>
+        </div>
+        <div id="guestList" class="guest-list" style="margin-top:10px;"></div>
+      </div>
+
       <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
     </div>
 
@@ -69,8 +84,13 @@
       const sendBtn = document.getElementById('send');
       const clearBtn = document.getElementById('clear');
       const errorEl = document.getElementById('error');
+      const guestInput = document.getElementById('guestInput');
+      const guestSend = document.getElementById('guestSend');
+      const guestList = document.getElementById('guestList');
       const STORAGE_KEY = 'openai-tw-chat-history-v1';
+      const GUESTBOOK_KEY = 'openai-tw-guestbook-v1';
       const history = [];
+      const guestbook = [];
 
       function setError(msg = '') { if (errorEl) errorEl.textContent = msg; }
 
@@ -118,8 +138,35 @@
         history.forEach(m => addMsg(m.role === 'user' ? 'user' : 'bot', m.content));
       }
 
+      function saveGuestbook(){
+        localStorage.setItem(GUESTBOOK_KEY, JSON.stringify(guestbook.slice(-100)));
+      }
+
+      function loadGuestbook(){
+        try {
+          const raw = localStorage.getItem(GUESTBOOK_KEY);
+          if(!raw) return;
+          const arr = JSON.parse(raw);
+          if(!Array.isArray(arr)) return;
+          guestbook.push(...arr.filter(x => x && typeof x.text === 'string'));
+        } catch {}
+      }
+
+      function renderGuestbook(){
+        if(!guestList) return;
+        if(!guestbook.length){
+          guestList.innerHTML = '<div class="guest-meta">目前還沒有留言，歡迎第一則！</div>';
+          return;
+        }
+        guestList.innerHTML = guestbook.slice().reverse().map(item => {
+          return `<div class="guest-item"><div class="guest-meta">訪客 · ${item.time}</div><div class="guest-text">${linkify(item.text)}</div></div>`;
+        }).join('');
+      }
+
       loadHistory();
+      loadGuestbook();
       rerender();
+      renderGuestbook();
 
       const FAQ = [
         { k: ['台股', 'tw', '台灣股票'], a: '你可以查看「台股 15 分鐘」頁面：/tw/' },
@@ -198,6 +245,15 @@
           e.preventDefault();
           send();
         }
+      });
+
+      guestSend.addEventListener('click', () => {
+        const text = guestInput.value.trim();
+        if(!text) return;
+        guestbook.push({ text, time: new Date().toLocaleString('zh-Hant-TW', { hour12:false }) });
+        guestInput.value = '';
+        saveGuestbook();
+        renderGuestbook();
       });
     </script>
   </body>
