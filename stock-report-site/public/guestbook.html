@@ -31,6 +31,8 @@
       .btn-ghost{background:transparent;border-color:#2b3b5f;color:#bcd0ef}
       .hint{font-size:12px;color:var(--muted);margin-top:8px}
       .error{font-size:12px;color:#fca5a5;margin-top:8px;min-height:18px}
+      .search-frame-wrap{margin-top:12px}
+      .search-frame{width:100%;height:420px;border:1px solid #223055;border-radius:10px;background:#0f1730}
       .site-link{margin-top:18px;color:var(--muted);font-size:13px}
       .site-link a{color:#93c5fd;text-decoration:none}
       .site-link a:hover{text-decoration:underline}
@@ -62,6 +64,9 @@
         <div class="error" id="error"></div>
       </div>
 
+      <div class="search-frame-wrap">
+        <iframe id="searchFrame" class="search-frame" title="Google Search"></iframe>
+      </div>
       <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
     </div>
 
@@ -71,6 +76,7 @@
       const sendBtn = document.getElementById('send');
       const clearBtn = document.getElementById('clear');
       const errorEl = document.getElementById('error');
+      const searchFrame = document.getElementById('searchFrame');
       const STORAGE_KEY = 'openai-tw-chat-history-v1';
       const history = [];
 
@@ -134,7 +140,8 @@
         const query = scope === 'site' ? `${q} site:openai-tw.com` : q;
         const encoded = encodeURIComponent(query);
         const link = `https://www.google.com/search?q=${encoded}`;
-        return `Google 搜尋連結：${link}`;
+        const frameLink = `https://r.jina.ai/http://www.google.com/search?q=${encoded}`;
+        return { link, frameLink, text: `Google 搜尋連結：${link}` };
       }
 
       async function send(){
@@ -150,9 +157,18 @@
         let ans = '';
         const m = text.match(/^google\s*:\s*(.+)$/i);
         if (m) {
-          ans = googleReply(m[1], 'web');
+          const g = googleReply(m[1], 'web');
+          ans = g.text;
+          searchFrame.src = g.frameLink;
         } else {
-          ans = localAnswer(text) || `我目前找不到精準的本地答案。\n${googleReply(text, 'site')}\n\n如果要直接搜全網，請輸入：google: 你的關鍵字`;
+          const local = localAnswer(text);
+          if (local) {
+            ans = local;
+          } else {
+            const g = googleReply(text, 'site');
+            ans = `我目前找不到精準的本地答案。\n${g.text}\n\n如果要直接搜全網，請輸入：google: 你的關鍵字`;
+            searchFrame.src = g.frameLink;
+          }
         }
         history.push({ role:'assistant', content: ans });
         addMsg('bot', ans);
