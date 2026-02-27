@@ -154,15 +154,27 @@
         return dirs[Math.round((((deg % 360) + 360) % 360) / 45) % 8];
       }
 
-      async function loadWeatherByLocation(lat, lon){
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_direction_10m&hourly=precipitation_probability&timezone=auto`;
+      async function reverseArea(lat, lon){
+        try {
+          const r = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=zh&count=1`);
+          const d = await r.json();
+          const x = d?.results?.[0];
+          if (!x) return '';
+          return x.name || x.admin2 || x.admin1 || '';
+        } catch { return ''; }
+      }
+
+      async function loadWeatherByLocation(lat, lon, areaHint = ''){
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_direction_10m&timezone=auto`;
         const res = await fetch(url);
         const data = await res.json();
 
         const current = data.current || {};
         const meta = document.getElementById('weatherMeta');
         if (!meta) return;
+        const area = areaHint || await reverseArea(lat, lon);
         const parts = [
+          ...(area ? [`地區 ${area}`] : []),
           `溫度 ${current.temperature_2m ?? 'N/A'}°C`,
           `風向 ${windDir(current.wind_direction_10m ?? 0)} (${current.wind_direction_10m ?? 'N/A'}°)`,
           `濕氣 ${current.relative_humidity_2m ?? 'N/A'}%`
@@ -170,11 +182,25 @@
         meta.textContent = parts.join(' ｜ ');
       }
 
+      async function loadWeatherByIP(){
+        const r = await fetch('https://ipapi.co/json/');
+        const d = await r.json();
+        const lat = d?.latitude;
+        const lon = d?.longitude;
+        if (lat == null || lon == null) throw new Error('ip location unavailable');
+        const area = d?.city || d?.region || d?.country_name || '';
+        await loadWeatherByLocation(lat, lon, area);
+      }
+
       (function initWeather(){
         const meta = document.getElementById('weatherMeta');
         if (!meta) return;
         if (!navigator.geolocation) {
-          meta.textContent = '此裝置不支援定位，無法讀取當地天氣。';
+          loadWeatherByIP().catch(() => {
+            loadWeatherByLocation(25.0330, 121.5654, '台北市').catch(() => {
+              meta.textContent = '無法讀取天氣資料。';
+            });
+          });
           return;
         }
         navigator.geolocation.getCurrentPosition(
@@ -182,12 +208,11 @@
             meta.textContent = '天氣資料讀取失敗，請稍後再試。';
           }),
           () => {
-            loadWeatherByLocation(25.0330, 121.5654)
-              .then(() => {
-                const m = document.getElementById('weatherMeta');
-                if (m) m.textContent = `[台北預設] ${m.textContent}`;
-              })
-              .catch(() => { meta.textContent = '未授權位置存取，且台北天氣讀取失敗。'; });
+            loadWeatherByIP().catch(() => {
+              loadWeatherByLocation(25.0330, 121.5654, '台北市').catch(() => {
+                meta.textContent = '未授權位置存取，且無法讀取替代天氣資料。';
+              });
+            });
           },
           { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
         );
