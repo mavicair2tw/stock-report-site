@@ -23,6 +23,8 @@
         color: var(--text);
       }
       .wrap { max-width: 1100px; margin: 0 auto; }
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
       h1 { margin: 0 0 8px; }
       .sub { color: var(--muted); margin-bottom: 14px; }
       .status { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #253252; color: #c7d5e5; margin-bottom: 16px; }
@@ -59,10 +61,13 @@
   </head>
   <body>
     <div class="wrap">
-      <div class="top-tags">
-        <div class="nav-item"><a class="tag" href="../">Home</a><span class="tag-sub">Main Portal</span></div>
-        <div class="nav-item"><a class="tag active" href="./">台股</a><span class="tag-sub">TW Market</span></div>
-        <div class="nav-item"><a class="tag" href="../us/">美股</a><span class="tag-sub">US Market</span></div>
+      <div class="top-bar">
+        <div class="logo">🧭 OpenClaw Market Hub</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="../">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag active" href="./">台股</a><span class="tag-sub">TW Market</span></div>
+          <div class="nav-item"><a class="tag" href="../us/">美股</a><span class="tag-sub">US Market</span></div>
+        </div>
       </div>
       <h1>台股即時報表（15 分鐘更新）</h1>
       <div class="sub" id="updated">載入中...</div>
