@@ -1,6 +1,6 @@
 const buckets = new Map();
 const WINDOW_MS = 60_000;
-const LIMIT_PER_MIN = 1000000; // temporary: effectively disable rate limiting
+const LIMIT_PER_MIN = 1000000;
 
 export default {
   async fetch(request, env) {
@@ -8,6 +8,37 @@ export default {
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders(request) });
+    }
+
+    if (url.pathname === '/api/stock/quote' && request.method === 'GET') {
+      const symbol = (url.searchParams.get('symbols') || 'AAPL').toUpperCase();
+      const tickers = symbol.includes(':')
+        ? [symbol]
+        : symbol.endsWith('.TW')
+          ? [`TWSE:${symbol.replace('.TW', '')}`, `TPEX:${symbol.replace('.TW', '')}`]
+          : /^\d{4}$/.test(symbol)
+            ? [`TWSE:${symbol}`, `TPEX:${symbol}`]
+            : [`NASDAQ:${symbol}`, `NYSE:${symbol}`, `AMEX:${symbol}`];
+
+      const body = {
+        symbols: { tickers, query: { types: [] } },
+        columns: ['name', 'description', 'close', 'change', 'volume', 'market_cap_basic'],
+      };
+      return proxyPostJson('https://scanner.tradingview.com/global/scan', body, request);
+    }
+
+    if (url.pathname === '/api/stock/chart' && request.method === 'GET') {
+      const symbol = url.searchParams.get('symbol') || 'AAPL';
+      const range = url.searchParams.get('range') || '1mo';
+      const interval = url.searchParams.get('interval') || '1d';
+      const y = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${encodeURIComponent(range)}&interval=${encodeURIComponent(interval)}`;
+      return proxyJson(y, request);
+    }
+
+    if (url.pathname === '/api/stock/search' && request.method === 'GET') {
+      const q = url.searchParams.get('q') || 'AAPL';
+      const y = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&lang=en-US&region=US&quotesCount=8&newsCount=0`;
+      return proxyJson(y, request);
     }
 
     if (url.pathname !== '/api/chat') {
@@ -73,6 +104,38 @@ export default {
   },
 };
 
+async function proxyJson(url, request) {
+  try {
+    const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const txt = await r.text();
+    if (!r.ok) return json({ error: 'upstream failed', status: r.status }, 502, request);
+    return new Response(txt, {
+      status: 200,
+      headers: { 'Content-Type': 'application/json; charset=utf-8', ...corsHeaders(request) },
+    });
+  } catch {
+    return json({ error: 'proxy fetch error' }, 502, request);
+  }
+}
+
+async function proxyPostJson(url, body, request) {
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'User-Agent': 'Mozilla/5.0' },
+      body: JSON.stringify(body),
+    });
+    const txt = await r.text();
+    if (!r.ok) return json({ error: 'upstream failed', status: r.status }, 502, request);
+    return new Response(txt, {
+      status: 200,
+      headers: { 'Content-Type': 'application/json; charset=utf-8', ...corsHeaders(request) },
+    });
+  } catch {
+    return json({ error: 'proxy fetch error' }, 502, request);
+  }
+}
+
 function hitRateLimit(key) {
   const now = Date.now();
   const b = buckets.get(key);
@@ -104,7 +167,7 @@ function corsHeaders(request) {
   const allowOrigin = allowed.includes(origin) ? origin : 'https://openai-tw.com';
   return {
     'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
 }

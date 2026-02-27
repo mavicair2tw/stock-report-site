@@ -34,6 +34,7 @@
 
 <script>
 const COMMON = ['AAPL','MSFT','NVDA','TSLA','AMZN','META','GOOGL','AMD','NFLX','INTC','2330.TW','2317.TW','0050.TW'];
+const API_BASE = 'https://openai-tw-chat.googselect.workers.dev/api/stock';
 const RANGES = {
   '1D': { interval: '5' },
   '5D': { interval: '15' },
@@ -79,29 +80,26 @@ function candidates(raw){
 }
 
 async function loadQuote(raw){
-  const ticks = candidates(raw);
-  const body = {
-    symbols: { tickers: ticks, query: { types: [] } },
-    columns: ['name','description','close','change','volume','market_cap_basic']
-  };
-
+  const tries = [raw, ...candidates(raw).map(x => x.replace(/^NASDAQ:|^NYSE:|^AMEX:|^TWSE:|^TPEX:/,''))];
   let lastErr;
-  for (let i=0; i<3; i++) {
+  for (const s of tries) {
     try {
-      const res = await fetch('https://scanner.tradingview.com/global/scan', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+      const res = await fetch(`${API_BASE}/quote?symbols=${encodeURIComponent(s)}`);
       if(!res.ok) throw new Error('quote fetch failed');
       const d = await res.json();
       const row = d?.data?.find(x => Array.isArray(x.d) && x.d.some(v => v != null));
       if(!row) throw new Error('symbol not found');
       const [name, description, close, change, volume, mcap] = row.d;
-      return { name: name || description || raw, close, change, volume, mcap, tv: row.s || tvSymbolFromInput(raw) };
+      return {
+        name: name || description || raw,
+        close,
+        change,
+        volume,
+        mcap,
+        tv: row.s || tvSymbolFromInput(raw)
+      };
     } catch (e) {
       lastErr = e;
-      await new Promise(r => setTimeout(r, 220 * (i + 1)));
     }
   }
   throw lastErr || new Error('quote unavailable');
