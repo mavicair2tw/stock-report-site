@@ -100,9 +100,8 @@
           .replace(/\n/g, '<br>');
       }
 
-      function firstUrl(s){
-        const m = String(s).match(/https?:\/\/[^\s]+/i);
-        return m ? m[0] : '';
+      function allUrls(s){
+        return String(s).match(/https?:\/\/[^\s]+/ig) || [];
       }
       function youtubeEmbed(url){
         try {
@@ -119,11 +118,15 @@
         return /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/i.test(url);
       }
       function renderEmbed(text){
-        const url = firstUrl(text);
-        if (!url) return '';
-        const yt = youtubeEmbed(url);
-        if (yt) return `<div class="embed"><iframe src="${yt}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
-        if (isImageUrl(url)) return `<div class="embed"><img src="${url}" alt="embed image" loading="lazy"/></div>`;
+        const urls = allUrls(text);
+        if (!urls.length) return '';
+        for (const u of urls){
+          const yt = youtubeEmbed(u);
+          if (yt) return `<div class="embed"><iframe src="${yt}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+        }
+        for (const u of urls){
+          if (isImageUrl(u)) return `<div class="embed"><img src="${u}" alt="embed image" loading="lazy"/></div>`;
+        }
         return '';
       }
 
@@ -170,7 +173,27 @@
       function googleReply(q){
         const encoded = encodeURIComponent(q);
         const link = `https://www.google.com/search?q=${encoded}`;
-        return `Google 搜尋連結：${link}`;
+        return { query:q, link };
+      }
+
+      async function enrichGoogle(q){
+        const g = googleReply(q);
+        const api = `https://r.jina.ai/http://www.google.com/search?q=${encodeURIComponent(q)}`;
+        try {
+          const r = await fetch(api);
+          const t = await r.text();
+          const cleaned = t.replace(/SECURITY NOTICE:[\s\S]*?---\n/, '').trim();
+          const lines = cleaned.split('\n').map(x=>x.trim()).filter(Boolean);
+          const summary = lines.slice(0, 3).join(' / ').slice(0, 260);
+          const urls = allUrls(cleaned);
+          const media = urls.find(u => youtubeEmbed(u) || isImageUrl(u));
+          let msg = `Google 搜尋連結：${g.link}`;
+          if (summary) msg += `\n摘要：${summary}`;
+          if (media) msg += `\n媒體：${media}`;
+          return msg;
+        } catch {
+          return `Google 搜尋連結：${g.link}`;
+        }
       }
 
       async function send(){
@@ -199,10 +222,10 @@
             if (res.ok && data?.reply) {
               ans = data.reply;
             } else {
-              ans = googleReply(text);
+              ans = await enrichGoogle(text);
             }
           } catch {
-            ans = googleReply(text);
+            ans = await enrichGoogle(text);
           }
         }
 
