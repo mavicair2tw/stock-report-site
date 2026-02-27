@@ -63,6 +63,9 @@ jobs:
 
           # Combined portal (root)
           cp stock-report-site/public/index.html dist/index.html
+          if [ -f stock-report-site/public/CNAME ]; then
+            cp stock-report-site/public/CNAME dist/CNAME
+          fi
 
           # TW stock report (tab page)
           cp stock-report-site/public/tw.html dist/tw/index.html
