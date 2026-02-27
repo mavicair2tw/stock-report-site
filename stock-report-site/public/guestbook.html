@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>留言板</title>
+    <style>
+      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; }
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1000px;margin:0 auto}
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      .sub{color:var(--muted);margin-bottom:12px}
+      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
+      .site-link{margin-top:18px;color:var(--muted);font-size:13px}
+      .site-link a{color:#93c5fd;text-decoration:none}
+      .site-link a:hover{text-decoration:underline}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="logo">openai-tw.com</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag" href="/tw/">台股</a><span class="tag-sub">TW Market</span></div>
+          <div class="nav-item"><a class="tag" href="/us/">美股</a><span class="tag-sub">US Market</span></div>
+          <div class="nav-item"><a class="tag active" href="/guestbook/">留言板</a><span class="tag-sub">Guestbook</span></div>
+        </div>
+      </div>
+      <h1>留言板</h1>
+      <div class="sub">歡迎留言。之後可接入表單或即時訊息系統。</div>
+      <div class="card">📝 留言板功能建置中，敬請期待。</div>
+      <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+    </div>
+  </body>
+</html>

@@ -59,6 +59,7 @@ jobs:
           mkdir -p dist/interesting-stories/data
           mkdir -p dist/coffee-news/data
           mkdir -p dist/podcast
+          mkdir -p dist/guestbook
           mkdir -p dist/assets
 
           # Combined portal (root)
@@ -97,6 +98,9 @@ jobs:
 
           # Podcast tag page
           cp stock-report-site/public/podcast.html dist/podcast/index.html
+
+          # Guestbook tag page
+          cp stock-report-site/public/guestbook.html dist/guestbook/index.html
 
           # Static assets (images, etc.)
           if [ -d stock-report-site/public/assets ]; then
