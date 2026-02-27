@@ -167,7 +167,7 @@
 
         const meta = document.getElementById('weatherMeta');
         if (!meta) return;
-        meta.textContent = `溫度 ${current.temperature_2m ?? 'N/A'}°C ｜ 降雨率 ${rain ?? 'N/A'}% ｜ 風向 ${windDir(current.wind_direction_10m ?? 0)} (${current.wind_direction_10m ?? 'N/A'}°) ｜ 濕氣 ${current.relative_humidity_2m ?? 'N/A'}%`;
+        meta.textContent = `溫度 ${current.temperature_2m ?? 'N/A'}°C ｜ 天氣預報 ${rain ?? 'N/A'}% ｜ 風向 ${windDir(current.wind_direction_10m ?? 0)} (${current.wind_direction_10m ?? 'N/A'}°) ｜ 濕氣 ${current.relative_humidity_2m ?? 'N/A'}%`;
       }
 
       (function initWeather(){
