@@ -10,6 +10,9 @@
       *{box-sizing:border-box} body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:20px;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
       .wrap{max-width:1100px;margin:0 auto} h1{margin:0 0 8px}.sub{color:var(--muted);margin-bottom:14px}
       .status{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#253252;color:#c7d5e5;margin-bottom:16px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
       .up{color:var(--green)} .down{color:var(--red)} .flat{color:var(--muted)} .muted{color:var(--muted)}
       table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:12px;overflow:hidden}
       th,td{padding:12px;border-bottom:1px solid #1f2a44;text-align:left} th{background:var(--panel2)} tr:last-child td{border-bottom:none}
@@ -20,6 +23,11 @@
   </head>
   <body>
     <div class="wrap">
+      <div class="top-tags">
+        <a class="tag" href="../">Home</a>
+        <a class="tag" href="../tw/">台股</a>
+        <a class="tag active" href="./">美股</a>
+      </div>
       <h1>美股即時報表（15 分鐘更新）</h1>
       <div class="sub" id="updated">載入中...</div>
       <div class="sub" id="viewCounter">點閱數：--</div>
