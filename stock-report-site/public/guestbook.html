@@ -49,7 +49,7 @@
       </div>
 
       <h1>Chat</h1>
-      <div class="sub">網站內嵌聊天（Cloudflare Worker + ChatGPT）</div>
+      <div class="sub">網站內嵌聊天（本地 Q&A + Google 搜尋）</div>
 
       <div class="card">
         <div id="chat" class="chat-box"></div>
@@ -58,7 +58,7 @@
           <button id="send">送出</button>
           <button id="clear" class="btn-ghost" type="button">清除</button>
         </div>
-        <div class="hint">若出現錯誤，請確認 Cloudflare Worker 已部署且已設定 OPENAI_API_KEY（目前走 workers.dev 端點）。</div>
+        <div class="hint">優先使用本地 Q&A 回答；找不到答案時，提供 Google 搜尋捷徑。</div>
         <div class="error" id="error"></div>
       </div>
 
@@ -113,13 +113,27 @@
       loadHistory();
       rerender();
 
-      function explainError(status, fallback){
-        const msg = String(fallback || '');
-        if(status === 404) return 'API 路徑不存在：請設定 Worker Route（openai-tw.com/api/*）。';
-        if(status === 401 || status === 403) return 'API 金鑰驗證失敗：請檢查 OPENAI_API_KEY。';
-        if(status === 429) return '【固定提示】目前 Chat 暫時不可用：OpenAI API 額度不足或帳單未啟用。請至 OpenAI Billing 開通後再試。';
-        if(status >= 500) return '伺服器暫時異常，請稍後再試。';
-        return fallback || '連線失敗，請稍後再試。';
+      const FAQ = [
+        { k: ['台股', 'tw', '台灣股票'], a: '你可以查看「台股 15 分鐘」頁面：/tw/' },
+        { k: ['美股', 'us', '美國股票'], a: '你可以查看「美股 15 分鐘」頁面：/us/' },
+        { k: ['btc', '比特幣', '加密貨幣'], a: '你可以查看「BTC 每小時」頁面：/btc-hourly/' },
+        { k: ['新聞', 'news'], a: '可看台股新聞 /tw-news/ 與美股新聞 /us-news/。' },
+        { k: ['podcast', '播客'], a: 'Podcast 頁面在 /podcast/。' },
+        { k: ['網站', '官網', '首頁'], a: '網站首頁： https://openai-tw.com/' }
+      ];
+
+      function localAnswer(q){
+        const t = q.toLowerCase();
+        for(const item of FAQ){
+          if(item.k.some(x => t.includes(x.toLowerCase()))) return item.a;
+        }
+        return null;
+      }
+
+      function googleReply(q){
+        const encoded = encodeURIComponent(q + ' site:openai-tw.com');
+        const link = `https://www.google.com/search?q=${encoded}`;
+        return `我目前找不到精準的本地答案。\n你可以用 Google 搜尋：${link}`;
       }
 
       async function send(){
@@ -131,41 +145,13 @@
         addMsg('user', text);
         saveHistory();
 
-        const loading = document.createElement('div');
-        loading.className = 'msg bot';
-        loading.innerHTML = '<div class="bubble">思考中…</div>';
-        chatEl.appendChild(loading);
-        chatEl.scrollTop = chatEl.scrollHeight;
         sendBtn.disabled = true;
-
-        try {
-          const res = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: history })
-          });
-          const data = await res.json().catch(() => ({}));
-          loading.remove();
-
-          if(!res.ok){
-            setError(explainError(res.status, data?.error));
-            addMsg('bot', `⚠️ ${explainError(res.status, data?.error)}`);
-            return;
-          }
-
-          const reply = data?.reply || '（沒有回覆內容）';
-          history.push({ role:'assistant', content: reply });
-          addMsg('bot', reply);
-          saveHistory();
-        } catch (e) {
-          loading.remove();
-          const msg = '連線失敗，請稍後再試。';
-          setError(msg);
-          addMsg('bot', `⚠️ ${msg}`);
-        } finally {
-          sendBtn.disabled = false;
-          inputEl.focus();
-        }
+        const ans = localAnswer(text) || googleReply(text);
+        history.push({ role:'assistant', content: ans });
+        addMsg('bot', ans);
+        saveHistory();
+        sendBtn.disabled = false;
+        inputEl.focus();
       }
 
       clearBtn.addEventListener('click', () => {
