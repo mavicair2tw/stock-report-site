@@ -55,7 +55,7 @@
       </div>
 
       <h1>Chat</h1>
-      <div class="sub">網站內嵌聊天（ChatGPT）</div>
+      <div class="sub">網站內嵌聊天（本地 Q&A → ChatGPT → Google fallback）</div>
 
       <div class="card">
         <div id="chat" class="chat-box"></div>
@@ -168,6 +168,29 @@
       rerender();
       renderGuestbook();
 
+      const FAQ = [
+        { k: ['台股', 'tw', '台灣股票'], a: '你可以查看「台股 15 分鐘」頁面：/tw/' },
+        { k: ['美股', 'us', '美國股票'], a: '你可以查看「美股 15 分鐘」頁面：/us/' },
+        { k: ['btc', '比特幣', '加密貨幣'], a: '你可以查看「BTC 每小時」頁面：/btc-hourly/' },
+        { k: ['新聞', 'news'], a: '可看台股新聞 /tw-news/ 與美股新聞 /us-news/。' },
+        { k: ['podcast', '播客'], a: 'Podcast 頁面在 /podcast/。' },
+        { k: ['網站', '官網', '首頁'], a: '網站首頁： https://openai-tw.com/' }
+      ];
+
+      function localAnswer(q){
+        const t = q.toLowerCase();
+        for(const item of FAQ){
+          if(item.k.some(x => t.includes(x.toLowerCase()))) return item.a;
+        }
+        return null;
+      }
+
+      function googleReply(q){
+        const encoded = encodeURIComponent(q);
+        const link = `https://www.google.com/search?q=${encoded}`;
+        return `Google 搜尋連結：${link}`;
+      }
+
       async function send(){
         const text = inputEl.value.trim();
         if(!text) return;
@@ -179,20 +202,26 @@
 
         sendBtn.disabled = true;
         let ans = '';
-        try {
-          const res = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: history })
-          });
-          const data = await res.json().catch(() => ({}));
-          if (res.ok && data?.reply) {
-            ans = data.reply;
-          } else {
-            ans = 'ChatGPT 暫時無回應，請稍後再試。';
+
+        const local = localAnswer(text);
+        if (local) {
+          ans = local;
+        } else {
+          try {
+            const res = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ messages: history })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data?.reply) {
+              ans = data.reply;
+            } else {
+              ans = googleReply(text);
+            }
+          } catch {
+            ans = googleReply(text);
           }
-        } catch {
-          ans = 'ChatGPT 連線失敗，請稍後再試。';
         }
 
         history.push({ role:'assistant', content: ans });
