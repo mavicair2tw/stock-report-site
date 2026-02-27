@@ -21,7 +21,7 @@
         <div id="suggest" class="absolute z-20 mt-2 w-full bg-slate-900 border border-slate-700 rounded-lg overflow-hidden hidden"></div>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4 text-sm" id="meta"></div>
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mt-4 text-sm" id="meta"></div>
 
       <div class="flex flex-wrap gap-2 mt-4" id="ranges"></div>
       <div class="text-red-400 text-sm mt-3" id="err"></div>
@@ -108,7 +108,8 @@ async function loadQuote(raw){
 function renderMeta(q){
   const cls = (q.change||0) >= 0 ? 'text-emerald-400' : 'text-red-400';
   metaEl.innerHTML = [
-    info('公司', q.name || symbol),
+    info('公司', symbol),
+    info('名稱', q.name || 'N/A'),
     info('價格', q.close ?? 'N/A'),
     info('漲跌幅', fmtPct(q.change), cls),
     info('成交量', fmtNum(q.volume)),
@@ -151,6 +152,7 @@ async function loadAll(){
   }catch(e){
     metaEl.innerHTML = [
       info('公司', symbol),
+      info('名稱', 'N/A'),
       info('價格', 'N/A'),
       info('漲跌幅', 'N/A'),
       info('成交量', 'N/A'),
