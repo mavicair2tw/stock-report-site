@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forum</title>
+    <style>
+      :root { --bg:#0b1020; --panel:#121a2f; --line:#1f2a44; --text:#e6edf3; --muted:#9fb0c3; }
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1000px;margin:0 auto}
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+      .row{display:flex;gap:8px;align-items:flex-start}
+      textarea{flex:1;min-height:72px;background:#0f1730;color:var(--text);border:1px solid #223055;border-radius:10px;padding:10px;resize:vertical}
+      button{padding:10px 14px;border-radius:10px;border:1px solid #35558d;background:#1a315f;color:#fff;font-weight:700;cursor:pointer}
+      .list{max-height:420px;overflow:auto}
+      .item{padding:10px 0;border-bottom:1px dashed #2a3556}
+      .item:last-child{border-bottom:none}
+      .meta{font-size:12px;color:var(--muted)}
+      .text{margin-top:6px;white-space:pre-wrap}
+      .site-link{margin-top:18px;color:var(--muted);font-size:13px}
+      .site-link a{color:#93c5fd;text-decoration:none}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="logo">openai-tw.com</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag" href="/guestbook/">Chat</a><span class="tag-sub">Discuss</span></div>
+          <div class="nav-item"><a class="tag active" href="/forum/">Forum</a><span class="tag-sub">Community</span></div>
+        </div>
+      </div>
+
+      <h1>Forum</h1>
+      <div class="card">
+        <div class="row">
+          <textarea id="forumInput" placeholder="輸入留言內容，分享你的想法…"></textarea>
+          <button id="postBtn">發佈</button>
+        </div>
+      </div>
+
+      <div class="card list" id="forumList"></div>
+      <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+    </div>
+
+    <script>
+      const KEY='openai-tw-forum-v1';
+      const input=document.getElementById('forumInput');
+      const btn=document.getElementById('postBtn');
+      const list=document.getElementById('forumList');
+      const data=[];
+
+      function load(){
+        try{const raw=localStorage.getItem(KEY); if(!raw) return; const arr=JSON.parse(raw); if(Array.isArray(arr)) data.push(...arr);}catch{}
+      }
+      function save(){ localStorage.setItem(KEY, JSON.stringify(data.slice(-200))); }
+      function render(){
+        if(!data.length){ list.innerHTML='<div class="meta">目前沒有留言，歡迎第一則！</div>'; return; }
+        list.innerHTML=data.slice().reverse().map(x=>`<div class="item"><div class="meta">訪客 · ${x.time}</div><div class="text">${x.text.replace(/</g,'&lt;')}</div></div>`).join('');
+      }
+
+      btn.addEventListener('click',()=>{
+        const t=input.value.trim(); if(!t) return;
+        data.push({text:t, time:new Date().toLocaleString('zh-Hant-TW',{hour12:false})});
+        input.value=''; save(); render();
+      });
+
+      load(); render();
+    </script>
+  </body>
+</html>

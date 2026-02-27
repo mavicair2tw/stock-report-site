@@ -61,6 +61,7 @@ jobs:
           mkdir -p dist/podcast
           mkdir -p dist/guestbook
           mkdir -p dist/music
+          mkdir -p dist/forum
           mkdir -p dist/assets
 
           # Combined portal (root)
@@ -105,6 +106,9 @@ jobs:
 
           # Music tag page
           cp stock-report-site/public/music.html dist/music/index.html
+
+          # Forum tag page
+          cp stock-report-site/public/forum.html dist/forum/index.html
 
           # Static assets (images, etc.)
           if [ -d stock-report-site/public/assets ]; then
