@@ -326,10 +326,17 @@
               if (res.ok && data?.reply) {
                 ans = data.reply;
               } else {
-                ans = await enrichGoogle(text);
+                const err = String(data?.error || '').toLowerCase();
+                if (err.includes('quota') || err.includes('billing') || err.includes('insufficient')) {
+                  ans = '⚠️ ChatGPT 目前不可用（API 額度/計費已用盡）。請更新 OpenAI billing 或更換 API key。';
+                } else if (data?.error) {
+                  ans = `⚠️ Chat 服務暫時不可用：${data.error}`;
+                } else {
+                  ans = await enrichGoogle(text);
+                }
               }
             } catch {
-              ans = await enrichGoogle(text);
+              ans = '⚠️ Chat 服務連線失敗，請稍後再試。';
             }
           }
         }
