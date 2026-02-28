@@ -304,7 +304,8 @@ function formatSearchItem(item = {}) {
 function trimSnippet(s = '', max = 100) {
   const blocked = [
     'We would like to show you a description here but the site won’t allow us.',
-    "We would like to show you a description here but the site won't allow us."
+    "We would like to show you a description here but the site won't allow us.",
+    '目前網頁可能出了系統端的問題，或是連結發生錯誤，您可以嘗試重新輸入網址，或回到 星巴克網站首頁。'
   ];
   let t = String(s).replace(/\s+/g, ' ').trim();
   if (!t) return '';
