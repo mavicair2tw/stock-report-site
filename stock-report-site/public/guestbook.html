@@ -170,16 +170,24 @@
         return null;
       }
 
+      function normalizeForumQuery(q=''){
+        return String(q)
+          .replace(/^\s*(forum|搜尋\s*forum)\s*:\s*/i, '')
+          .trim();
+      }
+
       async function searchForum(q){
-        const api = `https://openai-tw-forum.googselect.workers.dev/api/forum?q=${encodeURIComponent(q)}`;
+        const keyword = normalizeForumQuery(q);
+        if (!keyword) return '請輸入 Forum 搜尋關鍵字。';
+        const api = `https://openai-tw-forum.googselect.workers.dev/api/forum?q=${encodeURIComponent(keyword)}`;
         try {
           const r = await fetch(api);
           const d = await r.json();
           const posts = Array.isArray(d?.posts) ? d.posts : [];
-          if (!posts.length) return `Forum 搜尋「${q}」：找不到結果。`;
+          if (!posts.length) return `Forum 搜尋「${keyword}」：找不到結果。`;
           const top = posts.slice(-5).reverse();
           const lines = top.map((p, i) => `${i+1}. ${String(p.text||'').slice(0,80)} (${p.time || ''})`);
-          return `Forum 搜尋「${q}」共 ${posts.length} 筆：\n${lines.join('\n')}`;
+          return `Forum 搜尋「${keyword}」共 ${posts.length} 筆：\n${lines.join('\n')}`;
         } catch {
           return 'Forum 搜尋暫時失敗，請稍後再試。';
         }
