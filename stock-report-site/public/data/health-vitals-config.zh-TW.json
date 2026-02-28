@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "locale": "zh-TW",
+  "fields": [
+    { "id": "temp_c", "label": "體溫(°C)", "type": "number", "min": 34, "max": 43, "step": 0.1 },
+    { "id": "spo2", "label": "血氧(%)", "type": "number", "min": 50, "max": 100, "step": 1 },
+    { "id": "sbp", "label": "收縮壓(mmHg)", "type": "number", "min": 60, "max": 250, "step": 1 },
+    { "id": "dbp", "label": "舒張壓(mmHg)", "type": "number", "min": 30, "max": 150, "step": 1 },
+    { "id": "hr", "label": "心跳(bpm)", "type": "number", "min": 30, "max": 220, "step": 1 }
+  ]
+}
