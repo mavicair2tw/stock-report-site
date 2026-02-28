@@ -47,6 +47,7 @@ jobs:
           python stock-report-site/scripts/update_us_report.py
           python stock-report-site/scripts/update_tw_news.py
           python stock-report-site/scripts/update_us_news.py
+          python stock-report-site/scripts/update_coffee_news.py
           python btc-hourly-site/scripts/update_btc_report.py
 
       - name: Build static site
