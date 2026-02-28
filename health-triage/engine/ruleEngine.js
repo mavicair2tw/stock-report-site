@@ -163,8 +163,15 @@ function triage(input, paths) {
   const vitals = input.vitals || {};
   const duration_hours = input.duration_hours;
   const severity = input.severity;
-  const severity_map = input.severity_map || {};
-  const duration_map = input.duration_map || {};
+
+  // 支援兩種格式：severity_map/duration_map 或 symptom_details
+  const severity_map = { ...(input.severity_map || {}) };
+  const duration_map = { ...(input.duration_map || {}) };
+  const symptomDetails = input.symptom_details || {};
+  for (const [sid, detail] of Object.entries(symptomDetails)) {
+    if (detail && detail.severity !== undefined) severity_map[sid] = detail.severity;
+    if (detail && detail.duration_hours !== undefined) duration_map[sid] = detail.duration_hours;
+  }
 
   const ctx = { symptoms, comorbidities, vitals, duration_hours, severity, severity_map, duration_map };
 
@@ -223,11 +230,16 @@ function triage(input, paths) {
     en: { label: "English" }
   };
 
+  const finalReasons = uniq(reasons);
+  if (!finalReasons.length) {
+    finalReasons.push(finalLevel === 'L4' ? '目前可先自我照護並觀察' : '符合就醫評估條件');
+  }
+
   return {
     level: finalLevel,
     matched_rules: matchedRules,
     explain,
-    reasons: uniq(reasons),
+    reasons: finalReasons,
     departments,
     diet_tags: diet_tags_resolved,
     actions: uniq(actions),
