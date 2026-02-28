@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tag Cloud</title>
     <style>
-      :root{--bg:#0b1020;--panel:#121a2f;--line:#1f2a44;--text:#e6edf3;--muted:#9fb0c3;--accent:#60a5fa}
+      :root{--bg:#060b17;--bg2:#0a1226;--panel:#101a33;--line:#1f2a44;--text:#e6edf3;--muted:#9fb0c3}
       *{box-sizing:border-box}
-      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
-      .wrap{max-width:1100px;margin:0 auto}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:radial-gradient(1200px 700px at 50% 20%, #0f1d3f 0%, #060b17 55%, #040811 100%);color:var(--text)}
+      .wrap{max-width:1200px;margin:0 auto}
       .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
       .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
       .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
@@ -16,22 +16,17 @@
       .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
       .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
       .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
-      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.6;margin-bottom:12px}
-      .sub{color:var(--muted)}
-      .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px}
+      .sub{color:var(--muted);margin-bottom:10px}
+      .card{background:linear-gradient(180deg, rgba(16,26,51,.86) 0%, rgba(8,14,30,.9) 100%);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+      .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
       .controls label{font-size:12px;color:#b9cae6;display:flex;flex-direction:column;gap:6px}
       .controls input,.controls select{background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:8px;padding:8px}
-      #cloud{position:relative;height:520px;border:1px solid #223055;border-radius:12px;background:#0f1730;overflow:hidden}
-      .word{position:absolute;white-space:nowrap;cursor:pointer;user-select:none;transition:transform .14s ease, filter .14s ease, opacity .14s ease;text-decoration:none}
-      .word:hover{transform:scale(1.08);filter:drop-shadow(0 0 6px rgba(96,165,250,.4));z-index:5}
-      .dim .word{opacity:.35}
-      .dim .word.active{opacity:1}
-      .tooltip{position:fixed;pointer-events:none;background:#101a33;border:1px solid #2a3a5e;border-radius:8px;padding:6px 8px;font-size:12px;color:#dbeafe;display:none;z-index:20}
-      .list-item{padding:8px 0;border-bottom:1px dashed #2a3556}
-      .list-item:last-child{border-bottom:none}
+      #scene{position:relative;height:620px;border:1px solid #1e2c4d;border-radius:14px;overflow:hidden;background:radial-gradient(circle at 50% 40%, rgba(45,95,190,.26) 0%, rgba(12,20,42,.72) 38%, #060b17 100%)}
+      canvas{display:block;width:100%;height:100%}
+      .hint{position:absolute;left:12px;bottom:10px;font-size:12px;color:#9fb0c3;background:rgba(6,11,23,.55);padding:6px 8px;border-radius:8px;border:1px solid #1f2a44}
+      .tooltip{position:fixed;pointer-events:none;background:#0f1730;border:1px solid #2a3a5e;border-radius:8px;padding:6px 8px;font-size:12px;color:#dbeafe;display:none;z-index:20;max-width:280px}
       .site-link{margin-top:18px;color:var(--muted);font-size:13px}
       .site-link a{color:#93c5fd;text-decoration:none}
-      .site-link a:hover{text-decoration:underline}
     </style>
   </head>
   <body>
@@ -51,47 +46,34 @@
       </div>
 
       <h1>Tag Cloud</h1>
-      <div class="sub">動態字體、色彩層級、hover 高亮、點擊篩選、tooltip、可自訂樣式與形狀。</div>
+      <div class="sub">Animated 3D constellation-style keyword cloud (click any tag to open Search topic).</div>
 
       <div class="card">
         <div class="controls">
-          <label>Min Font Size
-            <input id="minSize" type="number" min="10" max="60" value="14" />
+          <label>Tag Count
+            <input id="count" type="number" min="80" max="400" value="220" />
           </label>
-          <label>Max Font Size
-            <input id="maxSize" type="number" min="20" max="120" value="52" />
+          <label>Rotation Speed
+            <input id="speed" type="range" min="0.1" max="2.5" step="0.1" value="1.0" />
           </label>
-          <label>Max Tags
-            <input id="maxTags" type="number" min="10" max="150" value="50" />
+          <label>Glow Intensity
+            <input id="glow" type="range" min="0" max="1" step="0.05" value="0.75" />
           </label>
-          <label>Shape
-            <select id="shape">
-              <option value="circle">Circle</option>
-              <option value="rectangle">Rectangle</option>
-              <option value="random">Random Cloud</option>
-            </select>
-          </label>
-          <label>Palette
-            <select id="palette">
-              <option value="blue">Blue</option>
-              <option value="sunset">Sunset</option>
-              <option value="mint">Mint</option>
-            </select>
-          </label>
-          <label>Animation
-            <select id="animation">
-              <option value="fade">Fade</option>
-              <option value="pop">Pop</option>
-              <option value="none">None</option>
+          <label>Size Range
+            <select id="sizePreset">
+              <option value="normal">Normal</option>
+              <option value="wide" selected>Wide</option>
+              <option value="compact">Compact</option>
             </select>
           </label>
         </div>
-        <div id="cloud"></div>
       </div>
 
-      <div class="card">
-        <h3 style="margin:0 0 8px">Related Content</h3>
-        <div id="content"></div>
+      <div class="card" style="padding:10px">
+        <div id="scene">
+          <canvas id="cloudCanvas"></canvas>
+          <div class="hint">Drag to rotate · hover for score · click to search topic</div>
+        </div>
       </div>
 
       <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
@@ -100,164 +82,175 @@
     <div id="tooltip" class="tooltip"></div>
 
     <script>
-      const seedTags = [
-        ['AI',98],['人工智慧',96],['Science',90],['科學',88],['Philosophy',66],['哲學',64],['Nature',78],['自然',76],['Education',73],['教育',72],
-        ['Travel',62],['旅遊',61],['Health',88],['健康',86],['Design',54],['設計',53],['Music',52],['音樂',51],['Food',74],['美食',73],
-        ['Coffee',46],['咖啡',45],['Startups',57],['新創',56],['Productivity',69],['效率',68],['History',42],['歷史',41],['Space',81],['太空',80],
-        ['Biology',58],['生物',57],['Physics',61],['物理',60],['Culture',67],['文化',66],['Finance',64],['財經',63],['Books',49],['閱讀',48],
-        ['Psychology',59],['心理學',58],['Climate',72],['氣候',71],['Art',53],['藝術',52],['Sports',45],['運動',44],['Gaming',51],['遊戲',50],
-        ['Movies',47],['電影',46],['Language',56],['語言',55],['Robotics',63],['機器人',62],['Ethics',55],['倫理',54],['Lifestyle',60],['生活',59],
-        ['Fashion',39],['時尚',38],['Housing',43],['居家',42],['Transport',41],['交通',40],['Learning',65],['學習',64],['Ecology',68],['生態',67],
-        ['Astronomy',70],['天文',69],['Nutrition',50],['營養',49],['Mindfulness',44],['正念',43],['Storytelling',48],['故事',47],['Innovation',76],['創新',75],
-      ].map(([text,value])=>({
-        text,
-        value,
-        link:`/search/?q=${encodeURIComponent(text)}`,
-        items:[`${text} insight #1`,`${text} insight #2`,`${text} insight #3`]
-      }));
+      const BASE = [
+        ['AI',98],['Data',95],['Cloud',93],['Automation',92],['Analytics',90],['Robotics',88],['Security',87],['MachineLearning',86],['LLM',85],['NLP',84],
+        ['人工智慧',90],['資料',85],['雲端',84],['自動化',83],['分析',82],['機器人',81],['資安',80],['演算法',79],['教育',76],['科學',78],
+        ['Philosophy',65],['Nature',70],['Travel',63],['Health',74],['Design',62],['Music',60],['Food',66],['Coffee',58],['Startups',69],['Innovation',77],
+        ['太空',72],['醫療',73],['文化',68],['心理學',67],['氣候',71],['天文',70],['生態',69],['Learning',74],['Finance',68],['Ethics',64]
+      ];
 
-      const paletteMap = {
-        blue:['#93c5fd','#60a5fa','#3b82f6','#1d4ed8'],
-        sunset:['#fdba74','#fb7185','#f97316','#e11d48'],
-        mint:['#86efac','#34d399','#10b981','#059669']
+      const canvas = document.getElementById('cloudCanvas');
+      const scene = document.getElementById('scene');
+      const tooltip = document.getElementById('tooltip');
+      const ctx = canvas.getContext('2d');
+
+      const controls = {
+        count: document.getElementById('count'),
+        speed: document.getElementById('speed'),
+        glow: document.getElementById('glow'),
+        sizePreset: document.getElementById('sizePreset'),
       };
 
-      const cloudEl = document.getElementById('cloud');
-      const tooltipEl = document.getElementById('tooltip');
-      const contentEl = document.getElementById('content');
-      const controls = ['minSize','maxSize','maxTags','shape','palette','animation'].reduce((m,id)=> (m[id]=document.getElementById(id),m),{});
+      let tags = [];
+      let projected = [];
+      let hoverTag = null;
+      let pointer = {x:0,y:0,down:false,lastX:0,lastY:0};
+      let rotY = 0, rotX = 0;
 
-      function lerp(a,b,t){return a+(b-a)*t}
-      function colorAt(palette, t){
-        const c = palette;
-        const seg = (c.length-1)*t;
-        const i = Math.min(c.length-2, Math.floor(seg));
-        const local = seg-i;
-        const p1 = hexToRgb(c[i]);
-        const p2 = hexToRgb(c[i+1]);
-        return `rgb(${Math.round(lerp(p1.r,p2.r,local))},${Math.round(lerp(p1.g,p2.g,local))},${Math.round(lerp(p1.b,p2.b,local))})`;
-      }
-      function hexToRgb(hex){const h=hex.replace('#','');return{r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)}}
-
-      function scale(value,minV,maxV,minS,maxS){
-        if(maxV===minV) return (minS+maxS)/2;
-        return minS + (value-minV)*(maxS-minS)/(maxV-minV);
+      function resize(){
+        const r = scene.getBoundingClientRect();
+        canvas.width = Math.floor(r.width * devicePixelRatio);
+        canvas.height = Math.floor(r.height * devicePixelRatio);
+        canvas.style.width = r.width + 'px';
+        canvas.style.height = r.height + 'px';
+        ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
       }
 
-      function makeBounds(shape,w,h){
-        if(shape==='rectangle') return ()=>true;
-        if(shape==='circle'){
-          const cx=w/2, cy=h/2, rx=w*0.45, ry=h*0.45;
-          return (x,y,bw,bh)=>{
-            const px=x+bw/2, py=y+bh/2;
-            const nx=(px-cx)/rx, ny=(py-cy)/ry;
-            return nx*nx+ny*ny<=1;
-          }
+      function sizeRange(){
+        const p = controls.sizePreset.value;
+        if (p === 'compact') return [12, 34];
+        if (p === 'wide') return [12, 58];
+        return [13, 44];
+      }
+
+      function buildTags(){
+        const wanted = Number(controls.count.value || 220);
+        const arr = [];
+        while (arr.length < wanted){
+          const [text, score] = BASE[arr.length % BASE.length];
+          const suffix = Math.floor(arr.length / BASE.length);
+          const label = suffix ? `${text}${suffix}` : text;
+          arr.push({text: label, baseText: text, score: Math.max(20, score - (suffix%6)*3)});
         }
-        return ()=>true;
-      }
 
-      function placeWords(tags, shape){
-        const w = cloudEl.clientWidth, h = cloudEl.clientHeight;
-        const placed = [];
-        const inShape = makeBounds(shape,w,h);
+        const min = Math.min(...arr.map(t=>t.score));
+        const max = Math.max(...arr.map(t=>t.score));
+        const [minS,maxS] = sizeRange();
 
-        for(const t of tags){
-          const probe = document.createElement('span');
-          probe.className='word';
-          probe.style.fontSize=`${t.size}px`;
-          probe.style.visibility='hidden';
-          probe.textContent=t.text;
-          cloudEl.appendChild(probe);
-          const bw = probe.offsetWidth + 8, bh = probe.offsetHeight + 6;
-          probe.remove();
-
-          let ok=false;
-          for(let i=0;i<1800 && !ok;i++){
-            const a = i*0.35;
-            const r = 2 + i*0.42;
-            const cx = w/2 + Math.cos(a)*r;
-            const cy = h/2 + Math.sin(a)*r;
-            const x = Math.round(cx-bw/2), y = Math.round(cy-bh/2);
-            if(x<0||y<0||x+bw>w||y+bh>h) continue;
-            if(!inShape(x,y,bw,bh)) continue;
-            let hit=false;
-            for(const p of placed){
-              if(!(x+bw<p.x||p.x+p.w<x||y+bh<p.y||p.y+p.h<y)){hit=true;break}
-            }
-            if(hit) continue;
-            placed.push({...t,x,y,w:bw,h:bh});
-            ok=true;
+        const golden = Math.PI * (3 - Math.sqrt(5));
+        tags = arr.map((t,i)=>{
+          const y = 1 - (i / (arr.length - 1)) * 2;
+          const radius = Math.sqrt(1 - y*y);
+          const theta = golden * i;
+          const x = Math.cos(theta) * radius;
+          const z = Math.sin(theta) * radius;
+          const ratio = (t.score - min) / (max - min || 1);
+          return {
+            ...t,
+            x, y, z,
+            size: minS + (maxS-minS)*ratio,
+            color: `rgba(${90+Math.floor(80*ratio)}, ${180+Math.floor(50*ratio)}, 255, 1)`
           }
-          if(!ok && shape==='random'){
-            const x = Math.max(0, Math.min(w-bw, Math.round(Math.random()*(w-bw))));
-            const y = Math.max(0, Math.min(h-bh, Math.round(Math.random()*(h-bh))));
-            placed.push({...t,x,y,w:bw,h:bh});
-          }
-        }
-        return placed;
-      }
-
-      function renderContent(title){
-        const target = seedTags.find(t=>t.text===title);
-        const items = target ? target.items : ['Click a keyword to filter related content.'];
-        contentEl.innerHTML = items.map((x,i)=>`<div class="list-item">${i+1}. ${x}</div>`).join('');
-      }
-
-      function render(){
-        cloudEl.innerHTML='';
-        const minSize = Number(controls.minSize.value||14);
-        const maxSize = Number(controls.maxSize.value||52);
-        const maxTags = Number(controls.maxTags.value||50);
-        const shape = controls.shape.value;
-        const palette = paletteMap[controls.palette.value] || paletteMap.blue;
-        const animation = controls.animation.value;
-
-        const tags = [...seedTags].sort((a,b)=>b.value-a.value).slice(0,maxTags);
-        const minV = Math.min(...tags.map(t=>t.value));
-        const maxV = Math.max(...tags.map(t=>t.value));
-        const sized = tags.map(t=>{
-          const ratio = (t.value-minV)/(maxV-minV||1);
-          return {...t,size:Math.round(scale(t.value,minV,maxV,minSize,maxSize)),ratio,color:colorAt(palette,ratio)};
         });
-
-        const placed = placeWords(sized, shape);
-
-        for(const t of placed){
-          const el = document.createElement('a');
-          el.className='word';
-          el.textContent=t.text;
-          el.href = t.link || `/search/?q=${encodeURIComponent(t.text)}`;
-          el.title = `${t.text} topic`;
-          el.style.left=`${t.x}px`;
-          el.style.top=`${t.y}px`;
-          el.style.fontSize=`${t.size}px`;
-          el.style.color=t.color;
-          if(animation==='fade'){el.style.opacity='0';requestAnimationFrame(()=>{el.style.transition='opacity .35s ease';el.style.opacity='1';});}
-          if(animation==='pop'){el.style.transform='scale(.8)';requestAnimationFrame(()=>{el.style.transition='transform .25s ease';el.style.transform='scale(1)';});}
-          cloudEl.appendChild(el);
-
-          el.addEventListener('mousemove',(e)=>{
-            tooltipEl.style.display='block';
-            tooltipEl.style.left=(e.clientX+12)+'px';
-            tooltipEl.style.top=(e.clientY+12)+'px';
-            tooltipEl.textContent=`${t.text} · score ${t.value}`;
-          });
-          el.addEventListener('mouseleave',()=> tooltipEl.style.display='none');
-          el.addEventListener('click',()=>{
-            cloudEl.classList.add('dim');
-            cloudEl.querySelectorAll('.word').forEach(w=>w.classList.remove('active'));
-            el.classList.add('active');
-            renderContent(t.text);
-          });
-        }
-        if(!placed.length) cloudEl.innerHTML='<div style="padding:12px;color:#9fb0c3;">No tags could be placed. Try reducing max tags or font size.</div>';
       }
 
-      Object.values(controls).forEach(c=>c.addEventListener('input',render));
-      window.addEventListener('resize',render);
-      render();
-      renderContent('');
+      function project(tag, w, h){
+        let {x,y,z} = tag;
+        const cx = Math.cos(rotY), sx = Math.sin(rotY);
+        const cy = Math.cos(rotX), sy = Math.sin(rotX);
+
+        let x1 = x*cx - z*sx;
+        let z1 = x*sx + z*cx;
+        let y1 = y*cy - z1*sy;
+        let z2 = y*sy + z1*cy;
+
+        const depth = 2.6;
+        const scale = 280 / (z2 + depth);
+        return {
+          ...tag,
+          sx: w/2 + x1*scale,
+          sy: h/2 + y1*scale,
+          sz: z2,
+          screenSize: Math.max(10, tag.size * (0.55 + scale/180)),
+          alpha: Math.max(0.25, Math.min(1, 0.4 + (z2+1.2)/2.4))
+        };
+      }
+
+      function draw(){
+        const w = scene.clientWidth;
+        const h = scene.clientHeight;
+        const speed = Number(controls.speed.value || 1) * 0.002;
+        const glow = Number(controls.glow.value || .75);
+
+        rotY += speed;
+        rotX += speed * 0.45;
+
+        ctx.clearRect(0,0,w,h);
+        projected = tags.map(t=>project(t,w,h)).sort((a,b)=>a.sz-b.sz);
+
+        hoverTag = null;
+        for(const p of projected){
+          const dx = pointer.x - p.sx;
+          const dy = pointer.y - p.sy;
+          const hit = Math.hypot(dx,dy) < Math.max(14, p.screenSize * 0.55);
+          if(hit) hoverTag = p;
+
+          ctx.save();
+          ctx.font = `${p.screenSize}px Inter, -apple-system, Segoe UI, Roboto, sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          const active = hoverTag && hoverTag.text === p.text;
+          const a = active ? 1 : p.alpha;
+          ctx.globalAlpha = a;
+          ctx.shadowColor = `rgba(94, 175, 255, ${0.5 * glow + (active?0.35:0)})`;
+          ctx.shadowBlur = 10 + (active ? 12 : 0) + 12*glow;
+          ctx.fillStyle = active ? '#d6edff' : p.color;
+          ctx.fillText(p.baseText, p.sx, p.sy);
+          ctx.restore();
+        }
+
+        if(hoverTag){
+          tooltip.style.display='block';
+          tooltip.style.left = (pointer.x + 20) + 'px';
+          tooltip.style.top = (pointer.y + 20) + 'px';
+          tooltip.textContent = `${hoverTag.baseText} · score ${hoverTag.score}`;
+          canvas.style.cursor = 'pointer';
+        } else {
+          tooltip.style.display='none';
+          canvas.style.cursor = pointer.down ? 'grabbing' : 'grab';
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      function onPointerMove(e){
+        const r = canvas.getBoundingClientRect();
+        pointer.x = e.clientX - r.left;
+        pointer.y = e.clientY - r.top;
+        if(pointer.down){
+          const dx = e.clientX - pointer.lastX;
+          const dy = e.clientY - pointer.lastY;
+          rotY += dx * 0.005;
+          rotX += dy * 0.005;
+          pointer.lastX = e.clientX;
+          pointer.lastY = e.clientY;
+        }
+      }
+
+      canvas.addEventListener('pointerdown',(e)=>{pointer.down=true; pointer.lastX=e.clientX; pointer.lastY=e.clientY; canvas.setPointerCapture(e.pointerId)});
+      canvas.addEventListener('pointerup',(e)=>{pointer.down=false; canvas.releasePointerCapture(e.pointerId)});
+      canvas.addEventListener('pointermove',onPointerMove);
+      canvas.addEventListener('click',()=>{
+        if(!hoverTag) return;
+        location.href = `/search/?q=${encodeURIComponent(hoverTag.baseText)}`;
+      });
+
+      Object.values(controls).forEach(el=>el.addEventListener('input',()=>{buildTags();}));
+      window.addEventListener('resize',()=>{resize(); buildTags();});
+
+      resize();
+      buildTags();
+      draw();
     </script>
   </body>
 </html>
