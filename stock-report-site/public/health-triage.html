@@ -252,6 +252,19 @@ async function run(){
   const redFlagReminder = outp.red_flags || ['若出現紅旗警訊，請立即就醫。'];
 
   const levelText = {1:'Level 1：立即急診 / 必要時叫救護車',2:'Level 2：24–48 小時內就醫',3:'Level 3：1–2 週內門診追蹤',4:'Level 4：自我照護與觀察'};
+
+  const runBtn = document.getElementById('runBtn');
+  if (runBtn) {
+    if (levelNum === 1) {
+      runBtn.style.background = '#dc2626';
+      runBtn.style.borderColor = '#ef4444';
+      runBtn.style.color = '#ffffff';
+    } else {
+      runBtn.style.background = '#16a34a';
+      runBtn.style.borderColor = '#22c55e';
+      runBtn.style.color = '#ffffff';
+    }
+  }
   document.getElementById('r1').innerHTML = `<h3 class="section-title">卡片1：風險分級</h3><div class="result-level ${levelClass(levelNum)}">${levelText[levelNum]}</div><div>主要觸發原因：<ul>${reasons.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
   document.getElementById('r2').innerHTML = `<h3 class="section-title">卡片2：建議就醫科別</h3><div>首選科別：<b>${dept[0]||'家醫科'}</b></div><div>次選：${dept.slice(1).join('、')||'家醫科'}</div><div class="sub">依 priority 規則 + 科別映射。</div>`;
   document.getElementById('r3').innerHTML = `<h3 class="section-title">卡片3：飲食注意</h3><div><b>${diet.title}</b>（${diet.id||''}）</div><div>今天先做：<ul>${(diet.do||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div><div>先避免：<ul>${(diet.avoid||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>${(diet.notes||[]).length?`<div>提醒：<ul>${diet.notes.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}`;
