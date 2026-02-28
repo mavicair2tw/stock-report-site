@@ -151,9 +151,9 @@
           const likeCount = Number(x.likeCount||0);
           const comments = Array.isArray(x.comments) ? x.comments : [];
           const commentsHtml = comments.length
-            ? comments.map(c => `<div class="comment-item"><div class="comment-meta">訪客 · ${esc(c.time||'')}</div><div class="comment-text">${visibleText(c.text||'')}</div></div>`).join('')
+            ? comments.map(c => `<div class="comment-item"><div class="comment-meta">訪客 · ${esc(c.time||'')} ${c.ip ? `· IP ${esc(c.ip)}` : ''} ${c.region ? `· ${esc(c.region)}` : ''}</div><div class="comment-text">${visibleText(c.text||'')}</div></div>`).join('')
             : '<div class="comment-meta">目前沒有留言，歡迎回覆。</div>';
-          return `<div class="item" id="post-${id}"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}<div class="actions"><button class="action-btn like-btn" data-id="${id}">👍 Like (${likeCount})</button><button class="action-btn share-btn" data-id="${id}">🔗 Share (${Number(x.shareCount||0)})</button></div><div class="comments"><div class="comment-meta">留言區（${comments.length}）</div>${commentsHtml}<div class="comment-row"><textarea class="comment-input" data-id="${id}" placeholder="留言回覆這篇貼文..."></textarea><button class="comment-btn" data-id="${id}">留言</button></div></div></div>`;
+          return `<div class="item" id="post-${id}"><div class="meta">訪客 · ${esc(x.time)} ${x.ip ? `· IP ${esc(x.ip)}` : ''} ${x.region ? `· ${esc(x.region)}` : ''}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}<div class="actions"><button class="action-btn like-btn" data-id="${id}">👍 Like (${likeCount})</button><button class="action-btn share-btn" data-id="${id}">🔗 Share (${Number(x.shareCount||0)})</button></div><div class="comments"><div class="comment-meta">留言區（${comments.length}）</div>${commentsHtml}<div class="comment-row"><textarea class="comment-input" data-id="${id}" placeholder="留言回覆這篇貼文..."></textarea><button class="comment-btn" data-id="${id}">留言</button></div></div></div>`;
         }).join('');
       }
 

@@ -46,6 +46,8 @@ export default {
           id: crypto.randomUUID(),
           text: text.slice(0, 1000),
           time: new Date().toLocaleString('zh-Hant-TW', { hour12: false }),
+          ip: maskIp(getClientIp(request)),
+          region: getRegion(request),
           likeCount: 0,
           shareCount: 0,
         });
@@ -82,6 +84,8 @@ export default {
           id: crypto.randomUUID(),
           text: text.slice(0, 500),
           time: new Date().toLocaleString('zh-Hant-TW', { hour12: false }),
+          ip: maskIp(getClientIp(request)),
+          region: getRegion(request),
         });
         posts[i].comments = comments.slice(-50);
       }
@@ -114,11 +118,15 @@ function normalizePosts(posts) {
     time: String(p?.time || ''),
     likeCount: Number(p?.likeCount || 0),
     shareCount: Number(p?.shareCount || 0),
+    ip: String(p?.ip || ''),
+    region: String(p?.region || ''),
     comments: Array.isArray(p?.comments)
       ? p.comments.map((c) => ({
           id: String(c?.id || crypto.randomUUID()),
           text: String(c?.text || ''),
           time: String(c?.time || ''),
+          ip: String(c?.ip || ''),
+          region: String(c?.region || ''),
         }))
       : [],
   }));
@@ -128,6 +136,30 @@ function calcTotals(posts) {
   const totalLike = posts.reduce((s, p) => s + Number(p.likeCount || 0), 0);
   const totalShare = posts.reduce((s, p) => s + Number(p.shareCount || 0), 0);
   return { totalLike, totalShare };
+}
+
+function getClientIp(request) {
+  return String(request?.headers?.get('CF-Connecting-IP') || '').trim();
+}
+
+function maskIp(ip = '') {
+  if (!ip) return '';
+  if (ip.includes(':')) {
+    const parts = ip.split(':');
+    return `${parts.slice(0, 3).join(':')}:****`;
+  }
+  const parts = ip.split('.');
+  if (parts.length === 4) return `${parts[0]}.${parts[1]}.***.***`;
+  return ip;
+}
+
+function getRegion(request) {
+  const cf = request?.cf || {};
+  const city = String(cf.city || '').trim();
+  const region = String(cf.region || '').trim();
+  const country = String(cf.country || '').trim();
+  const out = [country, region, city].filter(Boolean).join('/');
+  return out;
 }
 
 function json(obj, status, request) {
