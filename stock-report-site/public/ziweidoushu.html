@@ -146,6 +146,23 @@
         return `本命盤強勢宮位：${top.map(x=>`${x.name}（${x.stars.join('、')}）`).join('、')}。\n建議把重心放在優勢宮位的長期累積，弱勢宮位採取保守策略與風險管理。`;
       }
 
+      function palaceDetailText(p){
+        const level = p.score>=80 ? '強勢' : p.score>=60 ? '偏強' : p.score>=40 ? '中性' : '偏弱';
+        const action = p.score>=80
+          ? '此宮位適合主動出擊，設定具體里程碑並提高資源投入，容易在短中期看到成果。'
+          : p.score>=60
+          ? '此宮位可穩健推進，建議採取「小步快跑」策略，持續優化與驗證，避免一次性重押。'
+          : p.score>=40
+          ? '此宮位屬平衡區，關鍵在節奏管理與風險控制；維持紀律比追求爆發更重要。'
+          : '此宮位波動較高，宜先守後攻，優先補強基礎、降低風險，再逐步提升目標。';
+
+        const starHint = `主星為「${p.stars.join('、')}」，代表此宮位在思考模式與行動風格上，偏向${p.stars.includes('天機')?'策略規劃':'實作落地'}與${p.stars.includes('太陽')||p.stars.includes('天相')?'對外合作':'內部整合'}並重。`;
+        const advice = `實務建議：未來3個月針對「${p.name}」設定1個核心目標、2個量化指標（例如完成率/收益率/穩定度），每週檢視一次，若連續兩週低於目標，立即調整方法而非硬撐。`;
+
+        const text = `${p.name}（${level}，Score ${p.score}）：${starHint}${action}${advice}`;
+        return text.length > 500 ? `${text.slice(0,500)}…` : text;
+      }
+
       function renderChart(chart){
         const box = $('chart');
         box.innerHTML = '';
@@ -156,7 +173,7 @@
           d.onclick = () => {
             box.querySelectorAll('.palace').forEach(x=>x.classList.remove('active'));
             d.classList.add('active');
-            $('interpretation').innerHTML = `<b>${p.name}</b>：主星 ${p.stars.join('、')}。此宮分數 ${p.score}，${p.score>=70?'屬強勢宮位，可主動進攻。':p.score>=40?'中性宮位，建議穩健布局。':'波動較高，建議保守。'}`;
+            $('interpretation').innerHTML = `<b>${p.name} 詳細解讀（500字內）：</b><br>${palaceDetailText(p).replace(/\n/g,'<br>')}`;
           };
           box.appendChild(d);
         });
