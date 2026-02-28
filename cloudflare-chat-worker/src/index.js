@@ -198,12 +198,16 @@ async function fetchSearchSummary(q) {
       const summary = `${stripTags(title)} ${stripTags(desc)}`.replace(/\s+/g, ' ').trim().slice(0, 260);
       const media = link && (youtubeEmbed(link) || isImageUrl(link)) ? link : null;
       const items = [];
-      const re = /<item>[\s\S]*?<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>[\s\S]*?<link>([\s\S]*?)<\/link>[\s\S]*?<\/item>/ig;
-      let m;
-      while ((m = re.exec(xml)) && items.length < 10) {
-        const t = stripSearchLine(stripTags(m[1] || ''));
-        const u = String(m[2] || '').trim();
-        if (t && t !== '*') items.push(formatSearchItem({ title: t, url: /^https?:\/\//i.test(u) ? u : '' }));
+      const blocks = xml.match(/<item>[\s\S]*?<\/item>/ig) || [];
+      for (const b of blocks) {
+        if (items.length >= 10) break;
+        const tRaw = (b.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/i) || [])[1] || '';
+        const uRaw = (b.match(/<link>([\s\S]*?)<\/link>/i) || [])[1] || '';
+        const dRaw = (b.match(/<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i) || [])[1] || '';
+        const t = stripSearchLine(stripTags(tRaw));
+        const u = String(uRaw).trim();
+        const d = trimSnippet(stripTags(dRaw), 100);
+        if (t && t !== '*') items.push(formatSearchItem({ title: t, url: /^https?:\/\//i.test(u) ? u : '', snippet: d }));
       }
       if (summary || items.length) return { summary: summary || null, media, items };
     }
@@ -291,8 +295,16 @@ function parseSearchItem(line = '') {
 function formatSearchItem(item = {}) {
   const title = stripSearchLine(item.title || '');
   const url = String(item.url || '').trim();
+  const snippet = trimSnippet(item.snippet || '', 100);
   if (!title) return '';
-  return url ? `[${title}](${url})` : title;
+  const head = url ? `[${title}](${url})` : title;
+  return snippet ? `${head}：${snippet}` : head;
+}
+
+function trimSnippet(s = '', max = 100) {
+  const t = String(s).replace(/\s+/g, ' ').trim();
+  if (!t) return '';
+  return t.length > max ? `${t.slice(0, max)}…` : t;
 }
 
 function hitRateLimit(key) {
