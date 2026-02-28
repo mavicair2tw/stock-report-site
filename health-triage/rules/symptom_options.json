@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "locale": "zh-TW",
+  "groups": [
+    {
+      "id": "G_REDFLAG",
+      "title": "紅旗警訊（勾到建議立即就醫）",
+      "items": [
+        { "id": "S_CHEST_PAIN", "label": "胸痛／胸悶" },
+        { "id": "S_SOB", "label": "呼吸困難／喘" },
+        { "id": "S_STROKE_SIGN", "label": "口齒不清／單側無力／視力突變" },
+        { "id": "S_FAINT", "label": "昏厥／意識改變" },
+        { "id": "S_BLACK_STOOL", "label": "黑便／血便／吐血" }
+      ]
+    },
+    {
+      "id": "G_COMMON",
+      "title": "常見症狀",
+      "items": [
+        { "id": "S_FEVER", "label": "發燒" },
+        { "id": "S_COUGH", "label": "咳嗽" },
+        { "id": "S_SORE_THROAT", "label": "喉嚨痛" },
+        { "id": "S_RUNNY_NOSE", "label": "鼻塞／流鼻水" },
+        { "id": "S_NAUSEA", "label": "噁心" },
+        { "id": "S_VOMIT", "label": "嘔吐" },
+        { "id": "S_DIARRHEA", "label": "腹瀉" },
+        { "id": "S_ABD_PAIN", "label": "腹痛" },
+        { "id": "S_DIZZINESS", "label": "頭暈／眩暈" },
+        { "id": "S_HEADACHE", "label": "頭痛" },
+        { "id": "S_URINE_PAIN", "label": "排尿疼痛" },
+        { "id": "S_RASH", "label": "皮疹／蕁麻疹" }
+      ]
+    }
+  ]
+}

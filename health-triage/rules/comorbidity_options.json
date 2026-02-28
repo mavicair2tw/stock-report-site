@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "locale": "zh-TW",
+  "groups": [
+    {
+      "id": "C_CHRONIC",
+      "title": "慢性病／高風險",
+      "items": [
+        { "id": "C_HTN", "label": "高血壓" },
+        { "id": "C_DM", "label": "糖尿病" },
+        { "id": "C_CAD", "label": "心臟病／冠心症" },
+        { "id": "C_CKD", "label": "腎臟病" },
+        { "id": "C_LIVER", "label": "肝病" },
+        { "id": "C_ASTHMA", "label": "氣喘／COPD" },
+        { "id": "C_GERD", "label": "胃食道逆流／胃潰瘍" },
+        { "id": "C_IMMUNO", "label": "免疫低下／癌症治療中" },
+        { "id": "C_ANTICOAG", "label": "使用抗凝血／抗血小板藥" }
+      ]
+    }
+  ]
+}
