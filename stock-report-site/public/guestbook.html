@@ -91,14 +91,22 @@
       }
 
       function linkify(text){
-        const esc = String(text)
+        let esc = String(text)
           .replace(/&/g,'&amp;')
           .replace(/</g,'&lt;')
           .replace(/>/g,'&gt;');
-        return esc
-          .replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-          .replace(/(^|\s)(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>')
-          .replace(/\n/g, '<br>');
+
+        const tokens = [];
+        esc = esc.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, (_, label, url) => {
+          const token = `__LINK_TOKEN_${tokens.length}__`;
+          tokens.push(`<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`);
+          return token;
+        });
+
+        esc = esc.replace(/(^|\s)(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
+
+        esc = esc.replace(/__LINK_TOKEN_(\d+)__/g, (_, i) => tokens[Number(i)] || '');
+        return esc.replace(/\n/g, '<br>');
       }
 
       function allUrls(s){
