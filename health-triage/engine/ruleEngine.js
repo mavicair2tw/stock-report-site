@@ -43,32 +43,62 @@ function triage(input, { rulesPath, dietPath, deptPath }) {
     .sort((a, b) => b.priority - a.priority)
     .filter((r) => matchRule(r, allIds, vitals));
 
-  const chosen = matched[0] || {
-    id: 'DEFAULT',
-    outputs: {
-      level_override: 'L4',
-      reasons: ['可先自我照護並觀察'],
-      departments: ['家醫科'],
-      diet_tags: ['D_DEFAULT'],
-      actions: []
-    }
+  const defaultOut = {
+    level_override: 'L4',
+    reasons: ['可先自我照護並觀察'],
+    departments: [],
+    diet_tags: ['D_DEFAULT'],
+    actions: []
   };
 
-  const out = chosen.outputs || {};
-  const deptSet = new Set(out.departments || ['家醫科']);
-  symptoms.forEach((s) => (deptMap[s] || []).forEach((d) => deptSet.add(d)));
+  const reasonsSet = new Set();
+  const actionsSet = new Set();
+  const deptSet = new Set();
+  const dietSet = new Set();
 
-  const dietIds = out.diet_tags && out.diet_tags.length ? out.diet_tags : ['D_DEFAULT'];
+  // priority 由高到低跑：先命中的 level_override 優先
+  let level = 'L4';
+  const chosenRuleIds = [];
+
+  if (!matched.length) {
+    defaultOut.reasons.forEach((x) => reasonsSet.add(x));
+    defaultOut.actions.forEach((x) => actionsSet.add(x));
+    defaultOut.departments.forEach((x) => deptSet.add(x));
+    defaultOut.diet_tags.forEach((x) => dietSet.add(x));
+  }
+
+  for (const rule of matched) {
+    const out = rule.outputs || {};
+    chosenRuleIds.push(rule.id);
+
+    if (out.level_override && level === 'L4') {
+      level = out.level_override;
+    }
+
+    (out.reasons || []).forEach((x) => reasonsSet.add(x));
+    (out.actions || []).forEach((x) => actionsSet.add(x));
+    (out.departments || []).forEach((x) => deptSet.add(x));
+    (out.diet_tags || []).forEach((x) => dietSet.add(x));
+  }
+
+  // 若沒有科別，使用 department_map.json 依勾選症狀兜底
+  if (!deptSet.size) {
+    symptoms.forEach((s) => (deptMap[s] || []).forEach((d) => deptSet.add(d)));
+  }
+  if (!deptSet.size) deptSet.add('家醫科');
+  if (!dietSet.size) dietSet.add('D_DEFAULT');
+
+  const dietIds = Array.from(dietSet);
   const diet = dietIds.map((id) => dietById[id]).filter(Boolean);
 
   return {
-    ruleId: chosen.id,
-    level: out.level_override || 'L4',
-    reasons: out.reasons || [],
+    matchedRules: chosenRuleIds,
+    level,
+    reasons: Array.from(reasonsSet),
     diet_tags: dietIds,
     diet,
     departments: Array.from(deptSet),
-    actions: out.actions || []
+    actions: Array.from(actionsSet)
   };
 }
 
