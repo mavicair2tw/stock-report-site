@@ -38,7 +38,7 @@
           <div class="nav-item"><a class="tag" href="/tw/">台股</a><span class="tag-sub">TW Market</span></div>
           <div class="nav-item"><a class="tag" href="/us/">美股</a><span class="tag-sub">US Market</span></div>
           <div class="nav-item"><a class="tag active" href="/tag-cloud/">Tag Cloud</a><span class="tag-sub">Keywords</span></div>
-          <form class="quick-search" action="/search/" method="get" style="display:flex;gap:8px;align-items:center;">
+          <form class="quick-search" action="/chat/" method="get" style="display:flex;gap:8px;align-items:center;">
             <input name="q" type="text" placeholder="Search keyword..." style="width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px;" />
             <button type="submit" style="padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Search</button>
           </form>
@@ -242,7 +242,7 @@
       canvas.addEventListener('pointermove',onPointerMove);
       canvas.addEventListener('click',()=>{
         if(!hoverTag) return;
-        location.href = `/search/?q=${encodeURIComponent(hoverTag.baseText)}`;
+        location.href = `/chat/?q=${encodeURIComponent(hoverTag.baseText)}`;
       });
 
       Object.values(controls).forEach(el=>el.addEventListener('input',()=>{buildTags();}));
