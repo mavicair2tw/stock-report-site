@@ -11,19 +11,25 @@ from zoneinfo import ZoneInfo
 TZ = ZoneInfo("Asia/Taipei")
 
 QUERIES_ZH = [
-    "科技 突破",
-    "太空 探索",
-    "醫療 新發現",
-    "AI 新聞",
-    "有趣 科學",
+    "日常生活 有趣故事",
+    "食衣住行 趨勢",
+    "教育 新知",
+    "科學 發現",
+    "哲學 思辨",
+    "自然 生態",
+    "旅遊 文化",
+    "休閒 娛樂",
 ]
 
 QUERIES_EN = [
-    "science breakthrough",
-    "technology innovation",
-    "space exploration",
-    "ai research",
-    "health technology",
+    "daily life interesting stories",
+    "food fashion housing transport trends",
+    "education insights",
+    "science discoveries",
+    "philosophy ideas",
+    "nature and ecology",
+    "travel and culture",
+    "leisure and entertainment",
 ]
 
 
