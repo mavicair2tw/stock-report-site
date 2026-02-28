@@ -182,7 +182,14 @@
                t.includes('anonymous access to domain') ||
                t.includes('previous abuse found') ||
                t.includes('"code":451') ||
+               t.includes('"status":45102') ||
+               t.includes('code":451') ||
                t.includes('status":45102');
+      }
+
+      function normalizeAssistantAnswer(text=''){
+        if (!isBlockedOrAbuseText(text)) return text;
+        return 'Google 來源目前被暫時封鎖（451），已自動切換其他來源。\n請稍後再試，或直接點搜尋連結查看結果。';
       }
 
       async function fetchSearchSummary(q){
@@ -243,6 +250,7 @@
           }
         }
 
+        ans = normalizeAssistantAnswer(ans);
         history.push({ role:'assistant', content: ans });
         addMsg('bot', ans);
         saveHistory();
