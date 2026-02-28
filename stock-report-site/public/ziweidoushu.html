@@ -273,15 +273,31 @@
         }
       };
 
-      $('mailBtn').onclick = () => {
+      $('mailBtn').onclick = async () => {
         const d = collectData();
         if(!d.email){ $('status').textContent='請先輸入 Email。'; return; }
         if(!current){ $('status').textContent='請先計算命盤。'; return; }
         const subject = `紫微斗數完整命盤與解讀 - ${d.name || '使用者'}`;
         const body = buildEmailBody(current);
-        const url = `mailto:${encodeURIComponent(d.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        window.location.href = url;
-        $('status').textContent='已開啟 Email 草稿（含完整資訊與解讀）。';
+
+        // 1) Try local mail client via mailto
+        const mailto = `mailto:${encodeURIComponent(d.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        let opened = false;
+        try {
+          const w = window.open(mailto, '_self');
+          opened = !!w || document.hasFocus();
+        } catch {}
+
+        // 2) Fallback: open Gmail compose page (works on web-only environments)
+        if (!opened) {
+          const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(d.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+          window.open(gmail, '_blank');
+        }
+
+        // 3) Always copy content as final fallback
+        try { await navigator.clipboard.writeText(`To: ${d.email}\nSubject: ${subject}\n\n${body}`); } catch {}
+
+        $('status').innerHTML = '已嘗試開啟寄信視窗；若仍無法寄送，內容已複製到剪貼簿，可直接貼到 Gmail/Outlook。';
       };
     </script>
   </body>
