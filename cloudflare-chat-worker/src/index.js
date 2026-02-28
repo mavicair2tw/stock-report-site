@@ -203,7 +203,7 @@ async function fetchSearchSummary(q) {
       while ((m = re.exec(xml)) && items.length < 10) {
         const t = stripSearchLine(stripTags(m[1] || ''));
         const u = String(m[2] || '').trim();
-        if (t && t !== '*') items.push({ title: t, url: /^https?:\/\//i.test(u) ? u : '' });
+        if (t && t !== '*') items.push(formatSearchItem({ title: t, url: /^https?:\/\//i.test(u) ? u : '' }));
       }
       if (summary || items.length) return { summary: summary || null, media, items };
     }
@@ -239,9 +239,10 @@ async function fetchSearchSummary(q) {
         .filter(l => /^\d+\.\s+/.test(l))
         .map(l => parseSearchItem(l))
         .filter(x => x && x.title)
-        .slice(0, 10);
+        .slice(0, 10)
+        .map(formatSearchItem);
 
-      const picked = (items.length ? items.map(x => x.title) : useful).slice(0, 3);
+      const picked = (items.length ? items.map(x => stripSearchLine(x)) : useful).slice(0, 3);
       const summary = picked.join(' / ').replace(/\s*\/\s*markdown content:?\s*$/i, '').slice(0, 260);
       if (!summary && !items.length) continue;
 
@@ -285,6 +286,13 @@ function parseSearchItem(line = '') {
             raw.match(/\[([^\]]+?)\]\((https?:\/\/[^\s\)]+)\)/i);
   if (m) return { title: stripSearchLine(m[1]), url: m[2] };
   return { title: stripSearchLine(raw), url: '' };
+}
+
+function formatSearchItem(item = {}) {
+  const title = stripSearchLine(item.title || '');
+  const url = String(item.url || '').trim();
+  if (!title) return '';
+  return url ? `[${title}](${url})` : title;
 }
 
 function hitRateLimit(key) {
