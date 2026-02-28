@@ -99,6 +99,11 @@
       </div>
 
       <div class="card">
+        <h3 style="margin-top:0">十二宮主題對照</h3>
+        <div class="sub">命宮=個性、人生方向｜兄弟宮=手足、人際圈｜夫妻宮=婚姻與伴侶｜子女宮=子女、創作｜財帛宮=金錢與收入｜疾厄宮=健康｜遷移宮=外出、機會｜朋友宮=社交、人脈｜官祿宮=事業｜田宅宮=房產、家庭｜福德宮=精神、福氣｜父母宮=長輩、資源</div>
+      </div>
+
+      <div class="card">
         <h3 style="margin-top:0">互動式命盤（點擊宮位查看解讀）</h3>
         <div id="chart" class="chart"></div>
       </div>
@@ -107,7 +112,21 @@
     </div>
 
     <script>
-      const PALACES = ['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','僕役','官祿','田宅','福德','父母'];
+      const PALACES = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','朋友宮','官祿宮','田宅宮','福德宮','父母宮'];
+      const PALACE_TOPICS = {
+        '命宮':'個性、人生方向',
+        '兄弟宮':'手足、人際圈',
+        '夫妻宮':'婚姻與伴侶',
+        '子女宮':'子女、創作',
+        '財帛宮':'金錢與收入',
+        '疾厄宮':'健康',
+        '遷移宮':'外出、機會',
+        '朋友宮':'社交、人脈',
+        '官祿宮':'事業',
+        '田宅宮':'房產、家庭',
+        '福德宮':'精神、福氣',
+        '父母宮':'長輩、資源'
+      };
       const STARS = ['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];
 
       let current = null;
@@ -159,7 +178,8 @@
         const starHint = `主星為「${p.stars.join('、')}」，代表此宮位在思考模式與行動風格上，偏向${p.stars.includes('天機')?'策略規劃':'實作落地'}與${p.stars.includes('太陽')||p.stars.includes('天相')?'對外合作':'內部整合'}並重。`;
         const advice = `實務建議：未來3個月針對「${p.name}」設定1個核心目標、2個量化指標（例如完成率/收益率/穩定度），每週檢視一次，若連續兩週低於目標，立即調整方法而非硬撐。`;
 
-        const text = `${p.name}（${level}，Score ${p.score}）：${starHint}${action}${advice}`;
+        const topic = PALACE_TOPICS[p.name] || '綜合領域';
+        const text = `${p.name}（主題：${topic}；${level}，Score ${p.score}）：${starHint}${action}${advice}`;
         return text.length > 500 ? `${text.slice(0,500)}…` : text;
       }
 
