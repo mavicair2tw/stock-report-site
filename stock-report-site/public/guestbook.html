@@ -91,7 +91,9 @@
       }
 
       function linkify(text){
-        let esc = String(text)
+        // Remove raw HTML tags from content so users see normal text, not broken HTML code.
+        const cleaned = String(text).replace(/<[^>]+>/g, ' ');
+        let esc = cleaned
           .replace(/&/g,'&amp;')
           .replace(/</g,'&lt;')
           .replace(/>/g,'&gt;');
