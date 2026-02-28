@@ -166,78 +166,86 @@ renderChecks('comorbids', RULES_CONFIG.comorbDict);
 function checked(group){ return [...document.querySelectorAll(`input[data-group="${group}"]:checked`)].map(x=>x.value); }
 function levelClass(l){return l===1?'lv1':l===2?'lv2':l===3?'lv3':'lv4'}
 
-function run(){
+async function run(){
   const red = checked('redFlags');
   const sym = checked('symptoms');
   const comorb = checked('comorbids');
   const sev = Number(document.getElementById('severity').value||2);
+  const durMapVal = Number(document.getElementById('duration').value||2);
   const temp = Number(document.getElementById('temp').value||0);
   const spo2 = Number(document.getElementById('spo2').value||100);
+  const hr = Number(document.getElementById('hr').value||0);
+  const age = Number(document.getElementById('age').value||0);
+  const gender = document.getElementById('gender').value || '';
+  const note = document.getElementById('note').value || '';
 
-  const allIds = new Set([...sym, ...comorb]);
-  const vitals = { temp_c: temp, spo2 };
+  if (red.length) {
+    alert('你勾選了紅旗警訊，建議立即急診（仍可繼續填寫以取得完整建議）。');
+  }
 
-  const cmp = (a, op, b) => {
-    if (a === undefined || a === null || Number.isNaN(Number(a))) return false;
-    const x = Number(a), y = Number(b);
-    if (op === '<') return x < y;
-    if (op === '<=') return x <= y;
-    if (op === '>') return x > y;
-    if (op === '>=') return x >= y;
-    if (op === '==') return x === y;
-    return false;
+  const symptom_details = Object.fromEntries(sym.map(id => [id, { severity: sev, duration_hours: [24,48,168,336][durMapVal-1] || 24, notes: note }]));
+  const payload = {
+    demographics: { age, sex: gender || null },
+    symptoms: sym,
+    symptom_details,
+    comorbidities: comorb,
+    vitals: { temp_c: temp || undefined, spo2: spo2 || undefined, hr: hr || undefined },
+    severity: sev
   };
 
-  const ruleMatch = (rule) => {
-    const c = rule.conditions || {};
-    if (c.all_of && !c.all_of.every(id => allIds.has(id))) return false;
-    if (c.any_of && !c.any_of.some(id => allIds.has(id))) return false;
-    if (c.none_of && c.none_of.some(id => allIds.has(id))) return false;
-    if (c.any_vitals && !c.any_vitals.some(v => cmp(vitals[v.field], v.op, v.value))) return false;
-    return true;
-  };
+  let outp = null;
+  try {
+    const r = await fetch('/api/triage', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const d = await r.json();
+    if (r.ok && d?.result) outp = d.result;
+  } catch {}
 
-  const matched = [...RULES_CONFIG.levelRules]
-    .sort((a,b)=>b.priority-a.priority)
-    .filter(ruleMatch);
-
-  const chosen = matched[0] || { outputs:{ level_override:'L4', reasons:['可先自我照護並觀察'], departments:['家醫科'], diet_tags:['D_DEFAULT'], actions:[] } };
+  // fallback local rules if backend not reachable
+  if (!outp) {
+    const allIds = new Set([...sym, ...comorb]);
+    const vitals = { temp_c: temp, spo2 };
+    const cmp = (a, op, b) => { if (a==null || Number.isNaN(Number(a))) return false; const x=Number(a), y=Number(b); if(op==='<')return x<y; if(op==='<=')return x<=y; if(op==='>')return x>y; if(op==='>=')return x>=y; if(op==='==')return x===y; return false; };
+    const ruleMatch = (rule) => {
+      const c = rule.conditions || {};
+      if (c.all_of && !c.all_of.every(id => allIds.has(id))) return false;
+      if (c.any_of && !c.any_of.some(id => allIds.has(id))) return false;
+      if (c.none_of && c.none_of.some(id => allIds.has(id))) return false;
+      if (c.optional_any_of && c.optional_any_of.length && !c.optional_any_of.some(id => allIds.has(id))) return false;
+      if (c.any_vitals && !c.any_vitals.some(v => cmp(vitals[v.field], v.op, v.value))) return false;
+      if (c.optional_vitals && !c.optional_vitals.every(v => (vitals[v.field]==null) ? true : cmp(vitals[v.field], v.op, v.value))) return false;
+      return true;
+    };
+    const matched = [...RULES_CONFIG.levelRules].sort((a,b)=>b.priority-a.priority).filter(ruleMatch);
+    const chosen = matched[0] || { outputs:{ level_override:'L4', reasons:['可先自我照護並觀察'], departments:['家醫科'], diet_tags:['D_DEFAULT'], actions:[] } };
+    const dietById = Object.fromEntries(RULES_CONFIG.dietLibrary.map(x=>[x.id, x]));
+    const deptSet = new Set(chosen.outputs?.departments || ['家醫科']);
+    sym.forEach(id => (RULES_CONFIG.departmentMap[id] || []).forEach(d => deptSet.add(d)));
+    outp = {
+      level: chosen.outputs?.level_override || 'L4',
+      reasons: chosen.outputs?.reasons || ['可先自我照護並觀察'],
+      departments: [...deptSet],
+      diet_tags: (chosen.outputs?.diet_tags || ['D_DEFAULT']).map(id => dietById[id]).filter(Boolean),
+      actions: chosen.outputs?.actions || [],
+      red_flags: ['胸痛/胸悶持續或加重','呼吸困難或血氧偏低','意識改變/昏厥/抽搐','口齒不清/單側無力/視力突變','大量出血、黑便/吐血']
+    };
+  }
 
   const lvMap = {L1:1,L2:2,L3:3,L4:4};
-  const outp = chosen.outputs || {};
-  const level = lvMap[outp.level_override] || 4;
-  const reasons = outp.reasons?.length ? outp.reasons : ['可先自我照護並觀察'];
-  const deptSet = new Set(outp.departments?.length ? outp.departments : ['家醫科']);
-  sym.forEach(id => (RULES_CONFIG.departmentMap[id] || []).forEach(d => deptSet.add(d)));
-  const dept = [...deptSet].slice(0,4);
+  const levelNum = lvMap[outp.level] || 4;
+  const reasons = outp.reasons || ['可先自我照護並觀察'];
+  const dept = (outp.departments || ['家醫科']).slice(0,4);
+  const diet = (outp.diet_tags && outp.diet_tags[0]) || { id:'D_DEFAULT', title:'一般照護', do:['補充水分','清淡飲食'], avoid:['酒精'], notes:[] };
+  const actions = outp.actions || [];
+  const redFlagReminder = outp.red_flags || ['若出現紅旗警訊，請立即就醫。'];
 
-  const dietById = Object.fromEntries(RULES_CONFIG.dietLibrary.map(x=>[x.id, x]));
-  const dietIds = outp.diet_tags?.length ? outp.diet_tags : ['D_DEFAULT'];
-  const diet = dietById[dietIds[0]] || dietById['D_DEFAULT'];
-
-  const levelText = {
-    1:'Level 1：立即急診 / 必要時叫救護車',
-    2:'Level 2：24–48 小時內就醫',
-    3:'Level 3：1–2 週內門診追蹤',
-    4:'Level 4：自我照護與觀察'
-  };
-
-  document.getElementById('r1').innerHTML = `<h3 class="section-title">卡片1：風險分級</h3><div class="result-level ${levelClass(level)}">${levelText[level]}</div><div>主要觸發原因：<ul>${reasons.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
-  document.getElementById('r2').innerHTML = `<h3 class="section-title">卡片2：建議就醫科別</h3><div>首選科別：<b>${dept[0]||'家醫科'}</b></div><div>次選：${dept.slice(1).join('、')||'家醫科'}</div><div class="sub">規則鏈：症狀ID → 科別映射。</div>`;
-  document.getElementById('r3').innerHTML = `<h3 class="section-title">卡片3：飲食注意</h3><div><b>${diet.title}</b>（${diet.id}）</div><div>今天先做：<ul>${diet.do.map(x=>`<li>${x}</li>`).join('')}</ul></div><div>先避免：<ul>${diet.avoid.map(x=>`<li>${x}</li>`).join('')}</ul></div>${(diet.notes||[]).length?`<div>提醒：<ul>${diet.notes.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}`;
-  const actions = (outp.actions || []);
-  const redFlagReminder = [
-    '胸痛/胸悶持續、呼吸困難或血氧<92%',
-    '意識改變、昏厥、抽搐、單側無力或口齒不清',
-    '黑便/血便、大量出血、嚴重過敏（喉頭緊/嘴唇腫）'
-  ];
+  const levelText = {1:'Level 1：立即急診 / 必要時叫救護車',2:'Level 2：24–48 小時內就醫',3:'Level 3：1–2 週內門診追蹤',4:'Level 4：自我照護與觀察'};
+  document.getElementById('r1').innerHTML = `<h3 class="section-title">卡片1：風險分級</h3><div class="result-level ${levelClass(levelNum)}">${levelText[levelNum]}</div><div>主要觸發原因：<ul>${reasons.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  document.getElementById('r2').innerHTML = `<h3 class="section-title">卡片2：建議就醫科別</h3><div>首選科別：<b>${dept[0]||'家醫科'}</b></div><div>次選：${dept.slice(1).join('、')||'家醫科'}</div><div class="sub">依 priority 規則 + 科別映射。</div>`;
+  document.getElementById('r3').innerHTML = `<h3 class="section-title">卡片3：飲食注意</h3><div><b>${diet.title}</b>（${diet.id||''}）</div><div>今天先做：<ul>${(diet.do||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div><div>先避免：<ul>${(diet.avoid||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>${(diet.notes||[]).length?`<div>提醒：<ul>${diet.notes.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}`;
   document.getElementById('r4').innerHTML = `<h3 class="section-title">卡片4：觀察清單與紅旗提醒</h3><ul><li>體溫/血壓/心率/血氧</li><li>排尿量與補水狀況</li><li>症狀是否加重（24小時內）</li></ul>${actions.length?`<div>下一步建議：<ul>${actions.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}<div><b>紅旗提醒（再次確認）</b><ul>${redFlagReminder.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
 
-  // Backend-ready output payload (可直接送後端 API)
-  const resultPayload = { level: outp.level_override || 'L4', reasons, diet_tags: dietIds, departments: dept, actions };
-  window.__triageResult = resultPayload;
-
-  document.getElementById('status').textContent = '分析完成（前端收集 → 規則引擎輸出 level/reasons/diet_tags/departments/actions）。';
+  window.__triageResult = outp;
+  document.getElementById('status').textContent = '分析完成。';
 }
 
 document.getElementById('runBtn').addEventListener('click', run);
