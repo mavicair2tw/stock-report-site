@@ -22,7 +22,7 @@
       .controls label{font-size:12px;color:#b9cae6;display:flex;flex-direction:column;gap:6px}
       .controls input,.controls select{background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:8px;padding:8px}
       #cloud{position:relative;height:520px;border:1px solid #223055;border-radius:12px;background:#0f1730;overflow:hidden}
-      .word{position:absolute;white-space:nowrap;cursor:pointer;user-select:none;transition:transform .14s ease, filter .14s ease, opacity .14s ease}
+      .word{position:absolute;white-space:nowrap;cursor:pointer;user-select:none;transition:transform .14s ease, filter .14s ease, opacity .14s ease;text-decoration:none}
       .word:hover{transform:scale(1.08);filter:drop-shadow(0 0 6px rgba(96,165,250,.4));z-index:5}
       .dim .word{opacity:.35}
       .dim .word.active{opacity:1}
@@ -106,7 +106,12 @@
         ['Psychology',59],['Climate',72],['Art',53],['Sports',45],['Gaming',51],['Movies',47],['Language',56],['Robotics',63],['Ethics',55],['Lifestyle',60],
         ['Fashion',39],['Housing',43],['Transport',41],['Learning',65],['Ecology',68],['Astronomy',70],['Nutrition',50],['Mindfulness',44],['Storytelling',48],['Innovation',76],
         ['Engineering',71],['Medicine',77],['Neuroscience',52],['Photography',38],['Cooking',40],['Work',58],['Business',62],['Community',46],['Ocean',47],['Forests',45],
-      ].map(([text,value])=>({text,value,items:[`${text} insight #1`,`${text} insight #2`,`${text} insight #3`]}));
+      ].map(([text,value])=>({
+        text,
+        value,
+        link:`/search/?q=${encodeURIComponent(text)}`,
+        items:[`${text} insight #1`,`${text} insight #2`,`${text} insight #3`]
+      }));
 
       const paletteMap = {
         blue:['#93c5fd','#60a5fa','#3b82f6','#1d4ed8'],
@@ -216,9 +221,11 @@
         const placed = placeWords(sized, shape);
 
         for(const t of placed){
-          const el = document.createElement('span');
+          const el = document.createElement('a');
           el.className='word';
           el.textContent=t.text;
+          el.href = t.link || `/search/?q=${encodeURIComponent(t.text)}`;
+          el.title = `${t.text} topic`;
           el.style.left=`${t.x}px`;
           el.style.top=`${t.y}px`;
           el.style.fontSize=`${t.size}px`;
