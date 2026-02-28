@@ -120,14 +120,16 @@
       function renderEmbed(text){
         const urls = allUrls(text);
         if (!urls.length) return '';
+
+        const blocks = [];
         for (const u of urls){
           const yt = youtubeEmbed(u);
-          if (yt) return `<div class="embed"><iframe src="${yt}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+          if (yt) blocks.push(`<div class="embed"><iframe src="${yt}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`);
+          else if (isImageUrl(u)) blocks.push(`<div class="embed"><img src="${u}" alt="embed image" loading="lazy"/></div>`);
+          if (blocks.length >= 6) break;
         }
-        for (const u of urls){
-          if (isImageUrl(u)) return `<div class="embed"><img src="${u}" alt="embed image" loading="lazy"/></div>`;
-        }
-        return '';
+
+        return blocks.join('');
       }
 
       function addMsg(role, text){
@@ -185,9 +187,12 @@
           const d = await r.json();
           const posts = Array.isArray(d?.posts) ? d.posts : [];
           if (!posts.length) return `Forum 搜尋「${keyword}」：找不到結果。`;
-          const top = posts.slice(-5).reverse();
-          const lines = top.map((p, i) => `${i+1}. ${String(p.text||'').slice(0,80)} (${p.time || ''})`);
-          return `Forum 搜尋「${keyword}」共 ${posts.length} 筆：\n${lines.join('\n')}`;
+          const lines = posts.slice().reverse().map((p, i) => {
+            const text = String(p.text || '').trim();
+            const time = p.time ? `\n時間：${p.time}` : '';
+            return `#${i+1}${time}\n${text}`;
+          });
+          return `Forum 搜尋「${keyword}」共 ${posts.length} 筆（完整內容）：\n\n${lines.join('\n\n----------------\n\n')}`;
         } catch {
           return 'Forum 搜尋暫時失敗，請稍後再試。';
         }
@@ -238,9 +243,12 @@
           const d = await r.json();
           const posts = Array.isArray(d?.posts) ? d.posts : [];
           if (!posts.length) return '';
-          const top = posts.slice(-3).reverse();
-          const lines = top.map((p, i) => `${i+1}. ${String(p.text||'').slice(0,60)}`);
-          return `Forum 結果（${posts.length} 筆）：\n${lines.join('\n')}`;
+          const lines = posts.slice().reverse().map((p, i) => {
+            const text = String(p.text || '').trim();
+            const time = p.time ? `\n時間：${p.time}` : '';
+            return `#${i+1}${time}\n${text}`;
+          });
+          return `Forum 結果（${posts.length} 筆，完整內容）：\n\n${lines.join('\n\n----------------\n\n')}`;
         } catch {
           return '';
         }
