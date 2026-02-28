@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 
 function readJson(p) {
   return JSON.parse(fs.readFileSync(p, 'utf-8'));
@@ -27,57 +26,50 @@ function matchRule(rule, allIds, vitals) {
   return true;
 }
 
-function buildEngine(baseDir) {
-  const rulesPath = path.join(baseDir, 'rules', 'rules.json');
-  const dietPath = path.join(baseDir, 'rules', 'diet_tags.json');
-  const deptPath = path.join(baseDir, 'rules', 'department_map.json');
-
+function triage(input, { rulesPath, dietPath, deptPath }) {
   const rules = readJson(rulesPath);
   const dietTags = readJson(dietPath);
   const deptMapList = readJson(deptPath);
+
   const deptMap = Object.fromEntries(deptMapList.map((x) => [x.symptom, x.departments]));
   const dietById = Object.fromEntries(dietTags.map((x) => [x.id, x]));
 
-  function run(input) {
-    const symptoms = input.symptoms || [];
-    const comorbidities = input.comorbidities || [];
-    const allIds = new Set([...symptoms, ...comorbidities]);
-    const vitals = input.vitals || {};
+  const symptoms = input?.symptoms || [];
+  const comorbidities = input?.comorbidities || [];
+  const allIds = new Set([...symptoms, ...comorbidities]);
+  const vitals = input?.vitals || {};
 
-    const matched = [...rules]
-      .sort((a, b) => b.priority - a.priority)
-      .filter((r) => matchRule(r, allIds, vitals));
+  const matched = [...rules]
+    .sort((a, b) => b.priority - a.priority)
+    .filter((r) => matchRule(r, allIds, vitals));
 
-    const chosen = matched[0] || {
-      id: 'DEFAULT',
-      outputs: {
-        level_override: 'L4',
-        reasons: ['可先自我照護並觀察'],
-        departments: ['家醫科'],
-        diet_tags: ['D_DEFAULT'],
-        actions: []
-      }
-    };
+  const chosen = matched[0] || {
+    id: 'DEFAULT',
+    outputs: {
+      level_override: 'L4',
+      reasons: ['可先自我照護並觀察'],
+      departments: ['家醫科'],
+      diet_tags: ['D_DEFAULT'],
+      actions: []
+    }
+  };
 
-    const out = chosen.outputs || {};
-    const deptSet = new Set(out.departments || ['家醫科']);
-    symptoms.forEach((s) => (deptMap[s] || []).forEach((d) => deptSet.add(d)));
+  const out = chosen.outputs || {};
+  const deptSet = new Set(out.departments || ['家醫科']);
+  symptoms.forEach((s) => (deptMap[s] || []).forEach((d) => deptSet.add(d)));
 
-    const dietIds = out.diet_tags && out.diet_tags.length ? out.diet_tags : ['D_DEFAULT'];
-    const diet = dietIds.map((id) => dietById[id]).filter(Boolean);
+  const dietIds = out.diet_tags && out.diet_tags.length ? out.diet_tags : ['D_DEFAULT'];
+  const diet = dietIds.map((id) => dietById[id]).filter(Boolean);
 
-    return {
-      ruleId: chosen.id,
-      level: out.level_override || 'L4',
-      reasons: out.reasons || [],
-      diet_tags: dietIds,
-      diet,
-      departments: Array.from(deptSet),
-      actions: out.actions || []
-    };
-  }
-
-  return { run };
+  return {
+    ruleId: chosen.id,
+    level: out.level_override || 'L4',
+    reasons: out.reasons || [],
+    diet_tags: dietIds,
+    diet,
+    departments: Array.from(deptSet),
+    actions: out.actions || []
+  };
 }
 
-module.exports = { buildEngine };
+module.exports = { triage };

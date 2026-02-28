@@ -1,22 +1,30 @@
-const express = require('express');
-const { buildEngine } = require('./engine/ruleEngine');
+const express = require("express");
+const path = require("path");
+const { triage } = require("./engine/ruleEngine");
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
-const engine = buildEngine(__dirname);
-
-app.get('/health', (req, res) => {
-  res.json({ ok: true, service: 'health-triage' });
+// Health check
+app.get("/health", (_req, res) => {
+  res.json({ ok: true, service: "health-triage", ts: new Date().toISOString() });
 });
 
-app.post('/api/triage', (req, res) => {
-  const input = req.body || {};
-  const result = engine.run(input);
-  res.json({ ok: true, input, result });
+// Main triage endpoint
+app.post("/api/triage", (req, res) => {
+  try {
+    const input = req.body;
+
+    const rulesPath = path.join(__dirname, "rules", "rules.json");
+    const dietPath = path.join(__dirname, "rules", "diet_tags.json");
+    const deptPath = path.join(__dirname, "rules", "department_map.json");
+
+    const result = triage(input, { rulesPath, dietPath, deptPath });
+    res.json({ ok: true, result });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: "BAD_REQUEST", message: err?.message || "Unknown error" });
+  }
 });
 
-const PORT = process.env.PORT || 8788;
-app.listen(PORT, () => {
-  console.log(`health-triage server running on :${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`health-triage listening on :${PORT}`));
