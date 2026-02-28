@@ -176,24 +176,57 @@
         return { query:q, link };
       }
 
+      function isBlockedOrAbuseText(text=''){
+        const t = String(text).toLowerCase();
+        return t.includes('securitycompromiseerror') ||
+               t.includes('anonymous access to domain') ||
+               t.includes('previous abuse found') ||
+               t.includes('"code":451') ||
+               t.includes('status":45102');
+      }
+
+      async function fetchSearchSummary(q){
+        // Avoid depending on google.com scraping to reduce 451/abuse blocks.
+        const providers = [
+          `https://r.jina.ai/http://duckduckgo.com/?q=${encodeURIComponent(q)}`,
+          `https://r.jina.ai/http://www.bing.com/search?q=${encodeURIComponent(q)}`
+        ];
+
+        for (const api of providers){
+          try {
+            const r = await fetch(api);
+            const t = await r.text();
+            if (!r.ok || !t || isBlockedOrAbuseText(t)) continue;
+
+            const cleaned = t
+              .replace(/SECURITY NOTICE:[\s\S]*?---\n/, '')
+              .replace(/\{\s*"data"\s*:\s*null[\s\S]*?\}/g, '')
+              .trim();
+
+            if (!cleaned || isBlockedOrAbuseText(cleaned)) continue;
+
+            const lines = cleaned.split('\n').map(x=>x.trim()).filter(Boolean);
+            const summary = lines.slice(0, 3).join(' / ').slice(0, 260);
+            if (!summary) continue;
+
+            const urls = allUrls(cleaned);
+            const media = urls.find(u => youtubeEmbed(u) || isImageUrl(u));
+            return { summary, media };
+          } catch {}
+        }
+
+        return null;
+      }
+
       async function enrichGoogle(q){
         const g = googleReply(q);
-        const api = `https://r.jina.ai/http://www.google.com/search?q=${encodeURIComponent(q)}`;
-        try {
-          const r = await fetch(api);
-          const t = await r.text();
-          const cleaned = t.replace(/SECURITY NOTICE:[\s\S]*?---\n/, '').trim();
-          const lines = cleaned.split('\n').map(x=>x.trim()).filter(Boolean);
-          const summary = lines.slice(0, 3).join(' / ').slice(0, 260);
-          const urls = allUrls(cleaned);
-          const media = urls.find(u => youtubeEmbed(u) || isImageUrl(u));
-          let msg = `Google 搜尋連結：${g.link}`;
-          if (summary) msg += `\n摘要：${summary}`;
-          if (media) msg += `\n媒體：${media}`;
-          return msg;
-        } catch {
-          return `Google 搜尋連結：${g.link}`;
-        }
+        const extra = await fetchSearchSummary(q);
+
+        let msg = `Google 搜尋連結：${g.link}`;
+        if (extra?.summary) msg += `\n摘要：${extra.summary}`;
+        if (extra?.media) msg += `\n媒體：${extra.media}`;
+        if (!extra) msg += `\n（摘要暫時無法取得，請先點連結查看結果）`;
+        return msg;
       }
 
       async function send(){
