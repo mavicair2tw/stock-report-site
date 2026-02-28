@@ -66,6 +66,7 @@ jobs:
           mkdir -p dist/forum
           mkdir -p dist/stock-search
           mkdir -p dist/tag-cloud
+          mkdir -p dist/ziweidoushu
           mkdir -p dist/assets
 
           # Combined portal (root)
@@ -121,6 +122,9 @@ jobs:
 
           # Tag Cloud page
           cp stock-report-site/public/tag-cloud.html dist/tag-cloud/index.html
+
+          # Zi Wei Dou Shu page
+          cp stock-report-site/public/ziweidoushu.html dist/ziweidoushu/index.html
 
           # Static assets (images, etc.)
           if [ -d stock-report-site/public/assets ]; then
