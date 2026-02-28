@@ -109,13 +109,17 @@
           const data = await res.json().catch(() => ({}));
           const p = data?.providers || {};
           const okCount = [p.openai?.ok, p.openrouter?.ok, p.gemini?.ok].filter(Boolean).length;
+          const geminiErr = String(p.gemini?.error || '');
+          const geminiExpired = /api key expired/i.test(geminiErr);
           const detail = [
             `OpenAI: ${p.openai?.ok ? 'OK' : (p.openai?.error || 'Unavailable')}`,
             `OpenRouter: ${p.openrouter?.ok ? 'OK' : (p.openrouter?.error || 'Unavailable')}`,
             `Gemini: ${p.gemini?.ok ? 'OK' : (p.gemini?.error || 'Unavailable')}`,
           ].join('\n');
 
-          if (okCount >= 2) setHealth('green', `AI 正常 / Healthy (${okCount}/3)`, detail);
+          if (geminiExpired) {
+            setHealth('red', '請更新 Gemini key / Renew Gemini key', detail);
+          } else if (okCount >= 2) setHealth('green', `AI 正常 / Healthy (${okCount}/3)`, detail);
           else if (okCount === 1) setHealth('yellow', `部分可用 / Partial (1/3)`, detail);
           else setHealth('red', 'AI 不可用 / Unavailable (0/3)', detail);
         } catch {
