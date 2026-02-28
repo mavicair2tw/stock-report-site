@@ -207,12 +207,13 @@
           ? '此宮位屬平衡區，關鍵在節奏管理與風險控制；維持紀律比追求爆發更重要。'
           : '此宮位波動較高，宜先守後攻，優先補強基礎、降低風險，再逐步提升目標。';
 
-        const starHint = `主星為「${p.stars.join('、')}」，顯示此宮位的核心能量與行動風格。`;
+        const starHint = `主星為「${p.stars.join('、')}」，在領導/財務/關係/健康四維度約為 ${f.lead.toFixed(1)}/${f.wealth.toFixed(1)}/${f.relation.toFixed(1)}/${f.health.toFixed(1)}。`;
+        const dimAdvice = `四維度解析：${f.lead>=7?'領導面向較強，可主導節奏；':'領導面向中性，宜先整合再推進；'}${f.wealth>=7?'財務面向偏強，適合重視資源效率與成果轉化；':'財務面向宜保守，先顧現金流與成本控管；'}${f.relation>=6?'關係面向較佳，透過合作可放大成果；':'關係面向較弱，溝通與界線管理需特別留意；'}${f.health>=6?'健康/耐力面向穩定，可維持長期節奏。':'健康/耐力面向波動，建議留意作息與壓力管理。'}`;
         const advice = `實務建議：未來3個月聚焦「${p.name}」主題，採取穩健節奏推進，並依情況彈性調整策略。`;
 
         const topic = PALACE_TOPICS[p.name] || '綜合領域';
         const formula = `公式：綜合分 = 宮位分(${p.score})×0.55 + 星曜能力均值×4.5 = ${f.total}`;
-        const text = `${p.name}（主題：${topic}；${level}，綜合分 ${f.total}）：${formula}。${starHint}${action}${advice}`;
+        const text = `${p.name}（主題：${topic}；${level}，綜合分 ${f.total}）：${formula}。${starHint}${dimAdvice}${action}${advice}`;
         return text.length > 500 ? `${text.slice(0,500)}…` : text;
       }
 
