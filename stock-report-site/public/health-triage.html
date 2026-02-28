@@ -136,11 +136,14 @@ const RULES_CONFIG = {
     S_URINE_PAIN:['泌尿科','腎臟科'], S_BLOOD_URINE:['泌尿科','腎臟科'], S_RASH:['皮膚科','家醫科'],
     S_JOINT_SWELL:['骨科','復健科','風濕免疫科'], S_SLEEP_ISSUE:['身心科','家醫科'], S_ANXIETY:['身心科','家醫科']
   },
-  dietTags: {
-    GI: {do:['白粥/吐司/蒸蛋','少量多餐','電解質補充'], avoid:['油炸辛辣','咖啡','過甜乳製品']},
-    CV: {do:['低鹽','多蔬果','優質蛋白'], avoid:['高鈉加工品','泡麵','含糖飲料']},
-    DEFAULT: {do:['補充水分','清淡飲食','規律作息'], avoid:['酒精','油炸辛辣','含糖飲料']}
-  }
+  dietLibrary: [
+    {"id":"D_GI_REST","title":"腸胃休養（清淡/少量多餐）","do":["溫水少量多次","白粥/吐司/蒸蛋/香蕉","必要時補充電解質"],"avoid":["油炸辛辣","酒精","咖啡","高糖飲料","腹瀉時先減少乳製品"],"notes":["若持續無法進水或脫水徵象，建議就醫"]},
+    {"id":"D_LOW_SALT","title":"低鹽飲食","do":["少醬料少加工品","多蔬菜與原型食物","水分足夠"],"avoid":["泡麵/鹹湯/滷味","重口味零食"],"notes":["若血壓高合併胸悶/神經症狀，請就醫"]},
+    {"id":"D_GERD","title":"逆流/胃痛飲食","do":["少量多餐","飯後2-3小時再躺","溫和蛋白質與非油膩食物"],"avoid":["辛辣油炸","薄荷/巧克力","咖啡酒精","睡前大餐"],"notes":["黑便/吐血屬警訊"]},
+    {"id":"D_HYDRATION","title":"補水與電解質","do":["水/電解質水少量多次","觀察尿量與口乾"],"avoid":["含糖飲料（大量）","酒精"],"notes":["尿量明顯變少、站起來暈：提高就醫優先度"]},
+    {"id":"D_GOUT_LOW_PURINE","title":"痛風/尿酸注意（低普林）","do":["多喝水","低普林飲食","適量乳製品"],"avoid":["內臟/濃肉湯","啤酒"],"notes":[]},
+    {"id":"D_DEFAULT","title":"一般照護","do":["補充水分","清淡飲食","規律作息"],"avoid":["酒精","油炸辛辣","含糖飲料"],"notes":[]}
+  ]
 };
 
 function renderChecks(id, dict){
@@ -185,9 +188,12 @@ function run(){
   if(level===1) deptSet.add('急診');
   const dept = [...deptSet].slice(0,4);
 
-  let diet = RULES_CONFIG.dietTags.DEFAULT;
-  if(sym.some(id=>['S_NAUSEA','S_VOMIT','S_DIARRHEA','S_ABD_PAIN'].includes(id))) diet = RULES_CONFIG.dietTags.GI;
-  if(sym.some(id=>['S_CHEST_PAIN','S_PALPITATION'].includes(id)) || comorb.includes('C_HTN')) diet = RULES_CONFIG.dietTags.CV;
+  const dietById = Object.fromEntries(RULES_CONFIG.dietLibrary.map(x=>[x.id, x]));
+  let dietIds = ['D_DEFAULT'];
+  if(sym.some(id=>['S_NAUSEA','S_VOMIT','S_DIARRHEA','S_ABD_PAIN'].includes(id))) dietIds = ['D_GI_REST','D_HYDRATION'];
+  if(sym.some(id=>['S_CHEST_PAIN','S_PALPITATION'].includes(id)) || comorb.includes('C_HTN')) dietIds = ['D_LOW_SALT','D_HYDRATION'];
+  if(sym.includes('S_ABD_PAIN') || comorb.includes('C_GERD')) dietIds = ['D_GERD','D_HYDRATION'];
+  const diet = dietById[dietIds[0]] || dietById['D_DEFAULT'];
 
   const levelText = {
     1:'Level 1：立即急診 / 必要時叫救護車',
@@ -198,7 +204,7 @@ function run(){
 
   document.getElementById('r1').innerHTML = `<h3 class="section-title">卡片1：風險分級</h3><div class="result-level ${levelClass(level)}">${levelText[level]}</div><div>主要觸發原因：<ul>${reasons.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
   document.getElementById('r2').innerHTML = `<h3 class="section-title">卡片2：建議就醫科別</h3><div>首選科別：<b>${dept[0]||'家醫科'}</b></div><div>次選：${dept.slice(1).join('、')||'家醫科'}</div><div class="sub">規則鏈：症狀ID → 科別映射。</div>`;
-  document.getElementById('r3').innerHTML = `<h3 class="section-title">卡片3：飲食注意</h3><div>今天先做：<ul>${diet.do.map(x=>`<li>${x}</li>`).join('')}</ul></div><div>先避免：<ul>${diet.avoid.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  document.getElementById('r3').innerHTML = `<h3 class="section-title">卡片3：飲食注意</h3><div><b>${diet.title}</b>（${diet.id}）</div><div>今天先做：<ul>${diet.do.map(x=>`<li>${x}</li>`).join('')}</ul></div><div>先避免：<ul>${diet.avoid.map(x=>`<li>${x}</li>`).join('')}</ul></div>${(diet.notes||[]).length?`<div>提醒：<ul>${diet.notes.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}`;
   document.getElementById('r4').innerHTML = `<h3 class="section-title">卡片4：觀察清單</h3><ul><li>體溫/血壓/心率/血氧</li><li>排尿量與補水狀況</li><li>症狀是否加重（24小時內）</li></ul><div class="sub">若出現紅旗警訊，請立即就醫。</div>`;
   document.getElementById('status').textContent = '分析完成（JSON 規則引擎模式）。';
 }
