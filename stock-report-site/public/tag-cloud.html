@@ -29,6 +29,9 @@
       .tooltip{position:fixed;pointer-events:none;background:#101a33;border:1px solid #2a3a5e;border-radius:8px;padding:6px 8px;font-size:12px;color:#dbeafe;display:none;z-index:20}
       .list-item{padding:8px 0;border-bottom:1px dashed #2a3556}
       .list-item:last-child{border-bottom:none}
+      .site-link{margin-top:18px;color:var(--muted);font-size:13px}
+      .site-link a{color:#93c5fd;text-decoration:none}
+      .site-link a:hover{text-decoration:underline}
     </style>
   </head>
   <body>
@@ -37,7 +40,13 @@
         <div class="logo">openai-tw.com</div>
         <div class="top-tags">
           <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag" href="/tw/">台股</a><span class="tag-sub">TW Market</span></div>
+          <div class="nav-item"><a class="tag" href="/us/">美股</a><span class="tag-sub">US Market</span></div>
           <div class="nav-item"><a class="tag active" href="/tag-cloud/">Tag Cloud</a><span class="tag-sub">Keywords</span></div>
+          <form class="quick-search" action="/search/" method="get" style="display:flex;gap:8px;align-items:center;">
+            <input name="q" type="text" placeholder="Search keyword..." style="width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px;" />
+            <button type="submit" style="padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Search</button>
+          </form>
         </div>
       </div>
 
@@ -84,6 +93,8 @@
         <h3 style="margin:0 0 8px">Related Content</h3>
         <div id="content"></div>
       </div>
+
+      <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
     </div>
 
     <div id="tooltip" class="tooltip"></div>
