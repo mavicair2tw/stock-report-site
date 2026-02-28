@@ -76,10 +76,6 @@ export default {
       });
     }
 
-    if (!env.OPENAI_API_KEY) {
-      return json({ error: 'Missing OPENAI_API_KEY' }, 500, request);
-    }
-
     try {
       const body = await request.json();
       const messages = Array.isArray(body?.messages) ? body.messages : [];
@@ -91,37 +87,123 @@ export default {
         return json({ error: 'messages required' }, 400, request);
       }
 
-      const payload = {
-        model: env.OPENAI_MODEL || 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: '你是 openai-tw.com 的網站聊天助理。回覆繁體中文、簡潔、友善。' },
-          ...sanitized,
-        ],
-        temperature: 0.6,
-      };
+      const systemPrompt = '你是 openai-tw.com 的網站聊天助理。回覆繁體中文、簡潔、友善。';
+      const normalized = [
+        { role: 'system', content: systemPrompt },
+        ...sanitized,
+      ];
 
-      const r = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const attempts = [];
 
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) {
-        const status = [400, 401, 403, 404, 409, 422, 429].includes(r.status) ? r.status : 502;
-        return json({ error: data?.error?.message || 'OpenAI API error' }, status, request);
-      }
+      const openai = await callOpenAI(env, normalized);
+      if (openai.ok) return json({ reply: openai.reply, provider: 'openai' }, 200, request);
+      attempts.push(`openai: ${openai.error}`);
 
-      const reply = data?.choices?.[0]?.message?.content?.trim() || '（沒有回覆內容）';
-      return json({ reply }, 200, request);
+      const openrouter = await callOpenRouter(env, normalized);
+      if (openrouter.ok) return json({ reply: openrouter.reply, provider: 'openrouter' }, 200, request);
+      attempts.push(`openrouter: ${openrouter.error}`);
+
+      const gemini = await callGemini(env, normalized);
+      if (gemini.ok) return json({ reply: gemini.reply, provider: 'gemini' }, 200, request);
+      attempts.push(`gemini: ${gemini.error}`);
+
+      return json({ error: `All providers failed. ${attempts.join(' | ')}` }, 502, request);
     } catch {
       return json({ error: 'Internal error' }, 500, request);
     }
   },
 };
+
+async function callOpenAI(env, messages) {
+  if (!env.OPENAI_API_KEY) return { ok: false, error: 'Missing OPENAI_API_KEY' };
+  try {
+    const payload = {
+      model: env.OPENAI_MODEL || 'gpt-4o-mini',
+      messages,
+      temperature: 0.6,
+    };
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) return { ok: false, error: data?.error?.message || `HTTP ${r.status}` };
+    const reply = data?.choices?.[0]?.message?.content?.trim();
+    if (!reply) return { ok: false, error: 'Empty response' };
+    return { ok: true, reply };
+  } catch {
+    return { ok: false, error: 'Network error' };
+  }
+}
+
+async function callOpenRouter(env, messages) {
+  if (!env.OPENROUTER_API_KEY) return { ok: false, error: 'Missing OPENROUTER_API_KEY' };
+  try {
+    const payload = {
+      model: env.OPENROUTER_MODEL || 'openai/gpt-4o-mini',
+      messages,
+      temperature: 0.6,
+    };
+    const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://openai-tw.com',
+        'X-Title': 'openai-tw-chat',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) return { ok: false, error: data?.error?.message || `HTTP ${r.status}` };
+    const reply = data?.choices?.[0]?.message?.content?.trim();
+    if (!reply) return { ok: false, error: 'Empty response' };
+    return { ok: true, reply };
+  } catch {
+    return { ok: false, error: 'Network error' };
+  }
+}
+
+function toGeminiText(messages = []) {
+  return messages
+    .filter(m => m && typeof m.content === 'string' && (m.role === 'user' || m.role === 'assistant' || m.role === 'system'))
+    .map(m => {
+      const who = m.role === 'assistant' ? 'Assistant' : (m.role === 'system' ? 'System' : 'User');
+      return `${who}: ${m.content}`;
+    })
+    .join('\n\n');
+}
+
+async function callGemini(env, messages) {
+  if (!env.GEMINI_API_KEY) return { ok: false, error: 'Missing GEMINI_API_KEY' };
+  try {
+    const model = env.GEMINI_MODEL || 'gemini-1.5-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
+    const payload = {
+      contents: [{ parts: [{ text: toGeminiText(messages) }] }],
+      generationConfig: { temperature: 0.6 },
+    };
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const msg = data?.error?.message || data?.error?.status || `HTTP ${r.status}`;
+      return { ok: false, error: msg };
+    }
+    const reply = data?.candidates?.[0]?.content?.parts?.map(p => p?.text || '').join('').trim();
+    if (!reply) return { ok: false, error: 'Empty response' };
+    return { ok: true, reply };
+  } catch {
+    return { ok: false, error: 'Network error' };
+  }
+}
 
 async function proxyJson(url, request) {
   try {

@@ -7,11 +7,19 @@ npm i -g wrangler
 wrangler login
 ```
 
-## 2) Set API key secret
+## 2) Set provider secrets (OpenAI + fallback)
 
 ```bash
 cd cloudflare-chat-worker
+
+# Primary provider
 wrangler secret put OPENAI_API_KEY
+
+# Optional fallback provider 1 (recommended)
+wrangler secret put OPENROUTER_API_KEY
+
+# Optional fallback provider 2
+wrangler secret put GEMINI_API_KEY
 ```
 
 ## 3) Deploy
@@ -28,6 +36,10 @@ wrangler deploy
 Then `https://openai-tw.com/guestbook/` will call `/api/chat` directly.
 
 ## Notes
-- Built-in per-IP rate limit: 20 requests/minute.
-- Frontend now shows clearer errors for 404/401/403/429.
+- Provider order for `/api/chat`: **OpenAI → OpenRouter → Gemini**.
+- If one provider fails (quota/billing/down), it auto-tries the next.
+- Default models can be set in `wrangler.toml` vars:
+  - `OPENAI_MODEL` (default: `gpt-4o-mini`)
+  - `OPENROUTER_MODEL` (default: `openai/gpt-4o-mini`)
+  - `GEMINI_MODEL` (default: `gemini-1.5-flash`)
 - After code changes, run `wrangler deploy` again.
