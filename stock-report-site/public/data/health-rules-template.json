@@ -78,5 +78,20 @@
       "notes": []
     }
   ],
+  "triageRules": [
+    {"id":"R001_EMERGENCY_CHEST_PAIN","priority":1000},
+    {"id":"R002_EMERGENCY_STROKE","priority":990},
+    {"id":"R003_EMERGENCY_GI_BLEED","priority":980},
+    {"id":"R010_URGENCY_FEVER_HIGH","priority":800},
+    {"id":"R041_PYELONEPHRITIS_WARNING","priority":820},
+    {"id":"R030_GASTROENTERITIS","priority":400},
+    {"id":"R031_GERD_FLARE","priority":350},
+    {"id":"R040_UTI","priority":450},
+    {"id":"R050_VERTIGO","priority":420},
+    {"id":"R060_RASH_URTICARIA","priority":410},
+    {"id":"R070_LOW_BACK_SCIATICA","priority":360},
+    {"id":"R080_ANXIETY_SLEEP","priority":250},
+    {"id":"R020_COMMON_COLD","priority":300}
+  ],
   "pipeline": "symptom/comorbidity -> level -> diet tags -> department -> next steps"
 }

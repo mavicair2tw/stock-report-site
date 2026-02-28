@@ -122,12 +122,19 @@ const RULES_CONFIG = {
   },
   redFlagIds: ['S_CHEST_PAIN','S_SOB','S_FAINT','S_STROKE_SIGN','S_BLACK_STOOL'],
   levelRules: [
-    {id:'L1_RED_FLAG', priority:100, when:{redFlag:true}, out:{level:1, reason:'命中紅旗警訊'}},
-    {id:'L1_SPO2', priority:95, when:{spo2Lt:92}, out:{level:1, reason:'血氧低於 92%'}},
-    {id:'L2_FEVER', priority:80, when:{sym:['S_FEVER'], tempGt:39}, out:{level:2, reason:'高燒風險（建議24–48小時就醫）'}},
-    {id:'L2_HIGH_RISK', priority:70, when:{severityGte:2, hasComorb:true}, out:{level:2, reason:'中重度症狀 + 背景慢病風險'}},
-    {id:'L3_MODERATE', priority:50, when:{severityGte:2}, out:{level:3, reason:'中度症狀，建議1–2週內門診追蹤'}},
-    {id:'L4_OBS', priority:10, when:{}, out:{level:4, reason:'可先自我照護並觀察'}}
+    {"id":"R001_EMERGENCY_CHEST_PAIN","priority":1000,"conditions":{"any_of":["S_CHEST_PAIN"],"any_vitals":[{"field":"spo2","op":"<","value":92}],"optional_any_of":["S_SOB","S_FAINT"]},"outputs":{"level_override":"L1","reasons":["胸痛/胸悶合併呼吸困難或低血氧屬急症風險"],"departments":["急診"],"diet_tags":[],"actions":["立即就醫或呼叫119","避免自行開車長途"]}},
+    {"id":"R002_EMERGENCY_STROKE","priority":990,"conditions":{"any_of":["S_STROKE_SIGN"]},"outputs":{"level_override":"L1","reasons":["疑似中風徵象（口齒不清/單側無力/視力突變）"],"departments":["急診","神經內科"],"actions":["立即就醫，越快越好（黃金時間）"]}},
+    {"id":"R003_EMERGENCY_GI_BLEED","priority":980,"conditions":{"any_of":["S_BLACK_STOOL"],"optional_any_of":["C_ANTICOAG"]},"outputs":{"level_override":"L1","reasons":["黑便/血便可能為消化道出血"],"departments":["急診","腸胃科"],"actions":["立即就醫"]}},
+    {"id":"R010_URGENCY_FEVER_HIGH","priority":800,"conditions":{"all_of":["S_FEVER"],"any_vitals":[{"field":"temp_c","op":">=","value":39}],"optional_any_of":["C_AGE65P","C_IMMUNO","C_DM","C_CKD"]},"outputs":{"level_override":"L2","reasons":["高燒或合併慢病/高風險族群，建議24–48小時內就醫"],"departments":["家醫科","內科"],"diet_tags":["D_HYDRATION"],"actions":["補水、觀察尿量"]}},
+    {"id":"R041_PYELONEPHRITIS_WARNING","priority":820,"conditions":{"all_of":["S_FEVER","S_BACK_FLANK_PAIN"],"optional_any_of":["S_URINE_PAIN","S_BLOOD_URINE"]},"outputs":{"level_override":"L2","reasons":["發燒合併肋側痛，疑似上泌尿道感染風險較高"],"departments":["急診","泌尿科"],"diet_tags":["D_HYDRATION"],"actions":["24–48小時內就醫，必要時急診"]}},
+    {"id":"R030_GASTROENTERITIS","priority":400,"conditions":{"any_of":["S_DIARRHEA","S_VOMIT"],"optional_any_of":["S_ABD_PAIN"],"none_of":["S_BLACK_STOOL"]},"outputs":{"level_override":"L3","reasons":["疑似腸胃炎/腸胃不適，優先避免脫水"],"departments":["家醫科","腸胃科"],"diet_tags":["D_GI_REST","D_HYDRATION"],"actions":["若無法進水、尿量變少→提升為L2"]}},
+    {"id":"R031_GERD_FLARE","priority":350,"conditions":{"all_of":["S_ABD_PAIN"],"optional_any_of":["C_GERD"],"none_of":["S_BLACK_STOOL"]},"outputs":{"level_override":"L3","reasons":["胃部不適/逆流可能性，需觀察是否反覆或加重"],"departments":["腸胃科","家醫科"],"diet_tags":["D_GERD"],"actions":["若黑便/吐血→急診"]}},
+    {"id":"R040_UTI","priority":450,"conditions":{"all_of":["S_URINE_PAIN"],"optional_any_of":["S_FEVER"]},"outputs":{"level_override":"L3","reasons":["疑似泌尿道感染，建議門診評估與驗尿"],"departments":["泌尿科","家醫科"],"diet_tags":["D_HYDRATION"],"actions":["若發燒+肋側痛→提升為L2"]}},
+    {"id":"R050_VERTIGO","priority":420,"conditions":{"all_of":["S_DIZZINESS"],"none_of":["S_STROKE_SIGN","S_FAINT"]},"outputs":{"level_override":"L3","reasons":["眩暈需排除前庭或神經因素"],"departments":["耳鼻喉科","神經內科"],"diet_tags":["D_HYDRATION"],"actions":["若合併中風徵象→急診"]}},
+    {"id":"R060_RASH_URTICARIA","priority":410,"conditions":{"all_of":["S_RASH"],"none_of":["S_SOB"]},"outputs":{"level_override":"L3","reasons":["皮疹/蕁麻疹需評估誘因與嚴重度"],"departments":["皮膚科","家醫科"],"diet_tags":[],"actions":["若喘或嘴唇腫→急診"]}},
+    {"id":"R070_LOW_BACK_SCIATICA","priority":360,"conditions":{"all_of":["S_LOWER_BACK_PAIN"],"optional_any_of":["S_NUMBNESS"]},"outputs":{"level_override":"L3","reasons":["下背痛合併麻木可能與神經壓迫相關"],"departments":["骨科","復健科","神經內科"],"diet_tags":[],"actions":["若大小便失禁或無力快速加重→急診"]}},
+    {"id":"R080_ANXIETY_SLEEP","priority":250,"conditions":{"any_of":["S_SLEEP_ISSUE","S_ANXIETY"],"none_of":["S_CHEST_PAIN","S_SOB","S_FAINT"]},"outputs":{"level_override":"L3","reasons":["睡眠/焦慮影響功能，建議門診協助"],"departments":["身心科","家醫科"],"diet_tags":[],"actions":["避免晚間咖啡因與酒精"]}},
+    {"id":"R020_COMMON_COLD","priority":300,"conditions":{"all_of":["S_COUGH"],"optional_any_of":["S_SORE_THROAT","S_RUNNY_NOSE"],"none_of":["S_SOB","S_CHEST_PAIN"],"optional_vitals":[{"field":"temp_c","op":"<","value":39}]},"outputs":{"level_override":"L4","reasons":["症狀像上呼吸道感染，且無明顯危險警訊"],"departments":["家醫科"],"diet_tags":["D_HYDRATION"],"actions":["若發燒>3天或咳嗽>3週改為就醫"]}}
   ],
   departmentMap: {
     S_CHEST_PAIN:['急診','心臟內科','家醫科'], S_PALPITATION:['心臟內科','家醫科'], S_SOB:['胸腔內科','急診','家醫科'],
@@ -165,34 +172,43 @@ function run(){
   const temp = Number(document.getElementById('temp').value||0);
   const spo2 = Number(document.getElementById('spo2').value||100);
 
-  const ctx = { redFlag: red.length>0, spo2, sym, severity: sev, hasComorb: comorb.length>0, temp };
+  const allIds = new Set([...sym, ...comorb]);
+  const vitals = { temp_c: temp, spo2 };
 
-  let chosen = {out:{level:4, reason:'可先自我照護並觀察'}};
-  for(const r of [...RULES_CONFIG.levelRules].sort((a,b)=>b.priority-a.priority)){
-    const w = r.when || {};
-    const ok =
-      (w.redFlag===undefined || w.redFlag===ctx.redFlag) &&
-      (w.spo2Lt===undefined || (ctx.spo2>0 && ctx.spo2 < w.spo2Lt)) &&
-      (w.sym===undefined || w.sym.some(id=>ctx.sym.includes(id))) &&
-      (w.tempGt===undefined || ctx.temp > w.tempGt) &&
-      (w.hasComorb===undefined || w.hasComorb===ctx.hasComorb) &&
-      (w.severityGte===undefined || ctx.severity >= w.severityGte);
-    if(ok){ chosen = r; break; }
-  }
+  const cmp = (a, op, b) => {
+    if (a === undefined || a === null || Number.isNaN(Number(a))) return false;
+    const x = Number(a), y = Number(b);
+    if (op === '<') return x < y;
+    if (op === '<=') return x <= y;
+    if (op === '>') return x > y;
+    if (op === '>=') return x >= y;
+    if (op === '==') return x === y;
+    return false;
+  };
 
-  const level = chosen.out.level;
-  const reasons = [chosen.out.reason];
+  const ruleMatch = (rule) => {
+    const c = rule.conditions || {};
+    if (c.all_of && !c.all_of.every(id => allIds.has(id))) return false;
+    if (c.any_of && !c.any_of.some(id => allIds.has(id))) return false;
+    if (c.none_of && c.none_of.some(id => allIds.has(id))) return false;
+    if (c.any_vitals && !c.any_vitals.some(v => cmp(vitals[v.field], v.op, v.value))) return false;
+    return true;
+  };
 
-  const deptSet = new Set(['家醫科']);
-  sym.forEach(id => (RULES_CONFIG.departmentMap[id]||[]).forEach(d=>deptSet.add(d)));
-  if(level===1) deptSet.add('急診');
-  const dept = [...deptSet].slice(0,4);
+  const matched = [...RULES_CONFIG.levelRules]
+    .sort((a,b)=>b.priority-a.priority)
+    .filter(ruleMatch);
+
+  const chosen = matched[0] || { outputs:{ level_override:'L4', reasons:['可先自我照護並觀察'], departments:['家醫科'], diet_tags:['D_DEFAULT'], actions:[] } };
+
+  const lvMap = {L1:1,L2:2,L3:3,L4:4};
+  const outp = chosen.outputs || {};
+  const level = lvMap[outp.level_override] || 4;
+  const reasons = outp.reasons?.length ? outp.reasons : ['可先自我照護並觀察'];
+  const dept = (outp.departments?.length ? outp.departments : ['家醫科']).slice(0,4);
 
   const dietById = Object.fromEntries(RULES_CONFIG.dietLibrary.map(x=>[x.id, x]));
-  let dietIds = ['D_DEFAULT'];
-  if(sym.some(id=>['S_NAUSEA','S_VOMIT','S_DIARRHEA','S_ABD_PAIN'].includes(id))) dietIds = ['D_GI_REST','D_HYDRATION'];
-  if(sym.some(id=>['S_CHEST_PAIN','S_PALPITATION'].includes(id)) || comorb.includes('C_HTN')) dietIds = ['D_LOW_SALT','D_HYDRATION'];
-  if(sym.includes('S_ABD_PAIN') || comorb.includes('C_GERD')) dietIds = ['D_GERD','D_HYDRATION'];
+  const dietIds = outp.diet_tags?.length ? outp.diet_tags : ['D_DEFAULT'];
   const diet = dietById[dietIds[0]] || dietById['D_DEFAULT'];
 
   const levelText = {
@@ -205,7 +221,8 @@ function run(){
   document.getElementById('r1').innerHTML = `<h3 class="section-title">卡片1：風險分級</h3><div class="result-level ${levelClass(level)}">${levelText[level]}</div><div>主要觸發原因：<ul>${reasons.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
   document.getElementById('r2').innerHTML = `<h3 class="section-title">卡片2：建議就醫科別</h3><div>首選科別：<b>${dept[0]||'家醫科'}</b></div><div>次選：${dept.slice(1).join('、')||'家醫科'}</div><div class="sub">規則鏈：症狀ID → 科別映射。</div>`;
   document.getElementById('r3').innerHTML = `<h3 class="section-title">卡片3：飲食注意</h3><div><b>${diet.title}</b>（${diet.id}）</div><div>今天先做：<ul>${diet.do.map(x=>`<li>${x}</li>`).join('')}</ul></div><div>先避免：<ul>${diet.avoid.map(x=>`<li>${x}</li>`).join('')}</ul></div>${(diet.notes||[]).length?`<div>提醒：<ul>${diet.notes.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}`;
-  document.getElementById('r4').innerHTML = `<h3 class="section-title">卡片4：觀察清單</h3><ul><li>體溫/血壓/心率/血氧</li><li>排尿量與補水狀況</li><li>症狀是否加重（24小時內）</li></ul><div class="sub">若出現紅旗警訊，請立即就醫。</div>`;
+  const actions = (outp.actions || []);
+  document.getElementById('r4').innerHTML = `<h3 class="section-title">卡片4：觀察清單</h3><ul><li>體溫/血壓/心率/血氧</li><li>排尿量與補水狀況</li><li>症狀是否加重（24小時內）</li></ul>${actions.length?`<div>下一步建議：<ul>${actions.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}<div class="sub">若出現紅旗警訊，請立即就醫。</div>`;
   document.getElementById('status').textContent = '分析完成（JSON 規則引擎模式）。';
 }
 
