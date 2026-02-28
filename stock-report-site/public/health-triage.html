@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>健康分級與就醫建議系統</title>
+  <style>
+    :root{--bg:#0b1020;--panel:#121a2f;--line:#1f2a44;--text:#e6edf3;--muted:#9fb0c3}
+    *{box-sizing:border-box}
+    body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+    .wrap{max-width:1200px;margin:0 auto}
+    .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+    .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+    .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+    .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+    .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+    .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+    .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.6;margin-bottom:12px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    @media (max-width: 900px){.grid{grid-template-columns:1fr}}
+    .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    @media (max-width: 700px){.row{grid-template-columns:1fr}}
+    label{font-size:12px;color:#b9cae6;display:flex;flex-direction:column;gap:6px}
+    input,select,textarea,button{background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:8px;padding:8px}
+    textarea{min-height:72px}
+    button{cursor:pointer}
+    .sub{color:var(--muted)}
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{border:1px solid #2a3a5e;border-radius:999px;padding:5px 10px;font-size:12px;background:#0f1730}
+    .section-title{margin:0 0 8px;font-size:16px}
+    .result-level{font-size:20px;font-weight:800}
+    .lv1{color:#fca5a5}.lv2{color:#fdba74}.lv3{color:#fde68a}.lv4{color:#86efac}
+    .site-link{margin-top:18px;color:var(--muted);font-size:13px}
+    .site-link a{color:#93c5fd;text-decoration:none}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar">
+    <div class="logo">openai-tw.com</div>
+    <div class="top-tags">
+      <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+      <div class="nav-item"><a class="tag active" href="/health-triage/">健康分級</a><span class="tag-sub">Triage</span></div>
+      <form action="/search/" method="get" style="display:flex;gap:8px;align-items:center;">
+        <input name="q" type="text" placeholder="Search keyword..." style="width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px;" />
+        <button type="submit" style="padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Search</button>
+      </form>
+    </div>
+  </div>
+
+  <h1>健康勾選 → 風險分級 → 飲食注意 → 建議就醫科別</h1>
+  <div class="sub">可直接作為 Web/App 規則引擎原型（繁中）。</div>
+
+  <div class="card">
+    <h3 class="section-title">1) 基本資料與生命徵象</h3>
+    <div class="row">
+      <label>年齡<input id="age" type="number" min="0" max="120" /></label>
+      <label>性別<select id="gender"><option value="">未填</option><option>男</option><option>女</option></select></label>
+      <label>懷孕/生理期<select id="preg"><option value="none">無</option><option value="period">生理期</option><option value="pregnancy">懷孕</option></select></label>
+      <label>體溫 (°C)<input id="temp" type="number" step="0.1" /></label>
+      <label>心率 (bpm)<input id="hr" type="number" /></label>
+      <label>血氧 SpO2 (%)<input id="spo2" type="number" /></label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label>慢病/背景風險（逗號分隔）<input id="comorb" placeholder="高血壓, 糖尿病, 心臟病..." /></label>
+      <label>用藥<input id="meds" placeholder="例：抗凝血藥" /></label>
+      <label>過敏<input id="allergy" placeholder="例：青黴素" /></label>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3 class="section-title">2A) 紅旗警訊（任一命中 -> Level 1）</h3>
+      <div id="redFlags" class="chips"></div>
+    </div>
+    <div class="card">
+      <h3 class="section-title">2B) 病徵分群（一般分級）</h3>
+      <div id="symptoms" class="chips"></div>
+      <label style="margin-top:10px">程度
+        <select id="severity"><option value="1">輕</option><option value="2" selected>中</option><option value="3">重</option></select>
+      </label>
+      <label>多久了
+        <select id="duration"><option value="1"><24h</option><option value="2">1-3天</option><option value="3">4-14天</option><option value="4">>2週</option></select>
+      </label>
+      <label>簡短補充
+        <textarea id="note" placeholder="補充描述：是否加重、發燒、食慾、脫水等"></textarea>
+      </label>
+    </div>
+  </div>
+
+  <div class="card"><button id="runBtn">產生分級與建議</button> <span id="status" class="sub"></span></div>
+
+  <div class="grid">
+    <div class="card" id="r1"><h3 class="section-title">卡片1：風險分級</h3><div class="sub">尚未分析</div></div>
+    <div class="card" id="r2"><h3 class="section-title">卡片2：建議就醫科別</h3><div class="sub">尚未分析</div></div>
+    <div class="card" id="r3"><h3 class="section-title">卡片3：飲食注意</h3><div class="sub">尚未分析</div></div>
+    <div class="card" id="r4"><h3 class="section-title">卡片4：觀察清單</h3><div class="sub">尚未分析</div></div>
+  </div>
+
+  <div class="card sub">
+    安全與免責：本系統提供健康資訊與就醫建議，不取代醫師診斷。若出現紅旗警訊或症狀快速惡化，請立即就醫/急診。
+  </div>
+
+  <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+</div>
+
+<script>
+const RED_FLAGS = [
+  '胸痛/胸悶 >10分鐘', '呼吸困難或無法完整說話', '意識改變/昏厥/抽搐', '單側無力/口齒不清/視力突變',
+  '大量吐血/黑便/血便', '高燒合併頸部僵硬或精神混亂', '嚴重過敏合併喘或嘴唇腫', '懷孕合併大量出血或劇痛', '劇烈腹痛伴持續嘔吐'
+];
+
+const SYMPTOMS = ['喉嚨痛','咳嗽','鼻塞流鼻水','喘鳴','噁心','嘔吐','腹痛','腹瀉','便秘','胃酸逆流','心悸','胸悶','頭暈','頭痛','麻木刺痛','眩暈','尿痛','頻尿','血尿','皮疹','搔癢','紅腫熱痛','肩頸腰痛','關節腫痛','失眠','焦慮'];
+
+const DEPT_RULES = [
+  {k:['胸痛','心悸','胸悶'], d:['急診','心臟內科','家醫科']},
+  {k:['咳嗽','喘鳴'], d:['胸腔內科','家醫科']},
+  {k:['腹痛','胃酸逆流','腹瀉','便秘','黑便'], d:['腸胃科','家醫科']},
+  {k:['頭痛','眩暈','麻木刺痛'], d:['神經內科','家醫科']},
+  {k:['尿痛','頻尿','血尿'], d:['泌尿科','腎臟科']},
+  {k:['皮疹','搔癢','紅腫熱痛'], d:['皮膚科','家醫科']},
+  {k:['關節腫痛','肩頸腰痛'], d:['骨科','復健科','風濕免疫科']},
+  {k:['失眠','焦慮'], d:['身心科','家醫科']},
+];
+
+function renderChecks(id, arr){
+  const el=document.getElementById(id);
+  el.innerHTML=arr.map((x,i)=>`<label class="chip"><input type="checkbox" value="${x}" data-group="${id}"> ${x}</label>`).join('');
+}
+renderChecks('redFlags', RED_FLAGS);
+renderChecks('symptoms', SYMPTOMS);
+
+function checked(group){
+  return [...document.querySelectorAll(`input[data-group="${group}"]:checked`)].map(x=>x.value);
+}
+
+function levelClass(l){return l===1?'lv1':l===2?'lv2':l===3?'lv3':'lv4'}
+
+function run(){
+  const red = checked('redFlags');
+  const sym = checked('symptoms');
+  const sev = Number(document.getElementById('severity').value||2);
+  const dur = Number(document.getElementById('duration').value||2);
+  const temp = Number(document.getElementById('temp').value||0);
+  const spo2 = Number(document.getElementById('spo2').value||100);
+  const age = Number(document.getElementById('age').value||0);
+  const comorb = document.getElementById('comorb').value;
+  const preg = document.getElementById('preg').value;
+
+  let level = 4;
+  const reasons = [];
+
+  if(red.length>0 || spo2>0 && spo2<92){
+    level=1; reasons.push('命中紅旗警訊或血氧過低');
+  } else {
+    let score = 0;
+    score += sev*18 + dur*8 + sym.length*3;
+    if(temp>39) score += 20;
+    if(age>=65 || age<=5) score += 10;
+    if(comorb.trim()) score += 12;
+    if(preg==='pregnancy') score += 10;
+
+    if(score>=70){ level=2; reasons.push('中高風險條件達標（建議24–48小時就醫）'); }
+    else if(score>=40){ level=3; reasons.push('中度症狀，建議1–2週內門診追蹤'); }
+    else { level=4; reasons.push('目前可先自我照護並觀察'); }
+  }
+
+  const deptSet = new Set(['家醫科']);
+  for(const r of DEPT_RULES){ if(r.k.some(k=>sym.some(s=>s.includes(k)||k.includes(s)))) r.d.forEach(x=>deptSet.add(x)); }
+  if(level===1) deptSet.add('急診');
+  if(preg==='pregnancy' && sym.some(s=>['腹痛','出血','嘔吐'].some(k=>s.includes(k)))) deptSet.add('婦產科');
+
+  const dept = [...deptSet].slice(0,4);
+
+  let dietDo=['補充水分','清淡飲食','規律作息'];
+  let dietAvoid=['酒精','油炸辛辣','含糖飲料'];
+  if(sym.some(s=>['腹瀉','嘔吐','腹痛','胃酸逆流'].includes(s))){
+    dietDo=['白粥/吐司/蒸蛋','少量多餐','電解質補充'];
+    dietAvoid=['油炸辛辣','咖啡','過甜乳製品'];
+  }
+  if(sym.some(s=>['胸悶','心悸'].includes(s)) || comorb.includes('高血壓')){
+    dietDo=['低鹽','多蔬果','優質蛋白'];
+    dietAvoid=['高鈉加工品','泡麵','含糖飲料'];
+  }
+
+  const levelText = {
+    1:'Level 1：立即急診 / 必要時叫救護車',
+    2:'Level 2：24–48 小時內就醫',
+    3:'Level 3：1–2 週內門診追蹤',
+    4:'Level 4：自我照護與觀察'
+  };
+
+  document.getElementById('r1').innerHTML = `<h3 class="section-title">卡片1：風險分級</h3><div class="result-level ${levelClass(level)}">${levelText[level]}</div><div>主要觸發原因：<ul>${reasons.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  document.getElementById('r2').innerHTML = `<h3 class="section-title">卡片2：建議就醫科別</h3><div>首選科別：<b>${dept[0]||'家醫科'}</b></div><div>次選：${dept.slice(1).join('、')||'家醫科'}</div><div class="sub">依症狀群與風險規則自動映射。</div>`;
+  document.getElementById('r3').innerHTML = `<h3 class="section-title">卡片3：飲食注意</h3><div>今天先做：<ul>${dietDo.map(x=>`<li>${x}</li>`).join('')}</ul></div><div>先避免：<ul>${dietAvoid.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  document.getElementById('r4').innerHTML = `<h3 class="section-title">卡片4：觀察清單</h3><ul><li>體溫/血壓/心率/血氧</li><li>排尿量與補水狀況</li><li>症狀是否加重（24小時內）</li></ul><div class="sub">若出現紅旗警訊，請立即就醫。</div>`;
+
+  document.getElementById('status').textContent = '分析完成。';
+}
+
+document.getElementById('runBtn').addEventListener('click', run);
+</script>
+</body>
+</html>

@@ -68,6 +68,7 @@ jobs:
           mkdir -p dist/tag-cloud
           mkdir -p dist/ziweidoushu
           mkdir -p dist/name-analysis
+          mkdir -p dist/health-triage
           mkdir -p dist/assets
 
           # Combined portal (root)
@@ -129,6 +130,9 @@ jobs:
 
           # Chinese name analysis page
           cp stock-report-site/public/name-analysis.html dist/name-analysis/index.html
+
+          # Health triage page
+          cp stock-report-site/public/health-triage.html dist/health-triage/index.html
 
           # Static assets (images, etc.)
           if [ -d stock-report-site/public/assets ]; then
