@@ -229,13 +229,34 @@
         return null;
       }
 
+      async function forumQuickResults(q){
+        const keyword = normalizeForumQuery(q);
+        if (!keyword) return '';
+        const api = `https://openai-tw-forum.googselect.workers.dev/api/forum?q=${encodeURIComponent(keyword)}`;
+        try {
+          const r = await fetch(api);
+          const d = await r.json();
+          const posts = Array.isArray(d?.posts) ? d.posts : [];
+          if (!posts.length) return '';
+          const top = posts.slice(-3).reverse();
+          const lines = top.map((p, i) => `${i+1}. ${String(p.text||'').slice(0,60)}`);
+          return `Forum 結果（${posts.length} 筆）：\n${lines.join('\n')}`;
+        } catch {
+          return '';
+        }
+      }
+
       async function enrichGoogle(q){
         const g = googleReply(q);
-        const extra = await fetchSearchSummary(q);
+        const [extra, forum] = await Promise.all([
+          fetchSearchSummary(q),
+          forumQuickResults(q)
+        ]);
 
         let msg = `Google 搜尋連結：${g.link}`;
         if (extra?.summary) msg += `\n摘要：${extra.summary}`;
         if (extra?.media) msg += `\n媒體：${extra.media}`;
+        if (forum) msg += `\n\n${forum}`;
         return msg;
       }
 
