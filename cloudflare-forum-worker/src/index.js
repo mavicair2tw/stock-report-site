@@ -49,8 +49,8 @@ export default {
         return json({ ok: true, count: keep.length, ...totals }, 200, request);
       }
 
-      // React to post: like / share
-      if (!['like', 'share'].includes(action)) {
+      // React to post: like / share / delete
+      if (!['like', 'share', 'delete'].includes(action)) {
         return json({ error: 'invalid action' }, 400, request);
       }
 
@@ -59,6 +59,13 @@ export default {
 
       const i = posts.findIndex(p => p.id === id);
       if (i < 0) return json({ error: 'post not found' }, 404, request);
+
+      if (action === 'delete') {
+        const [removed] = posts.splice(i, 1);
+        await env.FORUM_KV.put(KEY, JSON.stringify(posts));
+        const totals = calcTotals(posts);
+        return json({ ok: true, deleted: removed?.id || id, ...totals }, 200, request);
+      }
 
       if (action === 'like') posts[i].likeCount = Number(posts[i].likeCount || 0) + 1;
       if (action === 'share') posts[i].shareCount = Number(posts[i].shareCount || 0) + 1;
