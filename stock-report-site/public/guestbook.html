@@ -255,16 +255,16 @@
       }
 
       async function enrichGoogle(q){
+        const forum = await forumQuickResults(q);
+        // If Forum has matches, return Forum content only (no Google link/summary noise).
+        if (forum) return forum;
+
         const g = googleReply(q);
-        const [extra, forum] = await Promise.all([
-          fetchSearchSummary(q),
-          forumQuickResults(q)
-        ]);
+        const extra = await fetchSearchSummary(q);
 
         let msg = `Google 搜尋連結：${g.link}`;
         if (extra?.summary) msg += `\n摘要：${extra.summary}`;
         if (extra?.media) msg += `\n媒體：${extra.media}`;
-        if (forum) msg += `\n\n${forum}`;
         return msg;
       }
 
