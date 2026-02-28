@@ -206,7 +206,7 @@ async function fetchSearchSummary(q) {
         const dRaw = (b.match(/<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i) || [])[1] || '';
         const t = stripSearchLine(stripTags(tRaw));
         const u = String(uRaw).trim();
-        const d = trimSnippet(stripTags(dRaw), 100);
+        const d = trimSnippet(stripTags(dRaw), 300);
         if (t && t !== '*') items.push(formatSearchItem({ title: t, url: /^https?:\/\//i.test(u) ? u : '', snippet: d }));
       }
       if (summary || items.length) return { summary: summary || null, media, items };
@@ -295,13 +295,13 @@ function parseSearchItem(line = '') {
 function formatSearchItem(item = {}) {
   const title = stripSearchLine(item.title || '');
   const url = String(item.url || '').trim();
-  const snippet = trimSnippet(item.snippet || '', 100);
+  const snippet = trimSnippet(item.snippet || '', 300);
   if (!title) return '';
   const head = url ? `[${title}](${url})` : title;
   return snippet ? `${head}：${snippet}` : head;
 }
 
-function trimSnippet(s = '', max = 100) {
+function trimSnippet(s = '', max = 300) {
   const blocked = [
     'We would like to show you a description here but the site won’t allow us.',
     "We would like to show you a description here but the site won't allow us.",
