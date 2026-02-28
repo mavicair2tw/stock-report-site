@@ -185,6 +185,30 @@ function isImageUrl(url) {
 }
 
 async function fetchSearchSummary(q) {
+  // Prefer Bing RSS first for cleaner title+link extraction.
+  try {
+    const rssUrl = `https://www.bing.com/search?q=${encodeURIComponent(q)}&format=rss&setlang=zh-Hant`;
+    const r = await fetch(rssUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const xml = await r.text();
+    if (r.ok && xml) {
+      const title = (xml.match(/<item>[\s\S]*?<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/i) || [])[1] || '';
+      const desc = (xml.match(/<item>[\s\S]*?<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i) || [])[1] || '';
+      const link = (xml.match(/<item>[\s\S]*?<link>([\s\S]*?)<\/link>/i) || [])[1] || '';
+
+      const summary = `${stripTags(title)} ${stripTags(desc)}`.replace(/\s+/g, ' ').trim().slice(0, 260);
+      const media = link && (youtubeEmbed(link) || isImageUrl(link)) ? link : null;
+      const items = [];
+      const re = /<item>[\s\S]*?<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>[\s\S]*?<link>([\s\S]*?)<\/link>[\s\S]*?<\/item>/ig;
+      let m;
+      while ((m = re.exec(xml)) && items.length < 10) {
+        const t = stripSearchLine(stripTags(m[1] || ''));
+        const u = String(m[2] || '').trim();
+        if (t && t !== '*') items.push({ title: t, url: /^https?:\/\//i.test(u) ? u : '' });
+      }
+      if (summary || items.length) return { summary: summary || null, media, items };
+    }
+  } catch {}
+
   const providers = [
     `https://r.jina.ai/http://duckduckgo.com/?q=${encodeURIComponent(q)}`,
     `https://r.jina.ai/http://www.bing.com/search?q=${encodeURIComponent(q)}`,
@@ -213,11 +237,11 @@ async function fetchSearchSummary(q) {
 
       const items = useful
         .filter(l => /^\d+\.\s+/.test(l))
-        .map(l => stripSearchLine(l))
-        .filter(Boolean)
-        .slice(0, 5);
+        .map(l => parseSearchItem(l))
+        .filter(x => x && x.title)
+        .slice(0, 10);
 
-      const picked = (items.length ? items : useful).slice(0, 3);
+      const picked = (items.length ? items.map(x => x.title) : useful).slice(0, 3);
       const summary = picked.join(' / ').replace(/\s*\/\s*markdown content:?\s*$/i, '').slice(0, 260);
       if (!summary && !items.length) continue;
 
@@ -226,31 +250,6 @@ async function fetchSearchSummary(q) {
       return { summary: summary || null, media, items };
     } catch {}
   }
-
-  // Fallback: use Bing RSS to avoid r.jina/451 issues.
-  try {
-    const rssUrl = `https://www.bing.com/search?q=${encodeURIComponent(q)}&format=rss&setlang=zh-Hant`;
-    const r = await fetch(rssUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-    const xml = await r.text();
-    if (r.ok && xml) {
-      const title = (xml.match(/<item>[\s\S]*?<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/i) || [])[1] ||
-                    (xml.match(/<item>[\s\S]*?<title>([\s\S]*?)<\/title>/i) || [])[1] || '';
-      const desc = (xml.match(/<item>[\s\S]*?<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/i) || [])[1] ||
-                   (xml.match(/<item>[\s\S]*?<description>([\s\S]*?)<\/description>/i) || [])[1] || '';
-      const link = (xml.match(/<item>[\s\S]*?<link>([\s\S]*?)<\/link>/i) || [])[1] || '';
-
-      const summary = `${stripTags(title)} ${stripTags(desc)}`.replace(/\s+/g, ' ').trim().slice(0, 260);
-      const media = link && (youtubeEmbed(link) || isImageUrl(link)) ? link : null;
-      const items = [];
-      const re = /<item>[\s\S]*?<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>[\s\S]*?<\/item>/ig;
-      let m;
-      while ((m = re.exec(xml)) && items.length < 5) {
-        const t = stripSearchLine(stripTags(m[1] || ''));
-        if (t) items.push(t);
-      }
-      if (summary || items.length) return { summary: summary || null, media, items };
-    }
-  } catch {}
 
   return null;
 }
@@ -278,6 +277,14 @@ function stripSearchLine(s = '') {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 140);
+}
+
+function parseSearchItem(line = '') {
+  const raw = String(line).replace(/^\d+\.\s+/, '').trim();
+  const m = raw.match(/\[\*\*?([^\]]+?)\*\*?\]\((https?:\/\/[^\s\)]+)\)/i) ||
+            raw.match(/\[([^\]]+?)\]\((https?:\/\/[^\s\)]+)\)/i);
+  if (m) return { title: stripSearchLine(m[1]), url: m[2] };
+  return { title: stripSearchLine(raw), url: '' };
 }
 
 function hitRateLimit(key) {
