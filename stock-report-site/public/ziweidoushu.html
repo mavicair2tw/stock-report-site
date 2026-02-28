@@ -85,9 +85,6 @@
             </label>
           </div>
           <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-            <button id="calcBtn">計算命盤</button>
-            <button id="saveBtn">儲存命盤</button>
-            <button id="loadBtn">載入 Email 命盤</button>
             <button id="aiBtn">AI 解析（全自動）</button>
             <button id="mailBtn">寄送完整資料到 Email</button>
           </div>
@@ -181,37 +178,6 @@
         };
       }
 
-      $('calcBtn').onclick = () => {
-        const d = collectData();
-        if(!d.name || !d.birthDate){ $('status').textContent = '請輸入姓名與出生日期。'; return; }
-        current = calcChart(d);
-        renderChart(current);
-        renderFortune(current);
-        $('status').textContent = '命盤計算完成。';
-      };
-
-      $('saveBtn').onclick = () => {
-        const d = collectData();
-        if(!d.email){ $('status').textContent='請輸入 Email 再儲存。'; return; }
-        if(!current){ $('status').textContent='請先計算命盤。'; return; }
-        localStorage.setItem(`ziweidoushu:${d.email}`, JSON.stringify(current));
-        $('status').textContent = `已儲存 ${d.email} 的命盤。`;
-      };
-
-      $('loadBtn').onclick = () => {
-        const email = $('email').value.trim();
-        if(!email){ $('status').textContent='請輸入 Email。'; return; }
-        const raw = localStorage.getItem(`ziweidoushu:${email}`);
-        if(!raw){ $('status').textContent='找不到已儲存命盤。'; return; }
-        current = JSON.parse(raw);
-        $('email').value = current.data.email || email;
-        $('name').value = current.data.name || '';
-        $('gender').value = current.data.gender || '男';
-        $('birthDate').value = current.data.birthDate || '';
-        $('birthTime').value = current.data.birthTime || '12:00';
-        renderChart(current); renderFortune(current);
-        $('status').textContent='已載入命盤。';
-      };
 
       function buildEmailBody(chart){
         const d = chart.data || {};
