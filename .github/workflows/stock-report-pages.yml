@@ -69,6 +69,7 @@ jobs:
           mkdir -p dist/ziweidoushu
           mkdir -p dist/name-analysis
           mkdir -p dist/health-triage
+          mkdir -p dist/health-triage/data
           mkdir -p dist/assets
 
           # Combined portal (root)
@@ -133,6 +134,7 @@ jobs:
 
           # Health triage page
           cp stock-report-site/public/health-triage.html dist/health-triage/index.html
+          cp stock-report-site/public/data/health-rules-template.json dist/health-triage/data/health-rules-template.json
 
           # Static assets (images, etc.)
           if [ -d stock-report-site/public/assets ]; then

@@ -63,9 +63,13 @@
       <label>血氧 SpO2 (%)<input id="spo2" type="number" /></label>
     </div>
     <div class="row" style="margin-top:10px">
-      <label>慢病/背景風險（逗號分隔）<input id="comorb" placeholder="高血壓, 糖尿病, 心臟病..." /></label>
       <label>用藥<input id="meds" placeholder="例：抗凝血藥" /></label>
       <label>過敏<input id="allergy" placeholder="例：青黴素" /></label>
+      <label>補充說明<textarea id="note" placeholder="補充描述：是否加重、發燒、食慾、脫水等"></textarea></label>
+    </div>
+    <div style="margin-top:10px">
+      <div class="sub" style="margin-bottom:6px">背景風險（Comorbidity IDs）</div>
+      <div id="comorbids" class="chips"></div>
     </div>
   </div>
 
@@ -82,9 +86,6 @@
       </label>
       <label>多久了
         <select id="duration"><option value="1"><24h</option><option value="2">1-3天</option><option value="3">4-14天</option><option value="4">>2週</option></select>
-      </label>
-      <label>簡短補充
-        <textarea id="note" placeholder="補充描述：是否加重、發燒、食慾、脫水等"></textarea>
       </label>
     </div>
   </div>
@@ -106,83 +107,87 @@
 </div>
 
 <script>
-const RED_FLAGS = [
-  '胸痛/胸悶 >10分鐘', '呼吸困難或無法完整說話', '意識改變/昏厥/抽搐', '單側無力/口齒不清/視力突變',
-  '大量吐血/黑便/血便', '高燒合併頸部僵硬或精神混亂', '嚴重過敏合併喘或嘴唇腫', '懷孕合併大量出血或劇痛', '劇烈腹痛伴持續嘔吐'
-];
+const RULES_CONFIG = {
+  symptomDict: {
+    S_CHEST_PAIN:'胸痛/胸悶', S_SOB:'呼吸困難/喘', S_FAINT:'昏厥/意識改變', S_STROKE_SIGN:'口齒不清/單側無力/視力突變',
+    S_FEVER:'發燒', S_COUGH:'咳嗽', S_SORE_THROAT:'喉嚨痛', S_RUNNY_NOSE:'流鼻水/鼻塞',
+    S_NAUSEA:'噁心', S_VOMIT:'嘔吐', S_DIARRHEA:'腹瀉', S_CONSTIPATION:'便秘', S_ABD_PAIN:'腹痛', S_BLACK_STOOL:'黑便/血便',
+    S_DIZZINESS:'頭暈/眩暈', S_HEADACHE:'頭痛', S_NUMBNESS:'麻木刺痛', S_PALPITATION:'心悸',
+    S_RASH:'皮疹/蕁麻疹', S_URINE_PAIN:'排尿疼痛', S_BLOOD_URINE:'血尿', S_BACK_FLANK_PAIN:'腰/肋側痛',
+    S_JOINT_SWELL:'關節腫痛', S_LOWER_BACK_PAIN:'下背痛/坐骨痛', S_SLEEP_ISSUE:'失眠', S_ANXIETY:'焦慮/恐慌'
+  },
+  comorbDict: {
+    C_HTN:'高血壓', C_DM:'糖尿病', C_CAD:'心臟病/冠心症', C_CKD:'腎臟病', C_LIVER:'肝病', C_ASTHMA:'氣喘/COPD',
+    C_GERD:'胃食道逆流/胃潰瘍', C_ANTICOAG:'抗凝血/抗血小板', C_PREG:'懷孕/疑似懷孕', C_IMMUNO:'免疫低下', C_AGE65P:'65歲以上', C_AGE5M:'5歲以下'
+  },
+  redFlagIds: ['S_CHEST_PAIN','S_SOB','S_FAINT','S_STROKE_SIGN','S_BLACK_STOOL'],
+  levelRules: [
+    {id:'L1_RED_FLAG', priority:100, when:{redFlag:true}, out:{level:1, reason:'命中紅旗警訊'}},
+    {id:'L1_SPO2', priority:95, when:{spo2Lt:92}, out:{level:1, reason:'血氧低於 92%'}},
+    {id:'L2_FEVER', priority:80, when:{sym:['S_FEVER'], tempGt:39}, out:{level:2, reason:'高燒風險（建議24–48小時就醫）'}},
+    {id:'L2_HIGH_RISK', priority:70, when:{severityGte:2, hasComorb:true}, out:{level:2, reason:'中重度症狀 + 背景慢病風險'}},
+    {id:'L3_MODERATE', priority:50, when:{severityGte:2}, out:{level:3, reason:'中度症狀，建議1–2週內門診追蹤'}},
+    {id:'L4_OBS', priority:10, when:{}, out:{level:4, reason:'可先自我照護並觀察'}}
+  ],
+  departmentMap: {
+    S_CHEST_PAIN:['急診','心臟內科','家醫科'], S_PALPITATION:['心臟內科','家醫科'], S_SOB:['胸腔內科','急診','家醫科'],
+    S_COUGH:['胸腔內科','家醫科'], S_ABD_PAIN:['腸胃科','家醫科'], S_DIARRHEA:['腸胃科','家醫科'], S_CONSTIPATION:['腸胃科','家醫科'],
+    S_DIZZINESS:['神經內科','家醫科'], S_HEADACHE:['神經內科','家醫科'], S_NUMBNESS:['神經內科','家醫科'],
+    S_URINE_PAIN:['泌尿科','腎臟科'], S_BLOOD_URINE:['泌尿科','腎臟科'], S_RASH:['皮膚科','家醫科'],
+    S_JOINT_SWELL:['骨科','復健科','風濕免疫科'], S_SLEEP_ISSUE:['身心科','家醫科'], S_ANXIETY:['身心科','家醫科']
+  },
+  dietTags: {
+    GI: {do:['白粥/吐司/蒸蛋','少量多餐','電解質補充'], avoid:['油炸辛辣','咖啡','過甜乳製品']},
+    CV: {do:['低鹽','多蔬果','優質蛋白'], avoid:['高鈉加工品','泡麵','含糖飲料']},
+    DEFAULT: {do:['補充水分','清淡飲食','規律作息'], avoid:['酒精','油炸辛辣','含糖飲料']}
+  }
+};
 
-const SYMPTOMS = ['喉嚨痛','咳嗽','鼻塞流鼻水','喘鳴','噁心','嘔吐','腹痛','腹瀉','便秘','胃酸逆流','心悸','胸悶','頭暈','頭痛','麻木刺痛','眩暈','尿痛','頻尿','血尿','皮疹','搔癢','紅腫熱痛','肩頸腰痛','關節腫痛','失眠','焦慮'];
-
-const DEPT_RULES = [
-  {k:['胸痛','心悸','胸悶'], d:['急診','心臟內科','家醫科']},
-  {k:['咳嗽','喘鳴'], d:['胸腔內科','家醫科']},
-  {k:['腹痛','胃酸逆流','腹瀉','便秘','黑便'], d:['腸胃科','家醫科']},
-  {k:['頭痛','眩暈','麻木刺痛'], d:['神經內科','家醫科']},
-  {k:['尿痛','頻尿','血尿'], d:['泌尿科','腎臟科']},
-  {k:['皮疹','搔癢','紅腫熱痛'], d:['皮膚科','家醫科']},
-  {k:['關節腫痛','肩頸腰痛'], d:['骨科','復健科','風濕免疫科']},
-  {k:['失眠','焦慮'], d:['身心科','家醫科']},
-];
-
-function renderChecks(id, arr){
+function renderChecks(id, dict){
   const el=document.getElementById(id);
-  el.innerHTML=arr.map((x,i)=>`<label class="chip"><input type="checkbox" value="${x}" data-group="${id}"> ${x}</label>`).join('');
+  el.innerHTML=Object.entries(dict).map(([k,v])=>`<label class="chip"><input type="checkbox" value="${k}" data-group="${id}"> ${v}<span class="sub" style="margin-left:4px">(${k})</span></label>`).join('');
 }
-renderChecks('redFlags', RED_FLAGS);
-renderChecks('symptoms', SYMPTOMS);
+renderChecks('redFlags', Object.fromEntries(RULES_CONFIG.redFlagIds.map(id=>[id, RULES_CONFIG.symptomDict[id]])));
+renderChecks('symptoms', RULES_CONFIG.symptomDict);
+renderChecks('comorbids', RULES_CONFIG.comorbDict);
 
-function checked(group){
-  return [...document.querySelectorAll(`input[data-group="${group}"]:checked`)].map(x=>x.value);
-}
-
+function checked(group){ return [...document.querySelectorAll(`input[data-group="${group}"]:checked`)].map(x=>x.value); }
 function levelClass(l){return l===1?'lv1':l===2?'lv2':l===3?'lv3':'lv4'}
 
 function run(){
   const red = checked('redFlags');
   const sym = checked('symptoms');
+  const comorb = checked('comorbids');
   const sev = Number(document.getElementById('severity').value||2);
-  const dur = Number(document.getElementById('duration').value||2);
   const temp = Number(document.getElementById('temp').value||0);
   const spo2 = Number(document.getElementById('spo2').value||100);
-  const age = Number(document.getElementById('age').value||0);
-  const comorb = document.getElementById('comorb').value;
-  const preg = document.getElementById('preg').value;
 
-  let level = 4;
-  const reasons = [];
+  const ctx = { redFlag: red.length>0, spo2, sym, severity: sev, hasComorb: comorb.length>0, temp };
 
-  if(red.length>0 || spo2>0 && spo2<92){
-    level=1; reasons.push('命中紅旗警訊或血氧過低');
-  } else {
-    let score = 0;
-    score += sev*18 + dur*8 + sym.length*3;
-    if(temp>39) score += 20;
-    if(age>=65 || age<=5) score += 10;
-    if(comorb.trim()) score += 12;
-    if(preg==='pregnancy') score += 10;
-
-    if(score>=70){ level=2; reasons.push('中高風險條件達標（建議24–48小時就醫）'); }
-    else if(score>=40){ level=3; reasons.push('中度症狀，建議1–2週內門診追蹤'); }
-    else { level=4; reasons.push('目前可先自我照護並觀察'); }
+  let chosen = {out:{level:4, reason:'可先自我照護並觀察'}};
+  for(const r of [...RULES_CONFIG.levelRules].sort((a,b)=>b.priority-a.priority)){
+    const w = r.when || {};
+    const ok =
+      (w.redFlag===undefined || w.redFlag===ctx.redFlag) &&
+      (w.spo2Lt===undefined || (ctx.spo2>0 && ctx.spo2 < w.spo2Lt)) &&
+      (w.sym===undefined || w.sym.some(id=>ctx.sym.includes(id))) &&
+      (w.tempGt===undefined || ctx.temp > w.tempGt) &&
+      (w.hasComorb===undefined || w.hasComorb===ctx.hasComorb) &&
+      (w.severityGte===undefined || ctx.severity >= w.severityGte);
+    if(ok){ chosen = r; break; }
   }
+
+  const level = chosen.out.level;
+  const reasons = [chosen.out.reason];
 
   const deptSet = new Set(['家醫科']);
-  for(const r of DEPT_RULES){ if(r.k.some(k=>sym.some(s=>s.includes(k)||k.includes(s)))) r.d.forEach(x=>deptSet.add(x)); }
+  sym.forEach(id => (RULES_CONFIG.departmentMap[id]||[]).forEach(d=>deptSet.add(d)));
   if(level===1) deptSet.add('急診');
-  if(preg==='pregnancy' && sym.some(s=>['腹痛','出血','嘔吐'].some(k=>s.includes(k)))) deptSet.add('婦產科');
-
   const dept = [...deptSet].slice(0,4);
 
-  let dietDo=['補充水分','清淡飲食','規律作息'];
-  let dietAvoid=['酒精','油炸辛辣','含糖飲料'];
-  if(sym.some(s=>['腹瀉','嘔吐','腹痛','胃酸逆流'].includes(s))){
-    dietDo=['白粥/吐司/蒸蛋','少量多餐','電解質補充'];
-    dietAvoid=['油炸辛辣','咖啡','過甜乳製品'];
-  }
-  if(sym.some(s=>['胸悶','心悸'].includes(s)) || comorb.includes('高血壓')){
-    dietDo=['低鹽','多蔬果','優質蛋白'];
-    dietAvoid=['高鈉加工品','泡麵','含糖飲料'];
-  }
+  let diet = RULES_CONFIG.dietTags.DEFAULT;
+  if(sym.some(id=>['S_NAUSEA','S_VOMIT','S_DIARRHEA','S_ABD_PAIN'].includes(id))) diet = RULES_CONFIG.dietTags.GI;
+  if(sym.some(id=>['S_CHEST_PAIN','S_PALPITATION'].includes(id)) || comorb.includes('C_HTN')) diet = RULES_CONFIG.dietTags.CV;
 
   const levelText = {
     1:'Level 1：立即急診 / 必要時叫救護車',
@@ -192,11 +197,10 @@ function run(){
   };
 
   document.getElementById('r1').innerHTML = `<h3 class="section-title">卡片1：風險分級</h3><div class="result-level ${levelClass(level)}">${levelText[level]}</div><div>主要觸發原因：<ul>${reasons.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
-  document.getElementById('r2').innerHTML = `<h3 class="section-title">卡片2：建議就醫科別</h3><div>首選科別：<b>${dept[0]||'家醫科'}</b></div><div>次選：${dept.slice(1).join('、')||'家醫科'}</div><div class="sub">依症狀群與風險規則自動映射。</div>`;
-  document.getElementById('r3').innerHTML = `<h3 class="section-title">卡片3：飲食注意</h3><div>今天先做：<ul>${dietDo.map(x=>`<li>${x}</li>`).join('')}</ul></div><div>先避免：<ul>${dietAvoid.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  document.getElementById('r2').innerHTML = `<h3 class="section-title">卡片2：建議就醫科別</h3><div>首選科別：<b>${dept[0]||'家醫科'}</b></div><div>次選：${dept.slice(1).join('、')||'家醫科'}</div><div class="sub">規則鏈：症狀ID → 科別映射。</div>`;
+  document.getElementById('r3').innerHTML = `<h3 class="section-title">卡片3：飲食注意</h3><div>今天先做：<ul>${diet.do.map(x=>`<li>${x}</li>`).join('')}</ul></div><div>先避免：<ul>${diet.avoid.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
   document.getElementById('r4').innerHTML = `<h3 class="section-title">卡片4：觀察清單</h3><ul><li>體溫/血壓/心率/血氧</li><li>排尿量與補水狀況</li><li>症狀是否加重（24小時內）</li></ul><div class="sub">若出現紅旗警訊，請立即就醫。</div>`;
-
-  document.getElementById('status').textContent = '分析完成。';
+  document.getElementById('status').textContent = '分析完成（JSON 規則引擎模式）。';
 }
 
 document.getElementById('runBtn').addEventListener('click', run);
