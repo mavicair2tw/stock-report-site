@@ -243,21 +243,33 @@
       $('aiBtn').onclick = async () => {
         if(!current){ $('status').textContent='請先計算命盤。'; return; }
         $('status').textContent='AI 解析中...';
-        const prompt = `你是專業紫微斗數老師。請以繁體中文針對以下資料給出精簡、專業解析：\n${JSON.stringify(current, null, 2)}`;
-        try {
+
+        const fullPrompt = `你是專業紫微斗數老師。請以繁體中文針對以下資料給出精簡、專業解析：\n${JSON.stringify(current, null, 2)}`;
+        const litePrompt = `請以繁體中文解讀這份紫微斗數重點（性格、事業、財運、感情、健康、近一年建議）：\n姓名:${current?.data?.name||''}\n性別:${current?.data?.gender||''}\n大限:${current?.major||''}\n小限:${current?.minor||''}\n流年:${current?.annual||''}\n強勢宮位:${(current?.palaces||[]).sort((a,b)=>b.score-a.score).slice(0,3).map(p=>`${p.name}(${p.stars.join('、')})`).join('、')}`;
+
+        async function ask(prompt){
           const r = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat', {
             method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify({messages:[{role:'user', content: prompt}]})
           });
-          const data = await r.json();
-          if(r.ok && data.reply){
-            $('interpretation').innerHTML = `<b>AI 解析：</b><br>${String(data.reply).replace(/\n/g,'<br>')}`;
+          const data = await r.json().catch(()=>({}));
+          return { ok: r.ok, data };
+        }
+
+        try {
+          let ret = await ask(fullPrompt);
+          if(!(ret.ok && ret.data?.reply)) ret = await ask(litePrompt);
+
+          if(ret.ok && ret.data?.reply){
+            $('interpretation').innerHTML = `<b>AI 解析：</b><br>${String(ret.data.reply).replace(/\n/g,'<br>')}`;
             $('status').textContent='AI 解析完成。';
           } else {
-            $('status').textContent='AI 解析暫時失敗。';
+            $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(current.summary||'').replace(/\n/g,'<br>')}`;
+            $('status').textContent='AI 服務忙碌，已切換系統解讀。';
           }
         } catch {
-          $('status').textContent='AI 解析連線失敗。';
+          $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(current.summary||'').replace(/\n/g,'<br>')}`;
+          $('status').textContent='AI 連線異常，已切換系統解讀。';
         }
       };
 
