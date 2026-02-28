@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tag Cloud</title>
+    <style>
+      :root{--bg:#0b1020;--panel:#121a2f;--line:#1f2a44;--text:#e6edf3;--muted:#9fb0c3;--accent:#60a5fa}
+      *{box-sizing:border-box}
+      body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+      .wrap{max-width:1100px;margin:0 auto}
+      .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+      .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+      .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+      .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+      .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+      .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+      .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+      .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.6;margin-bottom:12px}
+      .sub{color:var(--muted)}
+      .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px}
+      .controls label{font-size:12px;color:#b9cae6;display:flex;flex-direction:column;gap:6px}
+      .controls input,.controls select{background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:8px;padding:8px}
+      #cloud{position:relative;height:520px;border:1px solid #223055;border-radius:12px;background:#0f1730;overflow:hidden}
+      .word{position:absolute;white-space:nowrap;cursor:pointer;user-select:none;transition:transform .14s ease, filter .14s ease, opacity .14s ease}
+      .word:hover{transform:scale(1.08);filter:drop-shadow(0 0 6px rgba(96,165,250,.4));z-index:5}
+      .dim .word{opacity:.35}
+      .dim .word.active{opacity:1}
+      .tooltip{position:fixed;pointer-events:none;background:#101a33;border:1px solid #2a3a5e;border-radius:8px;padding:6px 8px;font-size:12px;color:#dbeafe;display:none;z-index:20}
+      .list-item{padding:8px 0;border-bottom:1px dashed #2a3556}
+      .list-item:last-child{border-bottom:none}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="logo">openai-tw.com</div>
+        <div class="top-tags">
+          <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+          <div class="nav-item"><a class="tag active" href="/tag-cloud/">Tag Cloud</a><span class="tag-sub">Keywords</span></div>
+        </div>
+      </div>
+
+      <h1>Tag Cloud</h1>
+      <div class="sub">動態字體、色彩層級、hover 高亮、點擊篩選、tooltip、可自訂樣式與形狀。</div>
+
+      <div class="card">
+        <div class="controls">
+          <label>Min Font Size
+            <input id="minSize" type="number" min="10" max="60" value="14" />
+          </label>
+          <label>Max Font Size
+            <input id="maxSize" type="number" min="20" max="120" value="52" />
+          </label>
+          <label>Max Tags
+            <input id="maxTags" type="number" min="10" max="150" value="50" />
+          </label>
+          <label>Shape
+            <select id="shape">
+              <option value="circle">Circle</option>
+              <option value="rectangle">Rectangle</option>
+              <option value="random">Random Cloud</option>
+            </select>
+          </label>
+          <label>Palette
+            <select id="palette">
+              <option value="blue">Blue</option>
+              <option value="sunset">Sunset</option>
+              <option value="mint">Mint</option>
+            </select>
+          </label>
+          <label>Animation
+            <select id="animation">
+              <option value="fade">Fade</option>
+              <option value="pop">Pop</option>
+              <option value="none">None</option>
+            </select>
+          </label>
+        </div>
+        <div id="cloud"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px">Related Content</h3>
+        <div id="content"></div>
+      </div>
+    </div>
+
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+      const seedTags = [
+        ['AI',98],['Science',90],['Philosophy',66],['Nature',78],['Education',73],['Travel',62],['Health',88],['Design',54],['Music',52],['Food',74],
+        ['Coffee',46],['Startups',57],['Productivity',69],['History',42],['Space',81],['Biology',58],['Physics',61],['Culture',67],['Finance',64],['Books',49],
+        ['Psychology',59],['Climate',72],['Art',53],['Sports',45],['Gaming',51],['Movies',47],['Language',56],['Robotics',63],['Ethics',55],['Lifestyle',60],
+        ['Fashion',39],['Housing',43],['Transport',41],['Learning',65],['Ecology',68],['Astronomy',70],['Nutrition',50],['Mindfulness',44],['Storytelling',48],['Innovation',76],
+        ['Engineering',71],['Medicine',77],['Neuroscience',52],['Photography',38],['Cooking',40],['Work',58],['Business',62],['Community',46],['Ocean',47],['Forests',45],
+      ].map(([text,value])=>({text,value,items:[`${text} insight #1`,`${text} insight #2`,`${text} insight #3`]}));
+
+      const paletteMap = {
+        blue:['#93c5fd','#60a5fa','#3b82f6','#1d4ed8'],
+        sunset:['#fdba74','#fb7185','#f97316','#e11d48'],
+        mint:['#86efac','#34d399','#10b981','#059669']
+      };
+
+      const cloudEl = document.getElementById('cloud');
+      const tooltipEl = document.getElementById('tooltip');
+      const contentEl = document.getElementById('content');
+      const controls = ['minSize','maxSize','maxTags','shape','palette','animation'].reduce((m,id)=> (m[id]=document.getElementById(id),m),{});
+
+      function lerp(a,b,t){return a+(b-a)*t}
+      function colorAt(palette, t){
+        const c = palette;
+        const seg = (c.length-1)*t;
+        const i = Math.min(c.length-2, Math.floor(seg));
+        const local = seg-i;
+        const p1 = hexToRgb(c[i]);
+        const p2 = hexToRgb(c[i+1]);
+        return `rgb(${Math.round(lerp(p1.r,p2.r,local))},${Math.round(lerp(p1.g,p2.g,local))},${Math.round(lerp(p1.b,p2.b,local))})`;
+      }
+      function hexToRgb(hex){const h=hex.replace('#','');return{r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)}}
+
+      function scale(value,minV,maxV,minS,maxS){
+        if(maxV===minV) return (minS+maxS)/2;
+        return minS + (value-minV)*(maxS-minS)/(maxV-minV);
+      }
+
+      function makeBounds(shape,w,h){
+        if(shape==='rectangle') return ()=>true;
+        if(shape==='circle'){
+          const cx=w/2, cy=h/2, rx=w*0.45, ry=h*0.45;
+          return (x,y,bw,bh)=>{
+            const px=x+bw/2, py=y+bh/2;
+            const nx=(px-cx)/rx, ny=(py-cy)/ry;
+            return nx*nx+ny*ny<=1;
+          }
+        }
+        return ()=>true;
+      }
+
+      function placeWords(tags, shape){
+        const w = cloudEl.clientWidth, h = cloudEl.clientHeight;
+        const placed = [];
+        const inShape = makeBounds(shape,w,h);
+
+        for(const t of tags){
+          const probe = document.createElement('span');
+          probe.className='word';
+          probe.style.fontSize=`${t.size}px`;
+          probe.style.visibility='hidden';
+          probe.textContent=t.text;
+          cloudEl.appendChild(probe);
+          const bw = probe.offsetWidth + 8, bh = probe.offsetHeight + 6;
+          probe.remove();
+
+          let ok=false;
+          for(let i=0;i<1800 && !ok;i++){
+            const a = i*0.35;
+            const r = 2 + i*0.42;
+            const cx = w/2 + Math.cos(a)*r;
+            const cy = h/2 + Math.sin(a)*r;
+            const x = Math.round(cx-bw/2), y = Math.round(cy-bh/2);
+            if(x<0||y<0||x+bw>w||y+bh>h) continue;
+            if(!inShape(x,y,bw,bh)) continue;
+            let hit=false;
+            for(const p of placed){
+              if(!(x+bw<p.x||p.x+p.w<x||y+bh<p.y||p.y+p.h<y)){hit=true;break}
+            }
+            if(hit) continue;
+            placed.push({...t,x,y,w:bw,h:bh});
+            ok=true;
+          }
+          if(!ok && shape==='random'){
+            const x = Math.max(0, Math.min(w-bw, Math.round(Math.random()*(w-bw))));
+            const y = Math.max(0, Math.min(h-bh, Math.round(Math.random()*(h-bh))));
+            placed.push({...t,x,y,w:bw,h:bh});
+          }
+        }
+        return placed;
+      }
+
+      function renderContent(title){
+        const target = seedTags.find(t=>t.text===title);
+        const items = target ? target.items : ['Click a keyword to filter related content.'];
+        contentEl.innerHTML = items.map((x,i)=>`<div class="list-item">${i+1}. ${x}</div>`).join('');
+      }
+
+      function render(){
+        cloudEl.innerHTML='';
+        const minSize = Number(controls.minSize.value||14);
+        const maxSize = Number(controls.maxSize.value||52);
+        const maxTags = Number(controls.maxTags.value||50);
+        const shape = controls.shape.value;
+        const palette = paletteMap[controls.palette.value] || paletteMap.blue;
+        const animation = controls.animation.value;
+
+        const tags = [...seedTags].sort((a,b)=>b.value-a.value).slice(0,maxTags);
+        const minV = Math.min(...tags.map(t=>t.value));
+        const maxV = Math.max(...tags.map(t=>t.value));
+        const sized = tags.map(t=>{
+          const ratio = (t.value-minV)/(maxV-minV||1);
+          return {...t,size:Math.round(scale(t.value,minV,maxV,minSize,maxSize)),ratio,color:colorAt(palette,ratio)};
+        });
+
+        const placed = placeWords(sized, shape);
+
+        for(const t of placed){
+          const el = document.createElement('span');
+          el.className='word';
+          el.textContent=t.text;
+          el.style.left=`${t.x}px`;
+          el.style.top=`${t.y}px`;
+          el.style.fontSize=`${t.size}px`;
+          el.style.color=t.color;
+          if(animation==='fade'){el.style.opacity='0';requestAnimationFrame(()=>{el.style.transition='opacity .35s ease';el.style.opacity='1';});}
+          if(animation==='pop'){el.style.transform='scale(.8)';requestAnimationFrame(()=>{el.style.transition='transform .25s ease';el.style.transform='scale(1)';});}
+          cloudEl.appendChild(el);
+
+          el.addEventListener('mousemove',(e)=>{
+            tooltipEl.style.display='block';
+            tooltipEl.style.left=(e.clientX+12)+'px';
+            tooltipEl.style.top=(e.clientY+12)+'px';
+            tooltipEl.textContent=`${t.text} · score ${t.value}`;
+          });
+          el.addEventListener('mouseleave',()=> tooltipEl.style.display='none');
+          el.addEventListener('click',()=>{
+            cloudEl.classList.add('dim');
+            cloudEl.querySelectorAll('.word').forEach(w=>w.classList.remove('active'));
+            el.classList.add('active');
+            renderContent(t.text);
+          });
+        }
+        if(!placed.length) cloudEl.innerHTML='<div style="padding:12px;color:#9fb0c3;">No tags could be placed. Try reducing max tags or font size.</div>';
+      }
+
+      Object.values(controls).forEach(c=>c.addEventListener('input',render));
+      window.addEventListener('resize',render);
+      render();
+      renderContent('');
+    </script>
+  </body>
+</html>
