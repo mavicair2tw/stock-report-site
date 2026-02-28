@@ -53,9 +53,9 @@
     <script>
       const lang = new URLSearchParams(location.search).get('lang') || 'zh';
       const i18n = {
-        zh: { title:'每日有趣故事', updated:'更新時間', loading:'載入中...', fail:'載入失敗', loadFail:'讀取每日故事失敗。', empty:'目前無資料，請稍後再試。', source:'來源' },
-        en: { title:'Daily Interesting Stories', updated:'Updated', loading:'Loading...', fail:'Load failed', loadFail:'Failed to load daily stories.', empty:'No data for now.', source:'Source' },
-        ja: { title:'毎日の面白い話', updated:'更新時間', loading:'読み込み中...', fail:'読み込み失敗', loadFail:'毎日の話題の読み込みに失敗しました。', empty:'現在データはありません。', source:'情報源' }
+        zh: { title:'每日有趣故事', updated:'更新時間', loading:'載入中...', fail:'載入失敗', loadFail:'讀取每日故事失敗。', empty:'目前無資料，請稍後再試。', source:'來源', zhSec:'中文有趣故事（5則）', enSec:'English Interesting Stories (5)' },
+        en: { title:'Daily Interesting Stories', updated:'Updated', loading:'Loading...', fail:'Load failed', loadFail:'Failed to load daily stories.', empty:'No data for now.', source:'Source', zhSec:'Chinese Stories (5)', enSec:'English Stories (5)' },
+        ja: { title:'毎日の面白い話', updated:'更新時間', loading:'読み込み中...', fail:'読み込み失敗', loadFail:'毎日の話題の読み込みに失敗しました。', empty:'現在データはありません。', source:'情報源', zhSec:'中国語の話題（5件）', enSec:'英語の話題（5件）' }
       };
       const t = i18n[lang] || i18n.zh;
       document.getElementById('title').textContent = t.title;
@@ -66,11 +66,16 @@
         .then(d=>{
           document.getElementById('updated').textContent = `${t.updated}：${d.updatedAt} (${d.timezone})`;
           const list = document.getElementById('list');
-          const stories = (d.stories || []).slice(0, 5);
-          list.innerHTML = stories.length
-            ? stories.map((s, i) => {
-                const title = lang === 'zh' ? (s.titleZh || s.titleEn || 'Untitled') : (s.titleEn || s.titleZh || 'Untitled');
-                const summary = lang === 'zh' ? (s.summaryZh || s.summaryEn || '') : (s.summaryEn || s.summaryZh || '');
+          const zhStories = (d.storiesZh || []).slice(0, 5);
+          const enStories = (d.storiesEn || []).slice(0, 5);
+
+          function renderSection(sectionTitle, stories, useZh){
+            if (!stories.length) return `<p>${t.empty}</p>`;
+            return `
+              <h2 style="margin:8px 0 10px; font-size:20px;">${sectionTitle}</h2>
+              ${stories.map((s, i) => {
+                const title = useZh ? (s.titleZh || s.titleEn || 'Untitled') : (s.titleEn || s.titleZh || 'Untitled');
+                const summary = useZh ? (s.summaryZh || s.summaryEn || '') : (s.summaryEn || s.summaryZh || '');
                 return `
                   <div class="story">
                     <h3>${i+1}. ${title}</h3>
@@ -78,8 +83,11 @@
                     ${s.url ? `<p><a href="${s.url}" target="_blank">${t.source}</a></p>` : ''}
                   </div>
                 `;
-              }).join('')
-            : `<p>${t.empty}</p>`;
+              }).join('')}
+            `;
+          }
+
+          list.innerHTML = `${renderSection(t.zhSec, zhStories, true)}<hr style="border:0;border-top:1px dashed #2a3556;margin:14px 0;">${renderSection(t.enSec, enStories, false)}`;
         })
         .catch(()=>{
           document.getElementById('updated').textContent = t.fail;
