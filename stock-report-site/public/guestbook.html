@@ -227,9 +227,12 @@
           const r = await fetch(api);
           const data = await r.json();
           if (!r.ok || !data) return null;
-          if (data.summary && !isBlockedOrAbuseText(data.summary)) {
-            return { summary: data.summary, media: data.media || null };
-          }
+          if (data.summary && isBlockedOrAbuseText(data.summary)) return null;
+          return {
+            summary: data.summary || null,
+            media: data.media || null,
+            items: Array.isArray(data.items) ? data.items : []
+          };
         } catch {}
         return null;
       }
@@ -259,13 +262,16 @@
         // If Forum has matches, return Forum content only (no Google link/summary noise).
         if (forum) return forum;
 
-        const g = googleReply(q);
         const extra = await fetchSearchSummary(q);
+        if (extra?.items?.length) {
+          return `Google 搜尋前 5 筆（純文字）：\n${extra.items.slice(0,5).map((x,i)=>`${i+1}. ${x}`).join('\n')}`;
+        }
+        if (extra?.summary) {
+          return `Google 搜尋摘要：${extra.summary}`;
+        }
 
-        let msg = `Google 搜尋連結：${g.link}`;
-        if (extra?.summary) msg += `\n摘要：${extra.summary}`;
-        if (extra?.media) msg += `\n媒體：${extra.media}`;
-        return msg;
+        const g = googleReply(q);
+        return `Google 搜尋連結：${g.link}`;
       }
 
       async function send(){

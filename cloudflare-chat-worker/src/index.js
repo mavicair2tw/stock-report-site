@@ -53,6 +53,7 @@ export default {
           link: googleLink,
           summary: null,
           media: null,
+          items: [],
           note: 'summary temporarily unavailable',
         }, 200, request);
       }
@@ -209,13 +210,20 @@ async function fetchSearchSummary(q) {
         !/^url source:\s*/i.test(l) &&
         !/^markdown content:?\s*$/i.test(l)
       );
-      const picked = (useful.length ? useful : lines).slice(0, 3);
+
+      const items = useful
+        .filter(l => /^\d+\.\s+/.test(l))
+        .map(l => stripSearchLine(l))
+        .filter(Boolean)
+        .slice(0, 5);
+
+      const picked = (items.length ? items : useful).slice(0, 3);
       const summary = picked.join(' / ').replace(/\s*\/\s*markdown content:?\s*$/i, '').slice(0, 260);
-      if (!summary) continue;
+      if (!summary && !items.length) continue;
 
       const urls = allUrls(cleaned);
       const media = urls.find(u => youtubeEmbed(u) || isImageUrl(u)) || null;
-      return { summary, media };
+      return { summary: summary || null, media, items };
     } catch {}
   }
 
@@ -233,7 +241,14 @@ async function fetchSearchSummary(q) {
 
       const summary = `${stripTags(title)} ${stripTags(desc)}`.replace(/\s+/g, ' ').trim().slice(0, 260);
       const media = link && (youtubeEmbed(link) || isImageUrl(link)) ? link : null;
-      if (summary) return { summary, media };
+      const items = [];
+      const re = /<item>[\s\S]*?<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>[\s\S]*?<\/item>/ig;
+      let m;
+      while ((m = re.exec(xml)) && items.length < 5) {
+        const t = stripSearchLine(stripTags(m[1] || ''));
+        if (t) items.push(t);
+      }
+      if (summary || items.length) return { summary: summary || null, media, items };
     }
   } catch {}
 
@@ -251,6 +266,18 @@ function stripTags(s = '') {
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .trim();
+}
+
+function stripSearchLine(s = '') {
+  return String(s)
+    .replace(/^\d+\.\s+/, '')
+    .replace(/\[\*\*([^\]]+)\*\*\]\([^\)]+\)/g, '$1')
+    .replace(/\[[^\]]+\]\([^\)]+\)/g, (m) => m.replace(/^\[|\]\([^\)]*\)$/g, ''))
+    .replace(/\*\*/g, '')
+    .replace(/https?:\/\/\S+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 140);
 }
 
 function hitRateLimit(key) {
