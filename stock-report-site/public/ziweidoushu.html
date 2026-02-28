@@ -101,6 +101,7 @@
       <div class="card">
         <h3 style="margin-top:0">十二宮主題對照</h3>
         <div class="sub">命宮=個性、人生方向｜兄弟宮=手足、人際圈｜夫妻宮=婚姻與伴侶｜子女宮=子女、創作｜財帛宮=金錢與收入｜疾厄宮=健康｜遷移宮=外出、機會｜朋友宮=社交、人脈｜官祿宮=事業｜田宅宮=房產、家庭｜福德宮=精神、福氣｜父母宮=長輩、資源</div>
+        <div id="palaceExplain" class="sub" style="margin-top:8px"></div>
       </div>
 
       <div class="card">
@@ -131,6 +132,20 @@
         '田宅宮':'房產、家庭',
         '福德宮':'精神、福氣',
         '父母宮':'長輩、資源'
+      };
+      const PALACE_EXPLAIN = {
+        '命宮':'命宮是命盤中心，反映核心本性、性格特質與人生走勢，並會連動其他宮位解讀。',
+        '父母宮':'父母宮顯示與父母互動模式、支持程度與價值觀影響，也是家庭和諧重要指標。',
+        '福德宮':'福德宮反映精神追求、內在幸福感與生活態度，關係到心靈安定與人生觀。',
+        '田宅宮':'田宅宮對應房產、居住穩定度與家庭安全感，常影響生活品質與心理安定。',
+        '官祿宮':'官祿宮關乎事業方向、職場表現、升遷機會與社會地位，是職涯規劃關鍵。',
+        '朋友宮':'朋友宮（僕役宮）顯示朋友、同事與合作關係，反映人脈支援與團隊互動品質。',
+        '遷移宮':'遷移宮主外出、移動、異地發展與環境適應力，影響在外機會與變動運勢。',
+        '疾厄宮':'疾厄宮反映健康體質、疾病風險與壓力耐受度，是保健與生活習慣參考重點。',
+        '財帛宮':'財帛宮關係收入模式、資源管理與財務起伏，可看理財習慣與金錢機會。',
+        '子女宮':'子女宮象徵子女緣、教育互動與創作表現，也可延伸觀察成果培育能力。',
+        '夫妻宮':'夫妻宮對應感情與婚姻品質，反映伴侶互動、關係穩定性與情感課題。',
+        '兄弟宮':'兄弟宮呈現手足互助、競合與家庭情感氛圍，關係到人際信任基礎。'
       };
       const STARS = ['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];
       const STAR_TRAITS = {
@@ -234,8 +249,9 @@
         const advice = `實務建議：未來3個月聚焦「${p.name}」主題，採取穩健節奏推進，並依情況彈性調整策略。`;
 
         const topic = PALACE_TOPICS[p.name] || '綜合領域';
+        const palaceBase = PALACE_EXPLAIN[p.name] || '';
         const formula = `公式：綜合分 = 宮位分(${p.score})×0.55 + 星曜能力均值×4.5 = ${f.total}`;
-        const text = `${p.name}（主題：${topic}；${level}，綜合分 ${f.total}）：${formula}。${starHint}${dimAdvice}${action}${advice}`;
+        const text = `${p.name}（主題：${topic}；${level}，綜合分 ${f.total}）：${palaceBase}${formula}。${starHint}${dimAdvice}${action}${advice}`;
         return text.length > 500 ? `${text.slice(0,500)}…` : text;
       }
 
@@ -378,6 +394,13 @@
         const box = $('starTraits');
         if(!box) return;
         box.innerHTML = STARS.map((s, i) => `${i+1}. <b>${s}星</b>：${STAR_TRAITS[s] || ''}`).join('<br>');
+      })();
+
+      (function renderPalaceExplain(){
+        const order = ['命宮','父母宮','福德宮','田宅宮','官祿宮','朋友宮','遷移宮','疾厄宮','財帛宮','子女宮','夫妻宮','兄弟宮'];
+        const box = $('palaceExplain');
+        if(!box) return;
+        box.innerHTML = order.map((p, i) => `紫微宮位${i+1}：<b>${p}</b>｜${PALACE_EXPLAIN[p] || ''}`).join('<br>');
       })();
 
       $('mailBtn').onclick = async () => {
