@@ -104,6 +104,11 @@
       </div>
 
       <div class="card">
+        <h3 style="margin-top:0">十四主星說明</h3>
+        <div id="starTraits" class="sub"></div>
+      </div>
+
+      <div class="card">
         <h3 style="margin-top:0">互動式命盤（點擊宮位查看解讀）</h3>
         <div id="chart" class="chart"></div>
       </div>
@@ -128,6 +133,22 @@
         '父母宮':'長輩、資源'
       };
       const STARS = ['紫微','天機','太陽','武曲','天同','廉貞','天府','太陰','貪狼','巨門','天相','天梁','七殺','破軍'];
+      const STAR_TRAITS = {
+        '紫微':'象徵尊貴、領導力和權威，具管理與領導能力，代表高貴地位與核心統御力。',
+        '天機':'代表智慧、謀略與變通能力，特質靈活，善於計劃與分析。',
+        '太陽':'象徵外向、積極、熱情與感染力，具行動力及公眾影響力。',
+        '武曲':'代表剛毅、決斷與實幹，重視財富與物質管理，擅長理財與執行。',
+        '天同':'象徵和諧、享受與慈悲，親和力高、適應力佳，偏好和平穩定環境。',
+        '廉貞':'代表理想、道德與約束力，也帶挑戰精神，重視信念與判斷。',
+        '天府':'象徵穩定、守成與保守，重視物質保障與長期安全感。',
+        '太陰':'代表陰柔、內斂與敏感，心思細膩，重家庭與生活經營。',
+        '貪狼':'象徵慾望、創造力與冒險，探索力強，追求新鮮與突破。',
+        '巨門':'代表口才、辯論與思想影響力，擅表達與人際互動。',
+        '天相':'象徵公平、公正與責任，擅協調調解，重視秩序與平衡。',
+        '天梁':'代表庇護、慈悲與安定，與教育、哲思、守護能量相關。',
+        '七殺':'象徵勇敢、決斷與魄力，行動果敢，常在壓力情境中表現突出。',
+        '破軍':'代表變動、改革與顛覆，具創新突破能力，能在劇變中找方向。'
+      };
       const STAR_WEIGHTS = {
         '紫微': {lead:9, wealth:6, relation:6, health:5},
         '天機': {lead:7, wealth:5, relation:5, health:6},
@@ -207,7 +228,8 @@
           ? '此宮位屬平衡區，關鍵在節奏管理與風險控制；維持紀律比追求爆發更重要。'
           : '此宮位波動較高，宜先守後攻，優先補強基礎、降低風險，再逐步提升目標。';
 
-        const starHint = `主星為「${p.stars.join('、')}」，在領導/財務/關係/健康四維度約為 ${f.lead.toFixed(1)}/${f.wealth.toFixed(1)}/${f.relation.toFixed(1)}/${f.health.toFixed(1)}。`;
+        const traitText = p.stars.map(s => `${s}：${STAR_TRAITS[s] || ''}`).join('；');
+        const starHint = `主星為「${p.stars.join('、')}」，在領導/財務/關係/健康四維度約為 ${f.lead.toFixed(1)}/${f.wealth.toFixed(1)}/${f.relation.toFixed(1)}/${f.health.toFixed(1)}。星曜特質：${traitText}`;
         const dimAdvice = `四維度解析：${f.lead>=7?'領導面向較強，可主導節奏；':'領導面向中性，宜先整合再推進；'}${f.wealth>=7?'財務面向偏強，適合重視資源效率與成果轉化；':'財務面向宜保守，先顧現金流與成本控管；'}${f.relation>=6?'關係面向較佳，透過合作可放大成果；':'關係面向較弱，溝通與界線管理需特別留意；'}${f.health>=6?'健康/耐力面向穩定，可維持長期節奏。':'健康/耐力面向波動，建議留意作息與壓力管理。'}`;
         const advice = `實務建議：未來3個月聚焦「${p.name}」主題，採取穩健節奏推進，並依情況彈性調整策略。`;
 
@@ -351,6 +373,12 @@
         // 4) AI 解析
         await doAIParse();
       };
+
+      (function renderStarTraits(){
+        const box = $('starTraits');
+        if(!box) return;
+        box.innerHTML = STARS.map((s, i) => `${i+1}. <b>${s}星</b>：${STAR_TRAITS[s] || ''}`).join('<br>');
+      })();
 
       $('mailBtn').onclick = async () => {
         const d = collectData();
