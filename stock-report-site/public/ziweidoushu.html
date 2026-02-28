@@ -221,27 +221,40 @@
         return { total: Number(total.toFixed(1)), lead, wealth, relation, health };
       }
 
+      function uniqueSentences(text=''){
+        const parts = String(text).split('。').map(s=>s.trim()).filter(Boolean);
+        const out = [];
+        const seen = new Set();
+        for (const p of parts){
+          if (seen.has(p)) continue;
+          seen.add(p);
+          out.push(p);
+        }
+        return out.join('。') + (out.length ? '。' : '');
+      }
+
       function palaceDetailText(p){
         const f = palaceFormulaScore(p);
         const level = f.total>=80 ? '強勢' : f.total>=60 ? '偏強' : f.total>=40 ? '中性' : '偏弱';
         const action = f.total>=80
           ? '此宮位適合主動出擊，設定具體里程碑並提高資源投入，容易在短中期看到成果。'
           : f.total>=60
-          ? '此宮位可穩健推進，建議採取「小步快跑」策略，持續優化與驗證，避免一次性重押。'
+          ? '此宮位可穩健推進，建議採取小步快跑策略，持續優化與驗證。'
           : f.total>=40
-          ? '此宮位屬平衡區，關鍵在節奏管理與風險控制；維持紀律比追求爆發更重要。'
-          : '此宮位波動較高，宜先守後攻，優先補強基礎、降低風險，再逐步提升目標。';
+          ? '此宮位屬平衡區，關鍵在節奏管理與風險控制。'
+          : '此宮位波動較高，宜先守後攻，優先補強基礎、降低風險。';
 
         const traitText = p.stars.map(s => `${s}：${STAR_TRAITS[s] || ''}`).join('；');
         const starHint = `主星為「${p.stars.join('、')}」，在領導/財務/關係/健康四維度約為 ${f.lead.toFixed(1)}/${f.wealth.toFixed(1)}/${f.relation.toFixed(1)}/${f.health.toFixed(1)}。星曜特質：${traitText}`;
-        const dimAdvice = `四維度解析：${f.lead>=7?'領導面向較強，可主導節奏；':'領導面向中性，宜先整合再推進；'}${f.wealth>=7?'財務面向偏強，適合重視資源效率與成果轉化；':'財務面向宜保守，先顧現金流與成本控管；'}${f.relation>=6?'關係面向較佳，透過合作可放大成果；':'關係面向較弱，溝通與界線管理需特別留意；'}${f.health>=6?'健康/耐力面向穩定，可維持長期節奏。':'健康/耐力面向波動，建議留意作息與壓力管理。'}`;
+        const dimAdvice = `四維度解析：${f.lead>=7?'領導面向較強，可主導節奏；':'領導面向中性，宜先整合再推進；'}${f.wealth>=7?'財務面向偏強，適合重視資源效率與成果轉化；':'財務面向宜保守，先顧現金流與成本控管；'}${f.relation>=6?'關係面向較佳，透過合作可放大成果；':'關係面向較弱，溝通與界線管理需特別留意；'}${f.health>=6?'健康/耐力面向穩定，可維持長期節奏。':'健康面向需留意作息與壓力平衡。'}`;
         const advice = `實務建議：未來3個月聚焦「${p.name}」主題，採取穩健節奏推進，並依情況彈性調整策略。`;
 
         const topic = PALACE_TOPICS[p.name] || '綜合領域';
         const palaceBase = PALACE_EXPLAIN[p.name] || '';
         const formula = `公式：綜合分 = 宮位分(${p.score})×0.55 + 星曜能力均值×4.5 = ${f.total}`;
         const text = `${p.name}（主題：${topic}；${level}，綜合分 ${f.total}）：${palaceBase}${formula}。${starHint}${dimAdvice}${action}${advice}`;
-        return text.length > 500 ? `${text.slice(0,500)}…` : text;
+        const deduped = uniqueSentences(text);
+        return deduped.length > 500 ? `${deduped.slice(0,500)}…` : deduped;
       }
 
       function renderChart(chart){
