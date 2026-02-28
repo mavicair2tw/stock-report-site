@@ -37,6 +37,12 @@
       .site-link{margin-top:18px;color:var(--muted);font-size:13px}
       .site-link a{color:#93c5fd;text-decoration:none}
       .site-link a:hover{text-decoration:underline}
+      .title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+      .health-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;background:#101a33;color:#cfe2ff;font-size:12px}
+      .health-dot{width:9px;height:9px;border-radius:999px;background:#64748b;box-shadow:0 0 8px rgba(100,116,139,.6)}
+      .health-dot.green{background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.7)}
+      .health-dot.yellow{background:#eab308;box-shadow:0 0 8px rgba(234,179,8,.7)}
+      .health-dot.red{background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,.7)}
     </style>
   </head>
   <body>
@@ -54,7 +60,13 @@
         </div>
       </div>
 
-      <h1>Chat</h1>
+      <div class="title-row">
+        <h1 style="margin:0;">Chat</h1>
+        <div id="healthPill" class="health-pill" title="Provider health">
+          <span id="healthDot" class="health-dot"></span>
+          <span id="healthText">檢查中...</span>
+        </div>
+      </div>
 
       <div class="card">
         <div id="chat" class="chat-box"></div>
@@ -74,10 +86,35 @@
       const sendBtn = document.getElementById('send');
       const clearBtn = document.getElementById('clear');
       const errorEl = document.getElementById('error');
+      const healthDotEl = document.getElementById('healthDot');
+      const healthTextEl = document.getElementById('healthText');
       const STORAGE_KEY = 'openai-tw-chat-history-v1';
       const history = [];
 
       function setError(msg = '') { if (errorEl) errorEl.textContent = msg; }
+
+      function setHealth(state, text) {
+        if (!healthDotEl || !healthTextEl) return;
+        healthDotEl.classList.remove('green', 'yellow', 'red');
+        if (state) healthDotEl.classList.add(state);
+        healthTextEl.textContent = text || '未知';
+      }
+
+      async function updateProviderHealth() {
+        setHealth('', '檢查中...');
+        try {
+          const res = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat/health');
+          const data = await res.json().catch(() => ({}));
+          const p = data?.providers || {};
+          const okCount = [p.openai?.ok, p.openrouter?.ok, p.gemini?.ok].filter(Boolean).length;
+
+          if (okCount >= 2) setHealth('green', `AI 正常 (${okCount}/3)`);
+          else if (okCount === 1) setHealth('yellow', `部分可用 (1/3)`);
+          else setHealth('red', 'AI 不可用 (0/3)');
+        } catch {
+          setHealth('red', '健康檢查失敗');
+        }
+      }
 
       function saveHistory(){
         localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(-40)));
@@ -359,6 +396,9 @@
 
       // Support /chat/?q=keyword quick-search entry from other pages.
       const initialQ = new URLSearchParams(location.search).get('q');
+      updateProviderHealth();
+      setInterval(updateProviderHealth, 60000);
+
       if (initialQ && initialQ.trim()) {
         inputEl.value = initialQ.trim();
         setTimeout(() => send(), 0);
