@@ -1,0 +1,9 @@
+[
+  { "symptom": "S_COUGH", "departments": ["家醫科", "胸腔內科"] },
+  { "symptom": "S_ABD_PAIN", "departments": ["家醫科", "腸胃科"] },
+  { "symptom": "S_DIZZINESS", "departments": ["耳鼻喉科", "神經內科"] },
+  { "symptom": "S_RASH", "departments": ["皮膚科", "家醫科"] },
+  { "symptom": "S_URINE_PAIN", "departments": ["泌尿科", "家醫科"] },
+  { "symptom": "S_LOWER_BACK_PAIN", "departments": ["骨科", "復健科"] },
+  { "symptom": "S_PALPITATION", "departments": ["心臟內科", "家醫科"] }
+]

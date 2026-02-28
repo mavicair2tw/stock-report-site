@@ -1,0 +1,62 @@
+[
+  {
+    "id": "R001_EMERGENCY_CHEST_PAIN",
+    "priority": 1000,
+    "conditions": {
+      "any_of": ["S_CHEST_PAIN"],
+      "any_vitals": [{ "field": "spo2", "op": "<", "value": 92 }],
+      "optional_any_of": ["S_SOB", "S_FAINT"]
+    },
+    "outputs": {
+      "level_override": "L1",
+      "reasons": ["胸痛/胸悶合併呼吸困難或低血氧屬急症風險"],
+      "departments": ["急診"],
+      "diet_tags": [],
+      "actions": ["立即就醫或呼叫119", "避免自行開車長途"]
+    }
+  },
+  {
+    "id": "R002_EMERGENCY_STROKE",
+    "priority": 990,
+    "conditions": { "any_of": ["S_STROKE_SIGN"] },
+    "outputs": {
+      "level_override": "L1",
+      "reasons": ["疑似中風徵象（口齒不清/單側無力/視力突變）"],
+      "departments": ["急診", "神經內科"],
+      "actions": ["立即就醫，越快越好（黃金時間）"]
+    }
+  },
+  {
+    "id": "R030_GASTROENTERITIS",
+    "priority": 400,
+    "conditions": {
+      "any_of": ["S_DIARRHEA", "S_VOMIT"],
+      "optional_any_of": ["S_ABD_PAIN"],
+      "none_of": ["S_BLACK_STOOL"]
+    },
+    "outputs": {
+      "level_override": "L3",
+      "reasons": ["疑似腸胃炎/腸胃不適，優先避免脫水"],
+      "departments": ["家醫科", "腸胃科"],
+      "diet_tags": ["D_GI_REST", "D_HYDRATION"],
+      "actions": ["若無法進水、頭暈站不穩、尿量變少→提升為L2"]
+    }
+  },
+  {
+    "id": "R020_COMMON_COLD",
+    "priority": 300,
+    "conditions": {
+      "all_of": ["S_COUGH"],
+      "optional_any_of": ["S_SORE_THROAT", "S_RUNNY_NOSE"],
+      "none_of": ["S_SOB", "S_CHEST_PAIN"],
+      "optional_vitals": [{ "field": "temp_c", "op": "<", "value": 39 }]
+    },
+    "outputs": {
+      "level_override": "L4",
+      "reasons": ["症狀像上呼吸道感染，且無明顯危險警訊"],
+      "departments": ["家醫科"],
+      "diet_tags": ["D_HYDRATION"],
+      "actions": ["多休息與補水", "若發燒>3天、喘、或咳嗽>3週改為就醫"]
+    }
+  }
+]
