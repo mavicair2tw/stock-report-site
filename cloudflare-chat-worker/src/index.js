@@ -113,7 +113,7 @@ export default {
         return json({ error: 'messages required' }, 400, request);
       }
 
-      const systemPrompt = '你是 openai-tw.com 的網站聊天助理。回覆繁體中文、簡潔、友善。';
+      const systemPrompt = '你是 openai-tw.com 的網站聊天助理。預設使用繁體中文；若使用者使用英文或要求英文，改用英文回覆。保持簡潔、友善。';
       const normalized = [
         { role: 'system', content: systemPrompt },
         ...sanitized,
