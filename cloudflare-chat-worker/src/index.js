@@ -213,7 +213,38 @@ async function fetchSearchSummary(q) {
     } catch {}
   }
 
+  // Fallback: use Bing RSS to avoid r.jina/451 issues.
+  try {
+    const rssUrl = `https://www.bing.com/search?q=${encodeURIComponent(q)}&format=rss&setlang=zh-Hant`;
+    const r = await fetch(rssUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const xml = await r.text();
+    if (r.ok && xml) {
+      const title = (xml.match(/<item>[\s\S]*?<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/i) || [])[1] ||
+                    (xml.match(/<item>[\s\S]*?<title>([\s\S]*?)<\/title>/i) || [])[1] || '';
+      const desc = (xml.match(/<item>[\s\S]*?<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/i) || [])[1] ||
+                   (xml.match(/<item>[\s\S]*?<description>([\s\S]*?)<\/description>/i) || [])[1] || '';
+      const link = (xml.match(/<item>[\s\S]*?<link>([\s\S]*?)<\/link>/i) || [])[1] || '';
+
+      const summary = `${stripTags(title)} ${stripTags(desc)}`.replace(/\s+/g, ' ').trim().slice(0, 260);
+      const media = link && (youtubeEmbed(link) || isImageUrl(link)) ? link : null;
+      if (summary) return { summary, media };
+    }
+  } catch {}
+
   return null;
+}
+
+function stripTags(s = '') {
+  return String(s)
+    .replace(/<!\[CDATA\[|\]\]>/g, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .trim();
 }
 
 function hitRateLimit(key) {
