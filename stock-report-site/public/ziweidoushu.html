@@ -281,6 +281,8 @@
         const d = chart.data || {};
         const palaceLines = (chart.palaces || []).map((p,i)=> `${i+1}. ${p.name}｜主星：${p.stars.join('、')}｜Score: ${p.score}`);
         const interp = ($('interpretation').innerText || chart.summary || '').trim();
+        const ming = (chart.palaces || []).find(p => p.name === '命宮');
+        const mingDetail = ming ? palaceDetailText(ming) : '（無命宮資料）';
         return [
           '【紫微斗數完整資料與解讀】',
           '',
@@ -293,6 +295,9 @@
           chart.major || '',
           chart.minor || '',
           chart.annual || '',
+          '',
+          '【命宮詳細解讀】',
+          mingDetail,
           '',
           '【命盤十二宮】',
           ...palaceLines,
