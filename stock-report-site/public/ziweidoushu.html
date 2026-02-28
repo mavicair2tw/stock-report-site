@@ -65,8 +65,8 @@
         <div class="card">
           <h3 style="margin-top:0">資料輸入 / 帳戶</h3>
           <div class="row">
-            <label>帳號
-              <input id="account" placeholder="例如：mavic" />
+            <label>Email
+              <input id="email" type="email" placeholder="name@example.com" />
             </label>
             <label>姓名
               <input id="name" placeholder="姓名" />
@@ -87,8 +87,9 @@
           <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
             <button id="calcBtn">計算命盤</button>
             <button id="saveBtn">儲存命盤</button>
-            <button id="loadBtn">載入帳號命盤</button>
+            <button id="loadBtn">載入 Email 命盤</button>
             <button id="aiBtn">AI 解析</button>
+            <button id="mailBtn">寄送完整資料到 Email</button>
           </div>
           <div id="status" class="sub" style="margin-top:8px"></div>
         </div>
@@ -171,7 +172,7 @@
 
       function collectData(){
         return {
-          account: $('account').value.trim(),
+          email: $('email').value.trim(),
           name: $('name').value.trim(),
           gender: $('gender').value,
           birthDate: $('birthDate').value,
@@ -191,18 +192,19 @@
 
       $('saveBtn').onclick = () => {
         const d = collectData();
-        if(!d.account){ $('status').textContent='請輸入帳號再儲存。'; return; }
+        if(!d.email){ $('status').textContent='請輸入 Email 再儲存。'; return; }
         if(!current){ $('status').textContent='請先計算命盤。'; return; }
-        localStorage.setItem(`ziweidoushu:${d.account}`, JSON.stringify(current));
-        $('status').textContent = `已儲存帳號 ${d.account} 的命盤。`;
+        localStorage.setItem(`ziweidoushu:${d.email}`, JSON.stringify(current));
+        $('status').textContent = `已儲存 ${d.email} 的命盤。`;
       };
 
       $('loadBtn').onclick = () => {
-        const account = $('account').value.trim();
-        if(!account){ $('status').textContent='請輸入帳號。'; return; }
-        const raw = localStorage.getItem(`ziweidoushu:${account}`);
+        const email = $('email').value.trim();
+        if(!email){ $('status').textContent='請輸入 Email。'; return; }
+        const raw = localStorage.getItem(`ziweidoushu:${email}`);
         if(!raw){ $('status').textContent='找不到已儲存命盤。'; return; }
         current = JSON.parse(raw);
+        $('email').value = current.data.email || email;
         $('name').value = current.data.name || '';
         $('gender').value = current.data.gender || '男';
         $('birthDate').value = current.data.birthDate || '';
@@ -210,6 +212,33 @@
         renderChart(current); renderFortune(current);
         $('status').textContent='已載入命盤。';
       };
+
+      function buildEmailBody(chart){
+        const d = chart.data || {};
+        const palaceLines = (chart.palaces || []).map((p,i)=> `${i+1}. ${p.name}｜主星：${p.stars.join('、')}｜Score: ${p.score}`);
+        const interp = ($('interpretation').innerText || chart.summary || '').trim();
+        return [
+          '【紫微斗數完整資料與解讀】',
+          '',
+          `姓名：${d.name || ''}`,
+          `Email：${d.email || ''}`,
+          `性別：${d.gender || ''}`,
+          `出生：${d.birthDate || ''} ${d.birthTime || ''} (${d.tz || ''})`,
+          '',
+          '【運勢】',
+          chart.major || '',
+          chart.minor || '',
+          chart.annual || '',
+          '',
+          '【命盤十二宮】',
+          ...palaceLines,
+          '',
+          '【解讀】',
+          interp,
+          '',
+          '— 由 openai-tw.com 紫微斗數系統產生 —'
+        ].join('\n');
+      }
 
       $('aiBtn').onclick = async () => {
         if(!current){ $('status').textContent='請先計算命盤。'; return; }
@@ -230,6 +259,17 @@
         } catch {
           $('status').textContent='AI 解析連線失敗。';
         }
+      };
+
+      $('mailBtn').onclick = () => {
+        const d = collectData();
+        if(!d.email){ $('status').textContent='請先輸入 Email。'; return; }
+        if(!current){ $('status').textContent='請先計算命盤。'; return; }
+        const subject = `紫微斗數完整命盤與解讀 - ${d.name || '使用者'}`;
+        const body = buildEmailBody(current);
+        const url = `mailto:${encodeURIComponent(d.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = url;
+        $('status').textContent='已開啟 Email 草稿（含完整資訊與解讀）。';
       };
     </script>
   </body>
