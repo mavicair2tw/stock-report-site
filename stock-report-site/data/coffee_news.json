@@ -1,67 +1,171 @@
 {
-  "updatedAt": "2026-02-28 12:12",
+  "updatedAt": "2026-02-28 20:17",
   "timezone": "Asia/Taipei",
-  "summary": "今日咖啡新聞重點：1. Royal Coffee Launches $250,000 Matched Campaign With Grounds For Health & Founding Partner Equator Coffees, Invites Industry To Join - Sprudge；2. Weekly Coffee News: 10K Walk with Lem Butler + New Execs at StoneX - Daily Coffee News by Roast Magazine；3. Coffee News Recap, 27 Feb: Potential US tariff refunds & more - Perfect Daily Grind。",
-  "news": [
+  "summary": "今日咖啡新聞重點｜中文：1. 高雄郵局攜陽光世界 推雙向回饋創新公益 - 經濟日報；2. 吳哲安打造「產生現金流咖啡機」星鏈咖啡啟動亞洲佈局 - PChome Online 新聞｜English: 1. Royal Coffee Launches $250,000 Matched Campaign With Grounds For Health & Founding Partner Equator Coffees, Invites Industry To Join - Sprudge Coffee；2. VISION 2026 | 'Whimsy and the spiritual' attract Moon and Mug Coffee business partners - The Tribune-Democrat",
+  "newsZh": [
     {
-      "title": "Royal Coffee Launches $250,000 Matched Campaign With Grounds For Health & Founding Partner Equator Coffees, Invites Industry To Join - Sprudge",
-      "titleZh": "Royal Coffee Launches $250,000 Matched Campaign With Grounds For Health & Founding Partner Equator Coffees, Invites Industry To Join - Sprudge",
+      "title": "高雄郵局攜陽光世界 推雙向回饋創新公益 - 經濟日報",
+      "titleZh": "高雄郵局攜陽光世界 推雙向回饋創新公益 - 經濟日報",
+      "titleEn": "",
       "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxPUTNLOGtUcG0tTy1laWVQYW5zRnlWYlVDN2FINVhqdGxNS1BRalY4Zi1OeHNxcEt5OUprWThWZFFpS0x6UUFsMHhtaXl5RTRaekNhT2xJQV9sa041WmNUZ2JUeUQtYnpQdDhMbG00WDdVNWJJR01EeFkzTHVPa1lvSEFMS0JpNWpPQmxxTG93dnhNWl9HZmowcmM0MjltT2dmX1JqRkhkS3duczVVaEY2MmhzanJoRkJqODlhU2pXb1ZMQVc3RHFud0JxV2lNN0RBcnd5c2hXZnNwMjlpQjJCMm1BYm9JSTR3OEMzWXBoMFM?oc=5"
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9zRnBac3doeU1sX3hpUmtaTmtzQ2pwUkw3M09RaHdHN1RCS21lU0p2M2NTLV93Zzd6UTk3VXFCZlE2d0trUjJqdFR1N1djUXlVMExVNEJRb0owR1XSAWBBVV95cUxQSnFoN1JFZmFuQWJGUFRxcTAyLXlUVzAxT3MySmRJREJUazlRRGRnYTEyUmxTMlk3M09kM1dvQVlxdDczMDJ3SEtSNG9TUHZrRGpScldpSG9sQnZfblFoN3M?oc=5",
+      "lang": "zh"
     },
     {
-      "title": "Weekly Coffee News: 10K Walk with Lem Butler + New Execs at StoneX - Daily Coffee News by Roast Magazine",
-      "titleZh": "Weekly Coffee News: 10K Walk with Lem Butler + New Execs at StoneX - Daily Coffee News by Roast Magazine",
+      "title": "吳哲安打造「產生現金流咖啡機」星鏈咖啡啟動亞洲佈局 - PChome Online 新聞",
+      "titleZh": "吳哲安打造「產生現金流咖啡機」星鏈咖啡啟動亞洲佈局 - PChome Online 新聞",
+      "titleEn": "",
       "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNVnJhVXZPd0plcU9YS2JaQkJUTkJLYWlmVDdELUJWNWtsTHIyQkdIWEFLSy1fZGtKLU93cFhuN2d1Z3F2NEpaTWNlWjFvMkpobEwyZHJzc2ppU2NzOUhkS1RmSkpjNjBzbHdNSC1VbGhKdThFZGdCMkxfNkIwWUJFMEREaUlxcUVJNVdvTWc1b25uYm9nenRVUUxUNURUZXhzYTdoUU53?oc=5"
+      "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxOdnFsbEJ4RktaRDlta2VFam96Rm9oSWtmLVlmUVRzdTIza3FpZzk2dlF3MFBndXVTYmM0SWlCSGlpZ2MxdE9HWWFnc0lPd3ZhQ2Y2bnlGcXlHMWw4ekdIQTVCUjdROGI5SUFldXZnS0xfNlVLMzczeFlLWmJ1NTZDeWROeTJ4Ym1GRjEtM0hrVQ?oc=5",
+      "lang": "zh"
     },
     {
-      "title": "Coffee News Recap, 27 Feb: Potential US tariff refunds & more - Perfect Daily Grind",
-      "titleZh": "Coffee News Recap, 27 Feb: Potential US tariff refunds & more - Perfect Daily Grind",
+      "title": "客座總編輯｜臺灣咖啡產業策略聯盟召集人林哲豪 抓緊第三波浪潮 讓臺灣咖啡成為消費者選項 - 農傳媒",
+      "titleZh": "客座總編輯｜臺灣咖啡產業策略聯盟召集人林哲豪 抓緊第三波浪潮 讓臺灣咖啡成為消費者選項 - 農傳媒",
+      "titleEn": "",
       "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTFBySDQxeHlOaEZJUnlGaDB3d2xoTnI0M19naGxvQzJqTmtSeTdub3VqYnA0ZlJ0Wk9qdmk1MENpTmtLNGprZVJDVDZRbXBoYlBIei01dS0tRlZqLV9ISEZmSTVoMjRrVVNnWVY4a1MyWGxJeFVNb0d6cHcwQ0Y1Zw?oc=5"
+      "url": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE0wVlM4WjlwNllaQXlsYVBNSXF2cEpyZFVoaUlRSGl3ajh0aWdJd2NLOUs3RTh1MHRhanNLeEF4MjR4SkJkX2lFbG1rQlg5djk2SXFJOA?oc=5",
+      "lang": "zh"
+    },
+    {
+      "title": "澳門咖啡業者走進阿里山 交流咖啡產業發展 - 原住民族文化事業基金會",
+      "titleZh": "澳門咖啡業者走進阿里山 交流咖啡產業發展 - 原住民族文化事業基金會",
+      "titleEn": "",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMiRkFVX3lxTE1UTXlZdGRpYkpsbTF5TzJ6T1hScmNMeW1VNE0xT2lreTluVjZSV1dQbjdSaEhVZktKMlJseWZtWmEtQnRLN2c?oc=5",
+      "lang": "zh"
+    },
+    {
+      "title": "全球暖化衝擊咖啡業 巴西豆種面臨轉型 - 公視新聞網PNN",
+      "titleZh": "全球暖化衝擊咖啡業 巴西豆種面臨轉型 - 公視新聞網PNN",
+      "titleEn": "",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE0wVjRONmJwT1MwcWo4WV9MMFhESlZ4QV84ZWtVTkFxYmpucmVPMkMwdl9hQUxycUdDMXpaano5RmNyQ1BiRktKS0xlRlM2aHM?oc=5",
+      "lang": "zh"
+    }
+  ],
+  "newsEn": [
+    {
+      "title": "Royal Coffee Launches $250,000 Matched Campaign With Grounds For Health & Founding Partner Equator Coffees, Invites Industry To Join - Sprudge Coffee",
+      "titleZh": "",
+      "titleEn": "Royal Coffee Launches $250,000 Matched Campaign With Grounds For Health & Founding Partner Equator Coffees, Invites Industry To Join - Sprudge Coffee",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxPUTNLOGtUcG0tTy1laWVQYW5zRnlWYlVDN2FINVhqdGxNS1BRalY4Zi1OeHNxcEt5OUprWThWZFFpS0x6UUFsMHhtaXl5RTRaekNhT2xJQV9sa041WmNUZ2JUeUQtYnpQdDhMbG00WDdVNWJJR01EeFkzTHVPa1lvSEFMS0JpNWpPQmxxTG93dnhNWl9HZmowcmM0MjltT2dmX1JqRkhkS3duczVVaEY2MmhzanJoRkJqODlhU2pXb1ZMQVc3RHFud0JxV2lNN0RBcnd5c2hXZnNwMjlpQjJCMm1BYm9JSTR3OEMzWXBoMFM?oc=5",
+      "lang": "en"
     },
     {
       "title": "VISION 2026 | 'Whimsy and the spiritual' attract Moon and Mug Coffee business partners - The Tribune-Democrat",
-      "titleZh": "VISION 2026 | 'Whimsy and the spiritual' attract Moon and Mug Coffee business partners - The Tribune-Democrat",
+      "titleZh": "",
+      "titleEn": "VISION 2026 | 'Whimsy and the spiritual' attract Moon and Mug Coffee business partners - The Tribune-Democrat",
       "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiggJBVV95cUxQYVNSR2VreDRobWdSaGVsV2g5U0lGMVdXTzZQbXBQUjhBVG9zM3JxX1p1a2lLSWJfSi1TR1RYSWlVcjNNWEsxLUFRcklxXzRZQmJFOWkyTDh2XzRfVDlyNUl6dzVaSDhjRlZ1S2QzMzBZZEJiN1pRaWtPRThWREt5V1FfTk56ejFaZ0twWWJZWFRzOThaNWoxbzd1bzNzdmhnU1JZcEtZQW9TT2ZpXzFxd2w2MjJxMWxlNkN3d3JRR0YyR0ItWFpQVlp3RFdudk1NUVlBeUhvWU1CRWFnWmlGU1lmdldkR1huendpeXExMzlucmFzVVZYbWdkUE04MmowRVE?oc=5"
+      "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxNaDVfNjdQQldGNWwzZVVxdVFmQUdwenN5ZGdBR2dvQ0l4ZkVIS2NRQlF3NmRkc2UxQUZKQ3J3bDJ3VkZxajF1bkhmWnBCNml6YWV0TzJ2ZFdJclhkVW1YaDhuZGgzWElpRFk2SXBUNk5ycjJHd01VQnRzTVhQUGxxYkpoNlBtNVhZZU5UVTRCa2FiS0s5bGZNTUU5bDlPUmlNYmJ5M1dLZjQzNEswT2lXWFo0aGZXY1V3RnpRSTFaS0Z2WmxvNHNlZkpiWmstamxGa1ZaNzVYc0hwNlRnZUk2X3ZCRDN6T2ZfVFA0SVVqMENGc0k?oc=5",
+      "lang": "en"
     },
     {
-      "title": "How REgrow Yirga is Reshaping the Coffee Industry in Ethiopia - The Borgen Project",
-      "titleZh": "How REgrow Yirga is Reshaping the Coffee Industry in Ethiopia - The Borgen Project",
+      "title": "Weekly Coffee News: 10K Walk with Lem Butler + New Execs at StoneX - Daily Coffee News by Roast Magazine",
+      "titleZh": "",
+      "titleEn": "Weekly Coffee News: 10K Walk with Lem Butler + New Execs at StoneX - Daily Coffee News by Roast Magazine",
       "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE5RM3dXVGduVGM2c3F1Nkd4Z25RalhkN3lFMm9uM2NRek5XUnZlMW9SZzFLa0dxREI3MG52MWNpLVp2S1QzYU9oWWJPZXR6VnFKWFJ0RnpIclZaYUp5ZU5BdUhMcnU?oc=5"
+      "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNVnJhVXZPd0plcU9YS2JaQkJUTkJLYWlmVDdELUJWNWtsTHIyQkdIWEFLSy1fZGtKLU93cFhuN2d1Z3F2NEpaTWNlWjFvMkpobEwyZHJzc2ppU2NzOUhkS1RmSkpjNjBzbHdNSC1VbGhKdThFZGdCMkxfNkIwWUJFMEREaUlxcUVJNVdvTWc1b25uYm9nenRVUUxUNURUZXhzYTdoUU53?oc=5",
+      "lang": "en"
     },
     {
-      "title": "Coffee industry prospers in Lincang, SW China's Yunnan - People's Daily",
-      "titleZh": "Coffee industry prospers in Lincang, SW China's Yunnan - People's Daily",
+      "title": "Coffee News Recap, 27 Feb: Potential US tariff refunds & more - Perfect Daily Grind",
+      "titleZh": "",
+      "titleEn": "Coffee News Recap, 27 Feb: Potential US tariff refunds & more - Perfect Daily Grind",
       "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTFBXa1VGWWtQZUUyTC1zTXQ5NHBUakFMWEZFWVZjOGxqcGJ4M3l1al9zR1B4WmpIMGhLeHhwbHl5NHppd2NJbWhNQ0Z0WWlUeHJuRXBIUDdfZ1ZKY3BobWtObGFzRUQ?oc=5"
+      "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTFBySDQxeHlOaEZJUnlGaDB3d2xoTnI0M19naGxvQzJqTmtSeTdub3VqYnA0ZlJ0Wk9qdmk1MENpTmtLNGprZVJDVDZRbXBoYlBIei01dS0tRlZqLV9ISEZmSTVoMjRrVVNnWVY4a1MyWGxJeFVNb0d6cHcwQ0Y1Zw?oc=5",
+      "lang": "en"
     },
     {
-      "title": "Coffee Industry Leaders Give Major Collections to UC Davis Library - UC Davis",
-      "titleZh": "Coffee Industry Leaders Give Major Collections to UC Davis Library - UC Davis",
+      "title": "Luckin Coffee: From Scandal to Supremacy in China's Coffee Market - QUASA Connect",
+      "titleZh": "",
+      "titleEn": "Luckin Coffee: From Scandal to Supremacy in China's Coffee Market - QUASA Connect",
       "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOTF94My1OOVZBY1M4c3EtSHNxd1IzRktJYVhheTdaWkpfSFUwaTVsY3lNTExYb3JLbTBMM25SdW1mWGxtY09xYm5xamdzR2x0RFlFX3pFa2FJM3dPRzAzaFB1NjVSaWlzNXBfRk9hbUFDRUUzQUxfNlZYZzNaeFlsUk94TUdULW0wVWJ2ajlKa2Q0bFFkb3Y2c3ZLcTRUcnczQ3hwWHhPSjY?oc=5"
+      "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPUmhYRDh3TEZBZXpwbzBCYTRoQmlFVTBLRktGbnRzTHlHaDdBTThIM3hXekI1WmNrMzQ3YkVULThVSHZfWkhMbXAwSzFic3VnQVFyV292ZWFvX3pJX0xITmo0Y1lXUnhfMmQ4cEY5S3FuNGw1WTRSczYxTk9MUmdBM3dOV3p1STZuR1piSy1ROXM?oc=5",
+      "lang": "en"
+    }
+  ],
+  "news": [
+    {
+      "title": "高雄郵局攜陽光世界 推雙向回饋創新公益 - 經濟日報",
+      "titleZh": "高雄郵局攜陽光世界 推雙向回饋創新公益 - 經濟日報",
+      "titleEn": "",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9zRnBac3doeU1sX3hpUmtaTmtzQ2pwUkw3M09RaHdHN1RCS21lU0p2M2NTLV93Zzd6UTk3VXFCZlE2d0trUjJqdFR1N1djUXlVMExVNEJRb0owR1XSAWBBVV95cUxQSnFoN1JFZmFuQWJGUFRxcTAyLXlUVzAxT3MySmRJREJUazlRRGRnYTEyUmxTMlk3M09kM1dvQVlxdDczMDJ3SEtSNG9TUHZrRGpScldpSG9sQnZfblFoN3M?oc=5",
+      "lang": "zh"
     },
     {
-      "title": "The coffee industry already knows the World’s 100 Best Coffee Shops - GlobeNewswire",
-      "titleZh": "The coffee industry already knows the World’s 100 Best Coffee Shops - GlobeNewswire",
+      "title": "吳哲安打造「產生現金流咖啡機」星鏈咖啡啟動亞洲佈局 - PChome Online 新聞",
+      "titleZh": "吳哲安打造「產生現金流咖啡機」星鏈咖啡啟動亞洲佈局 - PChome Online 新聞",
+      "titleEn": "",
       "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxNdjNIc1lmTXNiSmVLRlRmWWRUU19iQmxVMUdtbEtjSDYwSTRtXzBhZzlEV1hQajRpejBYUjdBSG9IZjJrclRqanNyTnhRcnhiVE1zN3R0Zm9ySWk2eUtmS09WTVY5NUwydHJlQzVLQzBEZnZWVmpzVGc3b25sc0N4T1VJS0ZPTklXZWVwUklZbmJpa3NCdmVmTnVQZm80bGlOT1k2dUJWVTV2ekdUcjhfUUF6OGpQcTF6Mnk1aUtUMWlkd21UWk9GVnVkelB5UlZPUTFaNzNn?oc=5"
+      "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxOdnFsbEJ4RktaRDlta2VFam96Rm9oSWtmLVlmUVRzdTIza3FpZzk2dlF3MFBndXVTYmM0SWlCSGlpZ2MxdE9HWWFnc0lPd3ZhQ2Y2bnlGcXlHMWw4ekdIQTVCUjdROGI5SUFldXZnS0xfNlVLMzczeFlLWmJ1NTZDeWROeTJ4Ym1GRjEtM0hrVQ?oc=5",
+      "lang": "zh"
     },
     {
-      "title": "Women coffee farmers nonprofit SANA releases 2025 Impact Report - Global Coffee Report",
-      "titleZh": "Women coffee farmers nonprofit SANA releases 2025 Impact Report - Global Coffee Report",
+      "title": "客座總編輯｜臺灣咖啡產業策略聯盟召集人林哲豪 抓緊第三波浪潮 讓臺灣咖啡成為消費者選項 - 農傳媒",
+      "titleZh": "客座總編輯｜臺灣咖啡產業策略聯盟召集人林哲豪 抓緊第三波浪潮 讓臺灣咖啡成為消費者選項 - 農傳媒",
+      "titleEn": "",
       "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNR1FEVXJqRFQ1aEJVcTRiZ0M0T0JGLTBteWpSX3ZqSVVBdjczXzdFSHo0MzU1UmJtTjZWWUJVSmdmSlR6YURnVnRjMXIxQ2xSS3BmMUlvcnp2eFIyYkxEeHNPY0ZpazQ5XzV4Rl9sbXVudVRhem1BQUtvZjg2WE5EblRxUkxMSHMwS1dNQ1JjOFg?oc=5"
+      "url": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE0wVlM4WjlwNllaQXlsYVBNSXF2cEpyZFVoaUlRSGl3ajh0aWdJd2NLOUs3RTh1MHRhanNLeEF4MjR4SkJkX2lFbG1rQlg5djk2SXFJOA?oc=5",
+      "lang": "zh"
     },
     {
-      "title": "Caffè Nero cleared to acquire Compass Coffee assets for $4.76M after bankruptcy auction - The Business Journals",
-      "titleZh": "Caffè Nero cleared to acquire Compass Coffee assets for $4.76M after bankruptcy auction - The Business Journals",
+      "title": "澳門咖啡業者走進阿里山 交流咖啡產業發展 - 原住民族文化事業基金會",
+      "titleZh": "澳門咖啡業者走進阿里山 交流咖啡產業發展 - 原住民族文化事業基金會",
+      "titleEn": "",
       "note": "Source: Google News aggregation",
-      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxNRkxGMFpVaXRXRFo3QzU4cXlwdkhVd3hDUXQ0cmFvbEpuRUh4Ujk4cGloUjZMTHAzbGxCeTFoOW1NU1paVlZ6WDZkamJvZ2NWMTdaRTI3TlRjNFl4bGxWN21mbHRlVnFVbGdlemhFV29wWV9QbUlpNlFEdzhaUU9ISDJ4QllKRThDSjNGZ1FqTHhSemFEbkw5aUJMRGdqZw?oc=5"
+      "url": "https://news.google.com/rss/articles/CBMiRkFVX3lxTE1UTXlZdGRpYkpsbTF5TzJ6T1hScmNMeW1VNE0xT2lreTluVjZSV1dQbjdSaEhVZktKMlJseWZtWmEtQnRLN2c?oc=5",
+      "lang": "zh"
+    },
+    {
+      "title": "全球暖化衝擊咖啡業 巴西豆種面臨轉型 - 公視新聞網PNN",
+      "titleZh": "全球暖化衝擊咖啡業 巴西豆種面臨轉型 - 公視新聞網PNN",
+      "titleEn": "",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE0wVjRONmJwT1MwcWo4WV9MMFhESlZ4QV84ZWtVTkFxYmpucmVPMkMwdl9hQUxycUdDMXpaano5RmNyQ1BiRktKS0xlRlM2aHM?oc=5",
+      "lang": "zh"
+    },
+    {
+      "title": "Royal Coffee Launches $250,000 Matched Campaign With Grounds For Health & Founding Partner Equator Coffees, Invites Industry To Join - Sprudge Coffee",
+      "titleZh": "",
+      "titleEn": "Royal Coffee Launches $250,000 Matched Campaign With Grounds For Health & Founding Partner Equator Coffees, Invites Industry To Join - Sprudge Coffee",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxPUTNLOGtUcG0tTy1laWVQYW5zRnlWYlVDN2FINVhqdGxNS1BRalY4Zi1OeHNxcEt5OUprWThWZFFpS0x6UUFsMHhtaXl5RTRaekNhT2xJQV9sa041WmNUZ2JUeUQtYnpQdDhMbG00WDdVNWJJR01EeFkzTHVPa1lvSEFMS0JpNWpPQmxxTG93dnhNWl9HZmowcmM0MjltT2dmX1JqRkhkS3duczVVaEY2MmhzanJoRkJqODlhU2pXb1ZMQVc3RHFud0JxV2lNN0RBcnd5c2hXZnNwMjlpQjJCMm1BYm9JSTR3OEMzWXBoMFM?oc=5",
+      "lang": "en"
+    },
+    {
+      "title": "VISION 2026 | 'Whimsy and the spiritual' attract Moon and Mug Coffee business partners - The Tribune-Democrat",
+      "titleZh": "",
+      "titleEn": "VISION 2026 | 'Whimsy and the spiritual' attract Moon and Mug Coffee business partners - The Tribune-Democrat",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxNaDVfNjdQQldGNWwzZVVxdVFmQUdwenN5ZGdBR2dvQ0l4ZkVIS2NRQlF3NmRkc2UxQUZKQ3J3bDJ3VkZxajF1bkhmWnBCNml6YWV0TzJ2ZFdJclhkVW1YaDhuZGgzWElpRFk2SXBUNk5ycjJHd01VQnRzTVhQUGxxYkpoNlBtNVhZZU5UVTRCa2FiS0s5bGZNTUU5bDlPUmlNYmJ5M1dLZjQzNEswT2lXWFo0aGZXY1V3RnpRSTFaS0Z2WmxvNHNlZkpiWmstamxGa1ZaNzVYc0hwNlRnZUk2X3ZCRDN6T2ZfVFA0SVVqMENGc0k?oc=5",
+      "lang": "en"
+    },
+    {
+      "title": "Weekly Coffee News: 10K Walk with Lem Butler + New Execs at StoneX - Daily Coffee News by Roast Magazine",
+      "titleZh": "",
+      "titleEn": "Weekly Coffee News: 10K Walk with Lem Butler + New Execs at StoneX - Daily Coffee News by Roast Magazine",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNVnJhVXZPd0plcU9YS2JaQkJUTkJLYWlmVDdELUJWNWtsTHIyQkdIWEFLSy1fZGtKLU93cFhuN2d1Z3F2NEpaTWNlWjFvMkpobEwyZHJzc2ppU2NzOUhkS1RmSkpjNjBzbHdNSC1VbGhKdThFZGdCMkxfNkIwWUJFMEREaUlxcUVJNVdvTWc1b25uYm9nenRVUUxUNURUZXhzYTdoUU53?oc=5",
+      "lang": "en"
+    },
+    {
+      "title": "Coffee News Recap, 27 Feb: Potential US tariff refunds & more - Perfect Daily Grind",
+      "titleZh": "",
+      "titleEn": "Coffee News Recap, 27 Feb: Potential US tariff refunds & more - Perfect Daily Grind",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTFBySDQxeHlOaEZJUnlGaDB3d2xoTnI0M19naGxvQzJqTmtSeTdub3VqYnA0ZlJ0Wk9qdmk1MENpTmtLNGprZVJDVDZRbXBoYlBIei01dS0tRlZqLV9ISEZmSTVoMjRrVVNnWVY4a1MyWGxJeFVNb0d6cHcwQ0Y1Zw?oc=5",
+      "lang": "en"
+    },
+    {
+      "title": "Luckin Coffee: From Scandal to Supremacy in China's Coffee Market - QUASA Connect",
+      "titleZh": "",
+      "titleEn": "Luckin Coffee: From Scandal to Supremacy in China's Coffee Market - QUASA Connect",
+      "note": "Source: Google News aggregation",
+      "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPUmhYRDh3TEZBZXpwbzBCYTRoQmlFVTBLRktGbnRzTHlHaDdBTThIM3hXekI1WmNrMzQ3YkVULThVSHZfWkhMbXAwSzFic3VnQVFyV292ZWFvX3pJX0xITmo0Y1lXUnhfMmQ4cEY5S3FuNGw1WTRSczYxTk9MUmdBM3dOV3p1STZuR1piSy1ROXM?oc=5",
+      "lang": "en"
     }
   ],
   "ok": true,

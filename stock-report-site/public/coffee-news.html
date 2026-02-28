@@ -68,19 +68,27 @@
           document.getElementById('updated').textContent = `${t.updated}：${d.updatedAt} (${d.timezone})`;
           document.getElementById('summary').innerHTML = `${d.summary || t.fallback}`;
           const list = document.getElementById('list');
-          const news = (d.news || []).slice(0, 10);
-          list.innerHTML = news.length
-            ? news.map((n, i) => {
-                const title = lang === 'zh' ? (n.titleZh || n.title || 'Untitled') : (n.title || n.titleZh || 'Untitled');
+          const zhNews = (d.newsZh || []).slice(0, 5);
+          const enNews = (d.newsEn || []).slice(0, 5);
+
+          function section(title, items, useZh){
+            if(!items.length) return `<p>${t.empty}</p>`;
+            return `
+              <h3 style="margin:8px 0 8px">${title}</h3>
+              ${items.map((n, i) => {
+                const name = useZh ? (n.titleZh || n.title || 'Untitled') : (n.titleEn || n.title || 'Untitled');
                 return `
                   <div class="item">
-                    <h3>${i+1}. ${title}</h3>
+                    <h3>${i+1}. ${name}</h3>
                     ${n.note ? `<p>${n.note}</p>` : ''}
                     ${n.url ? `<p><a href="${n.url}" target="_blank">${t.source}</a></p>` : ''}
                   </div>
                 `;
-              }).join('')
-            : `<p>${t.empty}</p>`;
+              }).join('')}
+            `;
+          }
+
+          list.innerHTML = `${section('中文咖啡新聞（5則）', zhNews, true)}<hr style="border:0;border-top:1px dashed #2a3556;margin:14px 0;">${section('English Coffee News (5)', enNews, false)}`;
         })
         .catch(()=>{
           document.getElementById('updated').textContent = t.fail;
