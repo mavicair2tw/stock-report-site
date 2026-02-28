@@ -30,6 +30,14 @@
       .embed{margin-top:8px;max-width:640px}
       .embed img{max-width:640px;max-height:360px;width:auto;height:auto;border-radius:10px;border:1px solid #2a3556;display:block}
       .embed iframe{width:640px;max-width:100%;height:360px;border:0;border-radius:10px}
+      .comments{margin-top:10px;padding-top:8px;border-top:1px dashed #2a3556}
+      .comment-item{padding:6px 0;border-bottom:1px dashed #22324f}
+      .comment-item:last-child{border-bottom:none}
+      .comment-meta{font-size:11px;color:var(--muted)}
+      .comment-text{font-size:13px;margin-top:2px;white-space:pre-wrap}
+      .comment-row{display:flex;gap:6px;margin-top:8px}
+      .comment-input{flex:1;min-height:38px;background:#0f1730;color:var(--text);border:1px solid #223055;border-radius:8px;padding:8px;resize:vertical}
+      .comment-btn{padding:8px 10px;font-size:12px;border-radius:8px;border:1px solid #35558d;background:#1a315f;color:#fff;cursor:pointer}
       .pager{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:10px;color:var(--muted);font-size:13px}
       .pager button{padding:6px 10px;font-size:12px}
       .site-link{margin-top:18px;color:var(--muted);font-size:13px}
@@ -141,7 +149,11 @@
         list.innerHTML=pageItems.map(x=>{
           const id = x.id;
           const likeCount = Number(x.likeCount||0);
-          return `<div class="item" id="post-${id}"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}<div class="actions"><button class="action-btn like-btn" data-id="${id}">👍 Like (${likeCount})</button><button class="action-btn share-btn" data-id="${id}">🔗 Share (${Number(x.shareCount||0)})</button></div></div>`;
+          const comments = Array.isArray(x.comments) ? x.comments : [];
+          const commentsHtml = comments.length
+            ? comments.map(c => `<div class="comment-item"><div class="comment-meta">訪客 · ${esc(c.time||'')}</div><div class="comment-text">${visibleText(c.text||'')}</div></div>`).join('')
+            : '<div class="comment-meta">目前沒有留言，歡迎回覆。</div>';
+          return `<div class="item" id="post-${id}"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}<div class="actions"><button class="action-btn like-btn" data-id="${id}">👍 Like (${likeCount})</button><button class="action-btn share-btn" data-id="${id}">🔗 Share (${Number(x.shareCount||0)})</button></div><div class="comments"><div class="comment-meta">留言區（${comments.length}）</div>${commentsHtml}<div class="comment-row"><textarea class="comment-input" data-id="${id}" placeholder="留言回覆這篇貼文..."></textarea><button class="comment-btn" data-id="${id}">留言</button></div></div></div>`;
         }).join('');
       }
 
@@ -178,6 +190,7 @@
       list.addEventListener('click', async (e) => {
         const likeBtn = e.target.closest('.like-btn');
         const shareBtn = e.target.closest('.share-btn');
+        const commentBtn = e.target.closest('.comment-btn');
         if (likeBtn) {
           const id = likeBtn.dataset.id;
           try {
@@ -209,6 +222,28 @@
               alert('已複製分享連結');
             }
           } catch {}
+          return;
+        }
+        if (commentBtn) {
+          const id = commentBtn.dataset.id;
+          const input = list.querySelector(`.comment-input[data-id="${id}"]`);
+          const text = String(input?.value || '').trim();
+          if (!text) return;
+          commentBtn.disabled = true;
+          try {
+            const r = await fetch(API, {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ action:'comment', id, text })
+            });
+            if (!r.ok) throw new Error('comment failed');
+            if (input) input.value = '';
+            await refresh();
+          } catch {
+            alert('留言失敗，請稍後再試');
+          } finally {
+            commentBtn.disabled = false;
+          }
         }
       });
 

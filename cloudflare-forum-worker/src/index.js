@@ -56,8 +56,8 @@ export default {
         return json({ ok: true, count: keep.length, ...totals }, 200, request);
       }
 
-      // React to post: like / share / delete
-      if (!['like', 'share', 'delete'].includes(action)) {
+      // React to post: like / share / delete / comment
+      if (!['like', 'share', 'delete', 'comment'].includes(action)) {
         return json({ error: 'invalid action' }, 400, request);
       }
 
@@ -72,6 +72,18 @@ export default {
         await env.FORUM_KV.put(KEY, JSON.stringify(posts));
         const totals = calcTotals(posts);
         return json({ ok: true, deleted: removed?.id || id, ...totals }, 200, request);
+      }
+
+      if (action === 'comment') {
+        const text = String(body?.text || '').trim();
+        if (!text) return json({ error: 'text required' }, 400, request);
+        const comments = Array.isArray(posts[i].comments) ? posts[i].comments : [];
+        comments.push({
+          id: crypto.randomUUID(),
+          text: text.slice(0, 500),
+          time: new Date().toLocaleString('zh-Hant-TW', { hour12: false }),
+        });
+        posts[i].comments = comments.slice(-50);
       }
 
       if (action === 'like') posts[i].likeCount = Number(posts[i].likeCount || 0) + 1;
@@ -102,6 +114,13 @@ function normalizePosts(posts) {
     time: String(p?.time || ''),
     likeCount: Number(p?.likeCount || 0),
     shareCount: Number(p?.shareCount || 0),
+    comments: Array.isArray(p?.comments)
+      ? p.comments.map((c) => ({
+          id: String(c?.id || crypto.randomUUID()),
+          text: String(c?.text || ''),
+          time: String(c?.time || ''),
+        }))
+      : [],
   }));
 }
 
