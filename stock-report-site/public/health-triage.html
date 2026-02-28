@@ -168,7 +168,9 @@ function levelClass(l){return l===1?'lv1':l===2?'lv2':l===3?'lv3':'lv4'}
 
 async function run(){
   const red = checked('redFlags');
-  const sym = checked('symptoms');
+  const symBase = checked('symptoms');
+  // 紅旗也視為症狀輸入，避免勾了紅旗卻沒有進入規則引擎
+  const sym = Array.from(new Set([...(symBase || []), ...(red || [])]));
   const comorb = checked('comorbids');
   const sev = Number(document.getElementById('severity').value||2);
   const durMapVal = Number(document.getElementById('duration').value||2);
