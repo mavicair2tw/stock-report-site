@@ -105,7 +105,7 @@
           return token;
         });
 
-        esc = esc.replace(/(^|\s)(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
+        esc = esc.replace(/(^|[\s：:>])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
 
         esc = esc.replace(/__LINK_TOKEN_(\d+)__/g, (_, i) => tokens[Number(i)] || '');
         return esc.replace(/\n/g, '<br>');
