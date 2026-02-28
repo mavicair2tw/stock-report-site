@@ -89,6 +89,7 @@
             <button id="saveBtn">儲存命盤</button>
             <button id="loadBtn">載入 Email 命盤</button>
             <button id="aiBtn">AI 解析</button>
+            <button id="autoBtn">一鍵自動化流程</button>
             <button id="mailBtn">寄送完整資料到 Email</button>
           </div>
           <div id="status" class="sub" style="margin-top:8px"></div>
@@ -240,12 +241,17 @@
         ].join('\n');
       }
 
-      $('aiBtn').onclick = async () => {
-        if(!current){ $('status').textContent='請先計算命盤。'; return; }
+      function limit500(text=''){
+        const t = String(text).replace(/\s+/g, ' ').trim();
+        return t.length > 500 ? `${t.slice(0,500)}…` : t;
+      }
+
+      async function doAIParse(){
+        if(!current){ $('status').textContent='請先計算命盤。'; return false; }
         $('status').textContent='AI 解析中...';
 
-        const fullPrompt = `你是專業紫微斗數老師。請以繁體中文針對以下資料給出精簡、專業解析：\n${JSON.stringify(current, null, 2)}`;
-        const litePrompt = `請以繁體中文解讀這份紫微斗數重點（性格、事業、財運、感情、健康、近一年建議）：\n姓名:${current?.data?.name||''}\n性別:${current?.data?.gender||''}\n大限:${current?.major||''}\n小限:${current?.minor||''}\n流年:${current?.annual||''}\n強勢宮位:${(current?.palaces||[]).sort((a,b)=>b.score-a.score).slice(0,3).map(p=>`${p.name}(${p.stars.join('、')})`).join('、')}`;
+        const fullPrompt = `你是專業紫微斗數老師。請以繁體中文提供完整但精煉的解析，限制在500字內，涵蓋：性格、事業、財運、感情、健康、未來一年建議。\n${JSON.stringify(current, null, 2)}`;
+        const litePrompt = `請用繁體中文解讀以下紫微斗數重點，500字內：\n姓名:${current?.data?.name||''}\n性別:${current?.data?.gender||''}\n大限:${current?.major||''}\n小限:${current?.minor||''}\n流年:${current?.annual||''}\n強勢宮位:${(current?.palaces||[]).sort((a,b)=>b.score-a.score).slice(0,3).map(p=>`${p.name}(${p.stars.join('、')})`).join('、')}`;
 
         async function ask(prompt){
           const r = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat', {
@@ -261,16 +267,51 @@
           if(!(ret.ok && ret.data?.reply)) ret = await ask(litePrompt);
 
           if(ret.ok && ret.data?.reply){
-            $('interpretation').innerHTML = `<b>AI 解析：</b><br>${String(ret.data.reply).replace(/\n/g,'<br>')}`;
+            const out = limit500(ret.data.reply);
+            $('interpretation').innerHTML = `<b>AI 解析（500字內）：</b><br>${String(out).replace(/\n/g,'<br>')}`;
             $('status').textContent='AI 解析完成。';
-          } else {
-            $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(current.summary||'').replace(/\n/g,'<br>')}`;
-            $('status').textContent='AI 服務忙碌，已切換系統解讀。';
+            return true;
           }
+
+          $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(limit500(current.summary||'')).replace(/\n/g,'<br>')}`;
+          $('status').textContent='AI 服務忙碌，已切換系統解讀。';
+          return false;
         } catch {
-          $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(current.summary||'').replace(/\n/g,'<br>')}`;
+          $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(limit500(current.summary||'')).replace(/\n/g,'<br>')}`;
           $('status').textContent='AI 連線異常，已切換系統解讀。';
+          return false;
         }
+      }
+
+      $('aiBtn').onclick = async () => { await doAIParse(); };
+
+      $('autoBtn').onclick = async () => {
+        const d = collectData();
+        if(!d.email || !d.name || !d.birthDate){
+          $('status').textContent='請先填寫 Email、姓名、出生日期。';
+          return;
+        }
+
+        $('status').textContent='自動化流程執行中：計算 → 儲存 → 載入 → AI 解析';
+
+        current = calcChart(d);
+        renderChart(current);
+        renderFortune(current);
+
+        localStorage.setItem(`ziweidoushu:${d.email}`, JSON.stringify(current));
+
+        const raw = localStorage.getItem(`ziweidoushu:${d.email}`);
+        if(raw) current = JSON.parse(raw);
+
+        $('email').value = current.data.email || d.email;
+        $('name').value = current.data.name || '';
+        $('gender').value = current.data.gender || '男';
+        $('birthDate').value = current.data.birthDate || '';
+        $('birthTime').value = current.data.birthTime || '12:00';
+        renderChart(current);
+        renderFortune(current);
+
+        await doAIParse();
       };
 
       $('mailBtn').onclick = async () => {
