@@ -211,9 +211,7 @@
         const extra = await fetchSearchSummary(q);
 
         let msg = `Google 搜尋連結：${g.link}`;
-        if (extra?.summary) msg += `\n摘要：${extra.summary}`;
         if (extra?.media) msg += `\n媒體：${extra.media}`;
-        if (!extra) msg += `\n（摘要暫時無法取得，請先點連結查看結果）`;
         return msg;
       }
 
