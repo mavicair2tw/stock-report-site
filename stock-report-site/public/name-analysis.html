@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>姓名學解析系統</title>
+  <style>
+    :root{--bg:#0b1020;--panel:#121a2f;--line:#1f2a44;--text:#e6edf3;--muted:#9fb0c3}
+    *{box-sizing:border-box}
+    body{margin:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0b1020 0%,#0a1226 100%);color:var(--text)}
+    .wrap{max-width:1100px;margin:0 auto}
+    .top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+    .logo{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2a3a5e;background:#101a33;color:#dbeafe;font-weight:800;font-size:13px}
+    .top-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+    .nav-item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+    .tag{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #2a3a5e;color:#cfe2ff;text-decoration:none;font-size:12px;font-weight:700}
+    .tag-sub{color:#8fa3bf;font-size:11px;line-height:1;padding-left:8px}
+    .tag.active{border-color:#60a5fa;background:#1a315f;color:#fff}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.7;margin-bottom:12px}
+    .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    @media (max-width: 820px){.row{grid-template-columns:1fr}}
+    label{font-size:12px;color:#b9cae6;display:flex;flex-direction:column;gap:6px}
+    input,select,button{background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:8px;padding:8px}
+    button{cursor:pointer}
+    .sub{color:var(--muted)}
+    .site-link{margin-top:18px;color:var(--muted);font-size:13px}
+    .site-link a{color:#93c5fd;text-decoration:none}
+    pre{white-space:pre-wrap;background:#0f1730;border:1px solid #223055;border-radius:10px;padding:12px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar">
+    <div class="logo">openai-tw.com</div>
+    <div class="top-tags">
+      <div class="nav-item"><a class="tag" href="/">Home</a><span class="tag-sub">Main Portal</span></div>
+      <div class="nav-item"><a class="tag" href="/search/">Search</a><span class="tag-sub">Search</span></div>
+      <div class="nav-item"><a class="tag active" href="/name-analysis/">姓名學</a><span class="tag-sub">Name</span></div>
+      <form action="/search/" method="get" style="display:flex;gap:8px;align-items:center;">
+        <input name="q" type="text" placeholder="Search keyword..." style="width:220px;max-width:42vw;background:#0f1730;color:#e6edf3;border:1px solid #223055;border-radius:999px;padding:6px 10px;font-size:12px;" />
+        <button type="submit" style="padding:6px 10px;border-radius:999px;border:1px solid #35558d;background:#1a315f;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Search</button>
+      </form>
+    </div>
+  </div>
+
+  <h1>姓名學解析系統</h1>
+  <div class="card">
+    <div class="row">
+      <label>姓名
+        <input id="name" placeholder="請輸入中文姓名（例：王小明）" />
+      </label>
+      <label>性別（選填）
+        <select id="gender"><option value="">未填</option><option>男</option><option>女</option></select>
+      </label>
+      <label>出生年（選填）
+        <input id="birthYear" type="number" min="1900" max="2100" placeholder="例：1990" />
+      </label>
+    </div>
+    <div style="margin-top:10px"><button id="runBtn">開始解析</button></div>
+    <div id="status" class="sub" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">姓名分析報告</h3>
+    <pre id="report">請輸入姓名後按「開始解析」。</pre>
+  </div>
+
+  <div class="site-link"><a href="https://openai-tw.com/">openai-tw.com</a></div>
+</div>
+
+<script>
+const STROKES = {
+  '王':4,'李':7,'陳':16,'林':8,'張':11,'劉':15,'黃':12,'吳':7,'周':8,'徐':10,'孫':10,'馬':10,'朱':6,'胡':11,'郭':15,'何':7,'高':10,'羅':20,'鄭':19,
+  '小':3,'大':3,'明':8,'美':9,'華':14,'文':4,'志':7,'國':11,'宏':7,'宇':6,'安':6,'家':10,'怡':9,'涵':11,'婷':12,'雅':12,'慧':15,'萱':15,
+  '俊':9,'傑':12,'豪':14,'翔':12,'睿':14,'宥':9,'恩':10,'妍':7,'欣':8,'琪':12,'瑋':14,'宸':10,'妤':7,'詠':12,'博':12,'誠':14,'瑞':13,'辰':7
+};
+
+const CHAR_MEAN = {
+  '明':'光明、清晰、聰慧','美':'美好、和諧、審美','文':'文采、學習、修養','志':'志向、目標、毅力','國':'格局、責任、承擔','安':'安定、平衡、內在穩定',
+  '家':'家庭、歸屬、責任','涵':'包容、內斂、修養','雅':'優雅、品味、氣質','慧':'智慧、洞察、敏銳','俊':'俊秀、才華、表現','傑':'卓越、企圖、成就',
+  '豪':'豪邁、氣魄、行動','翔':'飛翔、發展、拓展','睿':'睿智、判斷、策略','恩':'恩澤、善意、關係','欣':'喜悅、正向、活力','琪':'珍貴、質感、獨特'
+};
+
+const ELM_BY_CHAR = {
+  '木':'木','林':'木','森':'木','杰':'木','火':'火','炎':'火','日':'火','明':'火','土':'土','山':'土','田':'土','金':'金','鈺':'金','鑫':'金','水':'水','海':'水','涵':'水','雨':'水'
+};
+
+function strokeOf(ch){ return STROKES[ch] || ((ch.charCodeAt(0)%17)+4); }
+function luckOf(n){ const m=n%10; if([1,3,5,6,7,8].includes(m)) return '吉'; if([2,4].includes(m)) return '中'; return '凶'; }
+function meaningOfNum(n){ if(n>=1&&n<=10) return '起始與開展'; if(n<=20) return '成長與磨練'; if(n<=30) return '轉折與定位'; if(n<=40) return '承擔與擴張'; return '累積與變化'; }
+
+function fiveGrid(name){
+  const chars=[...name];
+  const sur=strokeOf(chars[0]||'');
+  const given=chars.slice(1).map(strokeOf);
+  const givenSum=given.reduce((a,b)=>a+b,0);
+  const tian=sur+1;
+  const ren=sur+(given[0]||1);
+  const di=givenSum + (given.length?0:1);
+  const wai=tian+di-ren;
+  const zong=sur+givenSum;
+  return {天格:tian,人格:ren,地格:di,外格:wai,總格:zong};
+}
+
+function fiveElements(name){
+  const count={木:0,火:0,土:0,金:0,水:0};
+  [...name].forEach(ch=>{
+    const e = ELM_BY_CHAR[ch] || ['木','火','土','金','水'][strokeOf(ch)%5];
+    count[e]++;
+  });
+  const missing = Object.entries(count).filter(([,v])=>v===0).map(([k])=>k);
+  return {count, missing};
+}
+
+function personalityText(grids){
+  const p=grids.人格; const z=grids.總格;
+  const traits = p%2===0 ? '務實、重秩序、執行力穩定' : '創意、主動、行動彈性高';
+  const strengths = z%3===0 ? '整合資源能力佳' : '在壓力下持續推進能力佳';
+  const weak = z%4===0 ? '有時過度承擔，需留意節奏' : '偶爾猶豫，建議強化決策時間點';
+  return {traits,strengths,weak};
+}
+
+function careerText(grids, elem){
+  const main = Object.entries(elem.count).sort((a,b)=>b[1]-a[1])[0][0];
+  const tendency = main==='木'?'教育/文化/設計':'火'===main?'品牌/行銷/內容':'土'===main?'管理/地產/營運':'金'===main?'金融/法務/工程':'科技/研究/流通';
+  const lead = grids.人格>=15 ? '領導潛力偏高，適合帶隊或主導專案。' : '領導潛力穩健，適合先從專業影響力建立。';
+  const money = grids.財帛? '': (grids.總格%2===0?'財務觀念偏穩，重視長期累積。':'財務彈性高，需建立紀律避免波動。');
+  return {tendency,lead,money};
+}
+
+function run(){
+  const name = document.getElementById('name').value.trim();
+  const gender = document.getElementById('gender').value.trim();
+  const birthYear = document.getElementById('birthYear').value.trim();
+  const status = document.getElementById('status');
+  const out = document.getElementById('report');
+
+  if(!name || !/^[\u4e00-\u9fff]{2,4}$/.test(name)){
+    status.textContent='請輸入 2-4 字中文姓名。';
+    return;
+  }
+
+  const grids = fiveGrid(name);
+  const elem = fiveElements(name);
+  const pers = personalityText(grids);
+  const career = careerText(grids, elem);
+
+  const score = Math.max(60, Math.min(100,
+    Math.round((Object.values(grids).reduce((a,b)=>a+(luckOf(b)==='吉'?18:luckOf(b)==='中'?12:8),0))/5 + (elem.missing.length===0?10:5-elem.missing.length))
+  ));
+
+  const chars=[...name];
+  const charExplain = chars.map((c,i)=>`${c}：${CHAR_MEAN[c]||'象徵穩定、發展與個人獨特氣質'}（筆畫 ${strokeOf(c)}）`).join('\n');
+
+  const gridLines = Object.entries(grids).map(([k,v])=>`${k}：${v}（${luckOf(v)}）解析：${meaningOfNum(v)}`).join('\n');
+  const elemLines = ['木','火','土','金','水'].map(k=>`${k}：${elem.count[k]}`).join('\n');
+
+  const report = `姓名分析報告\n姓名：${name}${gender?`（${gender}）`:''}${birthYear?`｜出生年：${birthYear}`:''}\n\n一、五格數理\n${gridLines}\n\n二、字義解析\n${charExplain}\n\n三、五行分析\n${elemLines}\n${elem.missing.length?`缺項：${elem.missing.join('、')}（建議在生活色彩、環境或命名用字補強）`:'五行分布均衡。'}\n\n四、性格解析\n性格特質：${pers.traits}\n優勢：${pers.strengths}\n可能弱點：${pers.weak}\n\n五、事業與人生運勢\n事業傾向：${career.tendency}\n領導潛力：${career.lead}\n財運：${career.money}\n\n六、綜合評分\n總分：${score} / 100\n評語：${score>=85?'整體格局佳，屬可穩健放大的名字。':score>=75?'整體平衡，透過方向聚焦可持續增強。':'基礎可用，建議透過行動策略與環境補強提升。'}`;
+
+  out.textContent = report;
+  status.textContent='解析完成。';
+}
+
+document.getElementById('runBtn').addEventListener('click', run);
+</script>
+</body>
+</html>
