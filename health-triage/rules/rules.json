@@ -4,7 +4,9 @@
     "priority": 1000,
     "conditions": {
       "any_of": ["S_CHEST_PAIN"],
-      "any_vitals": [{ "field": "spo2", "op": "<", "value": 92 }],
+      "any_vitals": [
+        { "field": "spo2", "op": "<", "value": 92 }
+      ],
       "optional_any_of": ["S_SOB", "S_FAINT"]
     },
     "outputs": {
@@ -18,12 +20,61 @@
   {
     "id": "R002_EMERGENCY_STROKE",
     "priority": 990,
-    "conditions": { "any_of": ["S_STROKE_SIGN"] },
+    "conditions": {
+      "any_of": ["S_STROKE_SIGN"]
+    },
     "outputs": {
       "level_override": "L1",
       "reasons": ["疑似中風徵象（口齒不清/單側無力/視力突變）"],
       "departments": ["急診", "神經內科"],
       "actions": ["立即就醫，越快越好（黃金時間）"]
+    }
+  },
+  {
+    "id": "R003_EMERGENCY_GI_BLEED",
+    "priority": 980,
+    "conditions": {
+      "any_of": ["S_BLACK_STOOL"],
+      "optional_any_of": ["C_ANTICOAG"]
+    },
+    "outputs": {
+      "level_override": "L1",
+      "reasons": ["黑便/血便可能為消化道出血"],
+      "departments": ["急診", "腸胃科"],
+      "actions": ["立即就醫", "先暫停酒精與刺激性飲食（但用藥請先問醫師）"]
+    }
+  },
+  {
+    "id": "R010_URGENCY_FEVER_HIGH",
+    "priority": 800,
+    "conditions": {
+      "all_of": ["S_FEVER"],
+      "any_vitals": [{ "field": "temp_c", "op": ">=", "value": 39 }],
+      "optional_any_of": ["C_AGE65P", "C_IMMUNO", "C_DM", "C_CKD"]
+    },
+    "outputs": {
+      "level_override": "L2",
+      "reasons": ["高燒或合併慢病/高風險族群，建議24–48小時內就醫"],
+      "departments": ["家醫科", "內科"],
+      "diet_tags": ["D_HYDRATION"],
+      "actions": ["補水、觀察尿量", "若精神變差或呼吸急促則升級急診"]
+    }
+  },
+  {
+    "id": "R020_COMMON_COLD",
+    "priority": 300,
+    "conditions": {
+      "all_of": ["S_COUGH"],
+      "optional_any_of": ["S_SORE_THROAT", "S_RUNNY_NOSE"],
+      "none_of": ["S_SOB", "S_CHEST_PAIN"],
+      "optional_vitals": [{ "field": "temp_c", "op": "<", "value": 39 }]
+    },
+    "outputs": {
+      "level_override": "L4",
+      "reasons": ["症狀像上呼吸道感染，且無明顯危險警訊"],
+      "departments": ["家醫科"],
+      "diet_tags": ["D_HYDRATION"],
+      "actions": ["多休息與補水", "若發燒>3天、喘、或咳嗽>3週改為就醫"]
     }
   },
   {
@@ -43,20 +94,109 @@
     }
   },
   {
-    "id": "R020_COMMON_COLD",
-    "priority": 300,
+    "id": "R031_GERD_FLARE",
+    "priority": 350,
     "conditions": {
-      "all_of": ["S_COUGH"],
-      "optional_any_of": ["S_SORE_THROAT", "S_RUNNY_NOSE"],
-      "none_of": ["S_SOB", "S_CHEST_PAIN"],
-      "optional_vitals": [{ "field": "temp_c", "op": "<", "value": 39 }]
+      "all_of": ["S_ABD_PAIN"],
+      "optional_any_of": ["C_GERD"],
+      "none_of": ["S_BLACK_STOOL"]
     },
     "outputs": {
-      "level_override": "L4",
-      "reasons": ["症狀像上呼吸道感染，且無明顯危險警訊"],
-      "departments": ["家醫科"],
+      "level_override": "L3",
+      "reasons": ["胃部不適/逆流可能性，需觀察是否反覆或加重"],
+      "departments": ["腸胃科", "家醫科"],
+      "diet_tags": ["D_GERD"],
+      "actions": ["若出現黑便/吐血/體重快速下降→急診或腸胃科"]
+    }
+  },
+  {
+    "id": "R040_UTI",
+    "priority": 450,
+    "conditions": {
+      "all_of": ["S_URINE_PAIN"],
+      "optional_any_of": ["S_FEVER"]
+    },
+    "outputs": {
+      "level_override": "L3",
+      "reasons": ["疑似泌尿道感染，建議門診評估與驗尿"],
+      "departments": ["泌尿科", "家醫科"],
       "diet_tags": ["D_HYDRATION"],
-      "actions": ["多休息與補水", "若發燒>3天、喘、或咳嗽>3週改為就醫"]
+      "actions": ["若合併發燒＋腰/肋側痛→提升為L2（疑腎盂腎炎）"]
+    }
+  },
+  {
+    "id": "R041_PYELONEPHRITIS_WARNING",
+    "priority": 820,
+    "conditions": {
+      "all_of": ["S_FEVER", "S_BACK_FLANK_PAIN"],
+      "optional_any_of": ["S_URINE_PAIN", "S_BLOOD_URINE"]
+    },
+    "outputs": {
+      "level_override": "L2",
+      "reasons": ["發燒合併肋側痛，疑似上泌尿道感染風險較高"],
+      "departments": ["急診", "泌尿科"],
+      "diet_tags": ["D_HYDRATION"],
+      "actions": ["24–48小時內就醫，必要時急診"]
+    }
+  },
+  {
+    "id": "R050_VERTIGO",
+    "priority": 420,
+    "conditions": {
+      "all_of": ["S_DIZZINESS"],
+      "none_of": ["S_STROKE_SIGN", "S_FAINT"]
+    },
+    "outputs": {
+      "level_override": "L3",
+      "reasons": ["眩暈需排除耳石症、前庭問題或其他原因"],
+      "departments": ["耳鼻喉科", "神經內科"],
+      "diet_tags": ["D_HYDRATION"],
+      "actions": ["若合併口齒不清/單側無力/走路明顯不穩→急診"]
+    }
+  },
+  {
+    "id": "R060_RASH_URTICARIA",
+    "priority": 410,
+    "conditions": {
+      "all_of": ["S_RASH"],
+      "none_of": ["S_SOB"]
+    },
+    "outputs": {
+      "level_override": "L3",
+      "reasons": ["皮疹/蕁麻疹多為過敏或刺激反應，需評估誘因與嚴重度"],
+      "departments": ["皮膚科", "家醫科"],
+      "diet_tags": [],
+      "actions": ["若出現喘/喉頭緊/嘴唇腫→立刻急診（過敏性反應）"]
+    }
+  },
+  {
+    "id": "R070_LOW_BACK_SCIATICA",
+    "priority": 360,
+    "conditions": {
+      "all_of": ["S_LOWER_BACK_PAIN"],
+      "optional_any_of": ["S_NUMBNESS"]
+    },
+    "outputs": {
+      "level_override": "L3",
+      "reasons": ["下背痛合併麻木可能與神經壓迫相關，建議門診評估"],
+      "departments": ["骨科", "復健科", "神經內科"],
+      "diet_tags": [],
+      "actions": ["若大小便失禁、會陰麻木、下肢無力快速加重→急診"]
+    }
+  },
+  {
+    "id": "R080_ANXIETY_SLEEP",
+    "priority": 250,
+    "conditions": {
+      "any_of": ["S_SLEEP_ISSUE", "S_ANXIETY"],
+      "none_of": ["S_CHEST_PAIN", "S_SOB", "S_FAINT"]
+    },
+    "outputs": {
+      "level_override": "L3",
+      "reasons": ["睡眠/焦慮若影響日常功能，建議門診協助"],
+      "departments": ["身心科", "家醫科"],
+      "diet_tags": [],
+      "actions": ["避免晚間咖啡因與酒精", "若有自傷念頭請立即求助（急診/1925等）"]
     }
   }
 ]
