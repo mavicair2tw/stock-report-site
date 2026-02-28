@@ -286,7 +286,7 @@
             const url = typeof x === 'object' ? String(x?.url || '').trim() : '';
             return `${i+1}. ${url ? `[${title}](${url})` : title}`;
           });
-          return `Google 搜尋前 ${Math.min(topN, extra.items.length)} 筆：\n${lines.join('\n')}`;
+          return `${lines.join('\n')}`;
         }
         if (extra?.summary) {
           return `Google 搜尋摘要：${extra.summary}`;
