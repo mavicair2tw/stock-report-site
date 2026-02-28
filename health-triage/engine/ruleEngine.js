@@ -71,6 +71,11 @@ function symptomDuration(ctx, id) {
   return Number.isNaN(n) ? Number(ctx.duration_hours || 0) : n;
 }
 
+function symptomNote(ctx, id) {
+  const d = ctx.symptom_details || {};
+  return String(d?.[id]?.notes || '').trim();
+}
+
 function matchRule(rule, ctx) {
   const c = rule.conditions || {};
   const symptoms = ctx.symptoms;
@@ -132,6 +137,31 @@ function matchRule(rule, ctx) {
     hits.push(`severity_min:${c.severity_min}`);
   }
 
+  // 單一症狀層級條件
+  if (c.symptom_detail && c.symptom_detail.id) {
+    const sid = c.symptom_detail.id;
+    if (!symptoms.has(sid)) return { ok: false, hits };
+    if (typeof c.symptom_detail.severity_min === 'number' && symptomLevel(ctx, sid) < c.symptom_detail.severity_min) return { ok: false, hits };
+    if (typeof c.symptom_detail.duration_hours_min === 'number' && symptomDuration(ctx, sid) < c.symptom_detail.duration_hours_min) return { ok: false, hits };
+    if (c.symptom_detail.notes_includes) {
+      const note = symptomNote(ctx, sid);
+      if (!note.includes(String(c.symptom_detail.notes_includes))) return { ok: false, hits };
+    }
+    hits.push(`symptom_detail:${sid}`);
+  }
+
+  if (Array.isArray(c.symptom_detail_any) && c.symptom_detail_any.length > 0) {
+    const anyHit = c.symptom_detail_any.some((sd) => {
+      if (!sd?.id || !symptoms.has(sd.id)) return false;
+      if (typeof sd.severity_min === 'number' && symptomLevel(ctx, sd.id) < sd.severity_min) return false;
+      if (typeof sd.duration_hours_min === 'number' && symptomDuration(ctx, sd.id) < sd.duration_hours_min) return false;
+      if (sd.notes_includes && !symptomNote(ctx, sd.id).includes(String(sd.notes_includes))) return false;
+      return true;
+    });
+    if (!anyHit) return { ok: false, hits };
+    hits.push('symptom_detail_any:hit');
+  }
+
   return { ok: true, hits };
 }
 
@@ -173,7 +203,7 @@ function triage(input, paths) {
     if (detail && detail.duration_hours !== undefined) duration_map[sid] = detail.duration_hours;
   }
 
-  const ctx = { symptoms, comorbidities, vitals, duration_hours, severity, severity_map, duration_map };
+  const ctx = { symptoms, comorbidities, vitals, duration_hours, severity, severity_map, duration_map, symptom_details: symptomDetails };
 
   const sorted = [...rules].sort((a, b) => (b.priority || 0) - (a.priority || 0));
 
