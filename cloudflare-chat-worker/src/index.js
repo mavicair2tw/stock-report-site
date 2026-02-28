@@ -41,6 +41,24 @@ export default {
       return proxyJson(y, request);
     }
 
+    if (url.pathname === '/api/search/summary' && request.method === 'GET') {
+      const q = (url.searchParams.get('q') || '').trim();
+      if (!q) return json({ error: 'q required' }, 400, request);
+
+      const result = await fetchSearchSummary(q);
+      const googleLink = `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+      if (!result) {
+        return json({
+          query: q,
+          link: googleLink,
+          summary: null,
+          media: null,
+          note: 'summary temporarily unavailable',
+        }, 200, request);
+      }
+      return json({ query: q, link: googleLink, ...result }, 200, request);
+    }
+
     if (url.pathname !== '/api/chat') {
       return json({ error: 'Not found' }, 404, request);
     }
@@ -134,6 +152,68 @@ async function proxyPostJson(url, body, request) {
   } catch {
     return json({ error: 'proxy fetch error' }, 502, request);
   }
+}
+
+function isBlockedOrAbuseText(text = '') {
+  const t = String(text).toLowerCase();
+  return t.includes('securitycompromiseerror') ||
+    t.includes('anonymous access to domain') ||
+    t.includes('previous abuse found') ||
+    t.includes('"code":451') ||
+    t.includes('status":45102');
+}
+
+function allUrls(s = '') {
+  return String(s).match(/https?:\/\/[^\s]+/ig) || [];
+}
+
+function youtubeEmbed(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')) return `https://www.youtube.com/embed/${u.pathname.replace('/', '')}`;
+    if (u.hostname.includes('youtube.com')) {
+      const v = u.searchParams.get('v');
+      if (v) return `https://www.youtube.com/embed/${v}`;
+    }
+  } catch {}
+  return '';
+}
+
+function isImageUrl(url) {
+  return /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/i.test(url);
+}
+
+async function fetchSearchSummary(q) {
+  const providers = [
+    `https://r.jina.ai/http://duckduckgo.com/?q=${encodeURIComponent(q)}`,
+    `https://r.jina.ai/http://www.bing.com/search?q=${encodeURIComponent(q)}`,
+    `https://r.jina.ai/http://www.google.com/search?q=${encodeURIComponent(q)}`,
+  ];
+
+  for (const api of providers) {
+    try {
+      const r = await fetch(api, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+      const t = await r.text();
+      if (!r.ok || !t || isBlockedOrAbuseText(t)) continue;
+
+      const cleaned = t
+        .replace(/SECURITY NOTICE:[\s\S]*?---\n/, '')
+        .replace(/\{\s*"data"\s*:\s*null[\s\S]*?\}/g, '')
+        .trim();
+
+      if (!cleaned || isBlockedOrAbuseText(cleaned)) continue;
+
+      const lines = cleaned.split('\n').map(x => x.trim()).filter(Boolean);
+      const summary = lines.slice(0, 3).join(' / ').slice(0, 260);
+      if (!summary) continue;
+
+      const urls = allUrls(cleaned);
+      const media = urls.find(u => youtubeEmbed(u) || isImageUrl(u)) || null;
+      return { summary, media };
+    } catch {}
+  }
+
+  return null;
 }
 
 function hitRateLimit(key) {

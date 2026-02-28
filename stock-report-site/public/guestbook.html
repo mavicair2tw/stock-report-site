@@ -186,35 +186,16 @@
       }
 
       async function fetchSearchSummary(q){
-        // Avoid depending on google.com scraping to reduce 451/abuse blocks.
-        const providers = [
-          `https://r.jina.ai/http://duckduckgo.com/?q=${encodeURIComponent(q)}`,
-          `https://r.jina.ai/http://www.bing.com/search?q=${encodeURIComponent(q)}`
-        ];
-
-        for (const api of providers){
-          try {
-            const r = await fetch(api);
-            const t = await r.text();
-            if (!r.ok || !t || isBlockedOrAbuseText(t)) continue;
-
-            const cleaned = t
-              .replace(/SECURITY NOTICE:[\s\S]*?---\n/, '')
-              .replace(/\{\s*"data"\s*:\s*null[\s\S]*?\}/g, '')
-              .trim();
-
-            if (!cleaned || isBlockedOrAbuseText(cleaned)) continue;
-
-            const lines = cleaned.split('\n').map(x=>x.trim()).filter(Boolean);
-            const summary = lines.slice(0, 3).join(' / ').slice(0, 260);
-            if (!summary) continue;
-
-            const urls = allUrls(cleaned);
-            const media = urls.find(u => youtubeEmbed(u) || isImageUrl(u));
-            return { summary, media };
-          } catch {}
-        }
-
+        // Prefer backend summary API to centralize anti-abuse handling.
+        const api = `https://openai-tw-chat.googselect.workers.dev/api/search/summary?q=${encodeURIComponent(q)}`;
+        try {
+          const r = await fetch(api);
+          const data = await r.json();
+          if (!r.ok || !data) return null;
+          if (data.summary && !isBlockedOrAbuseText(data.summary)) {
+            return { summary: data.summary, media: data.media || null };
+          }
+        } catch {}
         return null;
       }
 
