@@ -137,11 +137,13 @@ const RULES_CONFIG = {
     {"id":"R020_COMMON_COLD","priority":300,"conditions":{"all_of":["S_COUGH"],"optional_any_of":["S_SORE_THROAT","S_RUNNY_NOSE"],"none_of":["S_SOB","S_CHEST_PAIN"],"optional_vitals":[{"field":"temp_c","op":"<","value":39}]},"outputs":{"level_override":"L4","reasons":["症狀像上呼吸道感染，且無明顯危險警訊"],"departments":["家醫科"],"diet_tags":["D_HYDRATION"],"actions":["若發燒>3天或咳嗽>3週改為就醫"]}}
   ],
   departmentMap: {
-    S_CHEST_PAIN:['急診','心臟內科','家醫科'], S_PALPITATION:['心臟內科','家醫科'], S_SOB:['胸腔內科','急診','家醫科'],
-    S_COUGH:['胸腔內科','家醫科'], S_ABD_PAIN:['腸胃科','家醫科'], S_DIARRHEA:['腸胃科','家醫科'], S_CONSTIPATION:['腸胃科','家醫科'],
-    S_DIZZINESS:['神經內科','家醫科'], S_HEADACHE:['神經內科','家醫科'], S_NUMBNESS:['神經內科','家醫科'],
-    S_URINE_PAIN:['泌尿科','腎臟科'], S_BLOOD_URINE:['泌尿科','腎臟科'], S_RASH:['皮膚科','家醫科'],
-    S_JOINT_SWELL:['骨科','復健科','風濕免疫科'], S_SLEEP_ISSUE:['身心科','家醫科'], S_ANXIETY:['身心科','家醫科']
+    S_COUGH:['家醫科','胸腔內科'],
+    S_ABD_PAIN:['家醫科','腸胃科'],
+    S_DIZZINESS:['耳鼻喉科','神經內科'],
+    S_RASH:['皮膚科','家醫科'],
+    S_URINE_PAIN:['泌尿科','家醫科'],
+    S_LOWER_BACK_PAIN:['骨科','復健科'],
+    S_PALPITATION:['心臟內科','家醫科']
   },
   dietLibrary: [
     {"id":"D_GI_REST","title":"腸胃休養（清淡/少量多餐）","do":["溫水少量多次","白粥/吐司/蒸蛋/香蕉","必要時補充電解質"],"avoid":["油炸辛辣","酒精","咖啡","高糖飲料","腹瀉時先減少乳製品"],"notes":["若持續無法進水或脫水徵象，建議就醫"]},
@@ -205,7 +207,9 @@ function run(){
   const outp = chosen.outputs || {};
   const level = lvMap[outp.level_override] || 4;
   const reasons = outp.reasons?.length ? outp.reasons : ['可先自我照護並觀察'];
-  const dept = (outp.departments?.length ? outp.departments : ['家醫科']).slice(0,4);
+  const deptSet = new Set(outp.departments?.length ? outp.departments : ['家醫科']);
+  sym.forEach(id => (RULES_CONFIG.departmentMap[id] || []).forEach(d => deptSet.add(d)));
+  const dept = [...deptSet].slice(0,4);
 
   const dietById = Object.fromEntries(RULES_CONFIG.dietLibrary.map(x=>[x.id, x]));
   const dietIds = outp.diet_tags?.length ? outp.diet_tags : ['D_DEFAULT'];
