@@ -51,6 +51,7 @@
       </div>
 
       <h1>紫微斗數</h1>
+      <div class="sub" id="viewCounter">點閱數：--</div>
 
       <div class="card">
         <h3 style="margin-top:0">【紫微斗數簡介與說明】</h3>
@@ -107,6 +108,12 @@
     </div>
 
     <script>
+      const pageKey = `views:${location.pathname}`;
+      const pageViews = Number(localStorage.getItem(pageKey) || '0') + 1;
+      localStorage.setItem(pageKey, String(pageViews));
+      const viewCounterEl = document.getElementById('viewCounter');
+      if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
+
       const PALACES = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','朋友宮','官祿宮','田宅宮','福德宮','父母宮'];
       const PALACE_TOPICS = {
         '命宮':'個性、人生方向',
