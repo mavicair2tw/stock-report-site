@@ -204,7 +204,13 @@ async function fetchSearchSummary(q) {
       if (!cleaned || isBlockedOrAbuseText(cleaned)) continue;
 
       const lines = cleaned.split('\n').map(x => x.trim()).filter(Boolean);
-      const summary = lines.slice(0, 3).join(' / ').slice(0, 260);
+      const useful = lines.filter(l =>
+        !/^title:\s*/i.test(l) &&
+        !/^url source:\s*/i.test(l) &&
+        !/^markdown content:?\s*$/i.test(l)
+      );
+      const picked = (useful.length ? useful : lines).slice(0, 3);
+      const summary = picked.join(' / ').replace(/\s*\/\s*markdown content:?\s*$/i, '').slice(0, 260);
       if (!summary) continue;
 
       const urls = allUrls(cleaned);
