@@ -1,0 +1,176 @@
+{
+  "version": "1.0",
+  "locale": "zh-TW",
+  "severity_scale": {
+    "min": 0,
+    "max": 10,
+    "labels": ["無", "輕", "中", "重"]
+  },
+  "duration_presets_hours": [6, 12, 24, 48, 72, 168, 336],
+  "groups": [
+    {
+      "id": "G_REDFLAG",
+      "title": "紅旗警訊（勾到建議立即就醫）",
+      "ui": { "style": "alert" },
+      "items": [
+        {
+          "id": "S_CHEST_PAIN",
+          "label": "胸痛／胸悶",
+          "description": "壓迫感、放射到左臂/下顎、冒冷汗更需注意",
+          "red_flag": true,
+          "input": { "severity": true, "duration": true, "notes": true }
+        },
+        {
+          "id": "S_SOB",
+          "label": "呼吸困難／喘",
+          "description": "喘到講不出完整句子或血氧偏低需警覺",
+          "red_flag": true,
+          "input": { "severity": true, "duration": true, "notes": true }
+        },
+        {
+          "id": "S_STROKE_SIGN",
+          "label": "口齒不清／單側無力／視力突變",
+          "description": "可能是中風徵象",
+          "red_flag": true,
+          "input": { "severity": true, "duration": true, "notes": false }
+        },
+        {
+          "id": "S_FAINT",
+          "label": "昏厥／意識改變",
+          "description": "突然昏倒、叫不太醒、反應變慢",
+          "red_flag": true,
+          "input": { "severity": true, "duration": true, "notes": true }
+        },
+        {
+          "id": "S_BLACK_STOOL",
+          "label": "黑便／血便／吐血",
+          "description": "可能消化道出血",
+          "red_flag": true,
+          "input": { "severity": true, "duration": true, "notes": true }
+        }
+      ]
+    },
+    {
+      "id": "G_RESP",
+      "title": "呼吸道",
+      "items": [
+        {
+          "id": "S_FEVER",
+          "label": "發燒",
+          "description": "體溫上升、畏寒",
+          "input": { "severity": true, "duration": true, "notes": false }
+        },
+        {
+          "id": "S_COUGH",
+          "label": "咳嗽",
+          "description": "乾咳/有痰",
+          "input": { "severity": true, "duration": true, "notes": true }
+        },
+        {
+          "id": "S_SORE_THROAT",
+          "label": "喉嚨痛",
+          "description": "",
+          "input": { "severity": true, "duration": true, "notes": false }
+        },
+        {
+          "id": "S_RUNNY_NOSE",
+          "label": "鼻塞／流鼻水",
+          "description": "",
+          "input": { "severity": false, "duration": true, "notes": false }
+        }
+      ]
+    },
+    {
+      "id": "G_GI",
+      "title": "腸胃",
+      "items": [
+        { "id": "S_NAUSEA", "label": "噁心", "description": "", "input": { "severity": true, "duration": true, "notes": false } },
+        {
+          "id": "S_VOMIT",
+          "label": "嘔吐",
+          "description": "無法進水/膽汁/咖啡色需注意",
+          "input": { "severity": true, "duration": true, "notes": true }
+        },
+        {
+          "id": "S_DIARRHEA",
+          "label": "腹瀉",
+          "description": "次數很多或血便需注意",
+          "input": { "severity": true, "duration": true, "notes": true }
+        },
+        {
+          "id": "S_ABD_PAIN",
+          "label": "腹痛",
+          "description": "可在備註填部位（右下腹/右上腹等）",
+          "input": { "severity": true, "duration": true, "notes": true }
+        },
+        { "id": "S_CONSTIPATION", "label": "便秘", "description": "", "input": { "severity": true, "duration": true, "notes": false } }
+      ]
+    },
+    {
+      "id": "G_NEURO",
+      "title": "神經／頭暈頭痛",
+      "items": [
+        {
+          "id": "S_DIZZINESS",
+          "label": "頭暈／眩暈",
+          "description": "天旋地轉、站不穩",
+          "input": { "severity": true, "duration": true, "notes": true }
+        },
+        {
+          "id": "S_HEADACHE",
+          "label": "頭痛",
+          "description": "突發爆炸痛/最痛需注意",
+          "input": { "severity": true, "duration": true, "notes": true }
+        },
+        {
+          "id": "S_NUMBNESS",
+          "label": "麻木刺痛",
+          "description": "手腳麻、局部麻",
+          "input": { "severity": true, "duration": true, "notes": true }
+        }
+      ]
+    },
+    {
+      "id": "G_URO",
+      "title": "泌尿",
+      "items": [
+        { "id": "S_URINE_PAIN", "label": "排尿疼痛", "description": "", "input": { "severity": true, "duration": true, "notes": false } },
+        { "id": "S_BLOOD_URINE", "label": "血尿", "description": "", "input": { "severity": true, "duration": true, "notes": true } },
+        {
+          "id": "S_BACK_FLANK_PAIN",
+          "label": "腰／肋側痛",
+          "description": "合併發燒需注意腎盂腎炎",
+          "input": { "severity": true, "duration": true, "notes": true }
+        }
+      ]
+    },
+    {
+      "id": "G_SKIN",
+      "title": "皮膚／過敏",
+      "items": [
+        {
+          "id": "S_RASH",
+          "label": "皮疹／蕁麻疹",
+          "description": "若合併喘、嘴唇腫→急",
+          "input": { "severity": true, "duration": true, "notes": true }
+        }
+      ]
+    },
+    {
+      "id": "G_MSK",
+      "title": "肌肉骨骼",
+      "items": [
+        { "id": "S_LOWER_BACK_PAIN", "label": "下背痛／坐骨痛", "description": "", "input": { "severity": true, "duration": true, "notes": true } },
+        { "id": "S_JOINT_SWELL", "label": "關節腫痛", "description": "", "input": { "severity": true, "duration": true, "notes": true } }
+      ]
+    },
+    {
+      "id": "G_MENTAL",
+      "title": "睡眠／情緒",
+      "items": [
+        { "id": "S_SLEEP_ISSUE", "label": "失眠", "description": "", "input": { "severity": true, "duration": true, "notes": true } },
+        { "id": "S_ANXIETY", "label": "焦慮／恐慌", "description": "", "input": { "severity": true, "duration": true, "notes": true } }
+      ]
+    }
+  ]
+}
