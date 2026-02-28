@@ -302,8 +302,13 @@ function formatSearchItem(item = {}) {
 }
 
 function trimSnippet(s = '', max = 100) {
-  const t = String(s).replace(/\s+/g, ' ').trim();
+  const blocked = [
+    'We would like to show you a description here but the site won’t allow us.',
+    "We would like to show you a description here but the site won't allow us."
+  ];
+  let t = String(s).replace(/\s+/g, ' ').trim();
   if (!t) return '';
+  if (blocked.some(x => t.includes(x))) return '';
   return t.length > max ? `${t.slice(0, max)}…` : t;
 }
 
