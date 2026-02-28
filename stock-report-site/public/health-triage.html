@@ -226,8 +226,18 @@ function run(){
   document.getElementById('r2').innerHTML = `<h3 class="section-title">卡片2：建議就醫科別</h3><div>首選科別：<b>${dept[0]||'家醫科'}</b></div><div>次選：${dept.slice(1).join('、')||'家醫科'}</div><div class="sub">規則鏈：症狀ID → 科別映射。</div>`;
   document.getElementById('r3').innerHTML = `<h3 class="section-title">卡片3：飲食注意</h3><div><b>${diet.title}</b>（${diet.id}）</div><div>今天先做：<ul>${diet.do.map(x=>`<li>${x}</li>`).join('')}</ul></div><div>先避免：<ul>${diet.avoid.map(x=>`<li>${x}</li>`).join('')}</ul></div>${(diet.notes||[]).length?`<div>提醒：<ul>${diet.notes.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}`;
   const actions = (outp.actions || []);
-  document.getElementById('r4').innerHTML = `<h3 class="section-title">卡片4：觀察清單</h3><ul><li>體溫/血壓/心率/血氧</li><li>排尿量與補水狀況</li><li>症狀是否加重（24小時內）</li></ul>${actions.length?`<div>下一步建議：<ul>${actions.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}<div class="sub">若出現紅旗警訊，請立即就醫。</div>`;
-  document.getElementById('status').textContent = '分析完成（JSON 規則引擎模式）。';
+  const redFlagReminder = [
+    '胸痛/胸悶持續、呼吸困難或血氧<92%',
+    '意識改變、昏厥、抽搐、單側無力或口齒不清',
+    '黑便/血便、大量出血、嚴重過敏（喉頭緊/嘴唇腫）'
+  ];
+  document.getElementById('r4').innerHTML = `<h3 class="section-title">卡片4：觀察清單與紅旗提醒</h3><ul><li>體溫/血壓/心率/血氧</li><li>排尿量與補水狀況</li><li>症狀是否加重（24小時內）</li></ul>${actions.length?`<div>下一步建議：<ul>${actions.map(x=>`<li>${x}</li>`).join('')}</ul></div>`:''}<div><b>紅旗提醒（再次確認）</b><ul>${redFlagReminder.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+
+  // Backend-ready output payload (可直接送後端 API)
+  const resultPayload = { level: outp.level_override || 'L4', reasons, diet_tags: dietIds, departments: dept, actions };
+  window.__triageResult = resultPayload;
+
+  document.getElementById('status').textContent = '分析完成（前端收集 → 規則引擎輸出 level/reasons/diet_tags/departments/actions）。';
 }
 
 document.getElementById('runBtn').addEventListener('click', run);
