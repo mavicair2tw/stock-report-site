@@ -20,6 +20,13 @@ export default {
       const raw = await env.FORUM_KV.get(KEY);
       const posts = normalizePosts(safeParse(raw));
       const totals = calcTotals(posts);
+
+      const q = String(url.searchParams.get('q') || '').trim().toLowerCase();
+      if (q) {
+        const matched = posts.filter((p) => String(p.text || '').toLowerCase().includes(q)).slice(-100);
+        return json({ posts: matched, q, count: matched.length, ...totals }, 200, request);
+      }
+
       return json({ posts, ...totals }, 200, request);
     }
 

@@ -170,6 +170,21 @@
         return null;
       }
 
+      async function searchForum(q){
+        const api = `https://openai-tw-forum.googselect.workers.dev/api/forum?q=${encodeURIComponent(q)}`;
+        try {
+          const r = await fetch(api);
+          const d = await r.json();
+          const posts = Array.isArray(d?.posts) ? d.posts : [];
+          if (!posts.length) return `Forum 搜尋「${q}」：找不到結果。`;
+          const top = posts.slice(-5).reverse();
+          const lines = top.map((p, i) => `${i+1}. ${String(p.text||'').slice(0,80)} (${p.time || ''})`);
+          return `Forum 搜尋「${q}」共 ${posts.length} 筆：\n${lines.join('\n')}`;
+        } catch {
+          return 'Forum 搜尋暫時失敗，請稍後再試。';
+        }
+      }
+
       function googleReply(q){
         const encoded = encodeURIComponent(q);
         const link = `https://www.google.com/search?q=${encoded}`;
@@ -227,24 +242,29 @@
         sendBtn.disabled = true;
         let ans = '';
 
-        const local = localAnswer(text);
-        if (local) {
-          ans = local;
+        const forumMatch = text.match(/^forum\s*:\s*(.+)$/i) || text.match(/^搜尋\s*forum\s*:\s*(.+)$/i);
+        if (forumMatch && forumMatch[1]) {
+          ans = await searchForum(forumMatch[1].trim());
         } else {
-          try {
-            const res = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ messages: history })
-            });
-            const data = await res.json().catch(() => ({}));
-            if (res.ok && data?.reply) {
-              ans = data.reply;
-            } else {
+          const local = localAnswer(text);
+          if (local) {
+            ans = local;
+          } else {
+            try {
+              const res = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: history })
+              });
+              const data = await res.json().catch(() => ({}));
+              if (res.ok && data?.reply) {
+                ans = data.reply;
+              } else {
+                ans = await enrichGoogle(text);
+              }
+            } catch {
               ans = await enrichGoogle(text);
             }
-          } catch {
-            ans = await enrichGoogle(text);
           }
         }
 
