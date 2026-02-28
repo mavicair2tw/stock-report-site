@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+const fs = require('fs');
+const path = require('path');
 
 function readJson(p) {
   return JSON.parse(fs.readFileSync(p, 'utf-8'));
@@ -27,7 +27,7 @@ function matchRule(rule, allIds, vitals) {
   return true;
 }
 
-export function buildEngine(baseDir) {
+function buildEngine(baseDir) {
   const rulesPath = path.join(baseDir, 'rules', 'rules.json');
   const dietPath = path.join(baseDir, 'rules', 'diet_tags.json');
   const deptPath = path.join(baseDir, 'rules', 'department_map.json');
@@ -63,7 +63,7 @@ export function buildEngine(baseDir) {
     const deptSet = new Set(out.departments || ['家醫科']);
     symptoms.forEach((s) => (deptMap[s] || []).forEach((d) => deptSet.add(d)));
 
-    const dietIds = out.diet_tags?.length ? out.diet_tags : ['D_DEFAULT'];
+    const dietIds = out.diet_tags && out.diet_tags.length ? out.diet_tags : ['D_DEFAULT'];
     const diet = dietIds.map((id) => dietById[id]).filter(Boolean);
 
     return {
@@ -72,10 +72,12 @@ export function buildEngine(baseDir) {
       reasons: out.reasons || [],
       diet_tags: dietIds,
       diet,
-      departments: [...deptSet],
+      departments: Array.from(deptSet),
       actions: out.actions || []
     };
   }
 
   return { run };
 }
+
+module.exports = { buildEngine };
