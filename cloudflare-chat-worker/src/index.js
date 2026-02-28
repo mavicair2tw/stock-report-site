@@ -60,6 +60,32 @@ export default {
       return json({ query: q, link: googleLink, ...result }, 200, request);
     }
 
+    if (url.pathname === '/api/chat/health' && request.method === 'GET') {
+      const probeMessages = [
+        { role: 'system', content: 'Health check. Keep it very short.' },
+        { role: 'user', content: 'reply ok' },
+      ];
+
+      const [openai, openrouter, gemini] = await Promise.all([
+        callOpenAI(env, probeMessages),
+        callOpenRouter(env, probeMessages),
+        callGemini(env, probeMessages),
+      ]);
+
+      const providers = {
+        openai: providerHealth(openai),
+        openrouter: providerHealth(openrouter),
+        gemini: providerHealth(gemini),
+      };
+      const anyOk = providers.openai.ok || providers.openrouter.ok || providers.gemini.ok;
+
+      return json({
+        ok: anyOk,
+        providers,
+        checkedAt: new Date().toISOString(),
+      }, anyOk ? 200 : 503, request);
+    }
+
     if (url.pathname !== '/api/chat') {
       return json({ error: 'Not found' }, 404, request);
     }
@@ -407,6 +433,11 @@ function hitRateLimit(key) {
   }
   b.count += 1;
   return { ok: true };
+}
+
+function providerHealth(result) {
+  if (result?.ok) return { ok: true, error: null };
+  return { ok: false, error: String(result?.error || 'unknown error').slice(0, 240) };
 }
 
 function json(obj, status = 200, request, extraHeaders = {}) {

@@ -38,8 +38,10 @@ Then `https://openai-tw.com/guestbook/` will call `/api/chat` directly.
 ## Notes
 - Provider order for `/api/chat`: **OpenAI → OpenRouter → Gemini**.
 - If one provider fails (quota/billing/down), it auto-tries the next.
+- Health check endpoint: `GET /api/chat/health`
+  - Returns each provider status/error in one response.
 - Default models can be set in `wrangler.toml` vars:
   - `OPENAI_MODEL` (default: `gpt-4o-mini`)
   - `OPENROUTER_MODEL` (default: `openai/gpt-4o-mini`)
-  - `GEMINI_MODEL` (default: `gemini-1.5-flash`)
+  - `GEMINI_MODEL` (default: `gemini-2.0-flash`)
 - After code changes, run `wrangler deploy` again.
