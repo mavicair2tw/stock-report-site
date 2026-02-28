@@ -181,7 +181,7 @@ function toGeminiText(messages = []) {
 async function callGemini(env, messages) {
   if (!env.GEMINI_API_KEY) return { ok: false, error: 'Missing GEMINI_API_KEY' };
   try {
-    const model = env.GEMINI_MODEL || 'gemini-1.5-flash';
+    const model = env.GEMINI_MODEL || 'gemini-2.0-flash';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
     const payload = {
       contents: [{ parts: [{ text: toGeminiText(messages) }] }],
