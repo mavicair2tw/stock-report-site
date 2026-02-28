@@ -1,4 +1,4 @@
-const KEY = 'forum_posts_v1';
+const KEY = 'forum_posts_v2';
 
 export default {
   async fetch(request, env) {
@@ -18,21 +18,54 @@ export default {
 
     if (request.method === 'GET') {
       const raw = await env.FORUM_KV.get(KEY);
-      const posts = safeParse(raw);
-      return json({ posts }, 200, request);
+      const posts = normalizePosts(safeParse(raw));
+      const totals = calcTotals(posts);
+      return json({ posts, ...totals }, 200, request);
     }
 
     if (request.method === 'POST') {
       const body = await request.json().catch(() => ({}));
-      const text = String(body?.text || '').trim();
-      if (!text) return json({ error: 'text required' }, 400, request);
+      const action = String(body?.action || '').trim();
 
       const raw = await env.FORUM_KV.get(KEY);
-      const posts = safeParse(raw);
-      posts.push({ text: text.slice(0, 1000), time: new Date().toLocaleString('zh-Hant-TW', { hour12: false }) });
-      const keep = posts.slice(-300);
-      await env.FORUM_KV.put(KEY, JSON.stringify(keep));
-      return json({ ok: true, count: keep.length }, 200, request);
+      const posts = normalizePosts(safeParse(raw));
+
+      // Create post
+      if (!action) {
+        const text = String(body?.text || '').trim();
+        if (!text) return json({ error: 'text required' }, 400, request);
+
+        posts.push({
+          id: crypto.randomUUID(),
+          text: text.slice(0, 1000),
+          time: new Date().toLocaleString('zh-Hant-TW', { hour12: false }),
+          likeCount: 0,
+          shareCount: 0,
+        });
+
+        const keep = posts.slice(-300);
+        await env.FORUM_KV.put(KEY, JSON.stringify(keep));
+        const totals = calcTotals(keep);
+        return json({ ok: true, count: keep.length, ...totals }, 200, request);
+      }
+
+      // React to post: like / share
+      if (!['like', 'share'].includes(action)) {
+        return json({ error: 'invalid action' }, 400, request);
+      }
+
+      const id = String(body?.id || '').trim();
+      if (!id) return json({ error: 'id required' }, 400, request);
+
+      const i = posts.findIndex(p => p.id === id);
+      if (i < 0) return json({ error: 'post not found' }, 404, request);
+
+      if (action === 'like') posts[i].likeCount = Number(posts[i].likeCount || 0) + 1;
+      if (action === 'share') posts[i].shareCount = Number(posts[i].shareCount || 0) + 1;
+
+      await env.FORUM_KV.put(KEY, JSON.stringify(posts));
+      const totals = calcTotals(posts);
+      return json({ ok: true, post: posts[i], ...totals }, 200, request);
     }
 
     return json({ error: 'Method not allowed' }, 405, request);
@@ -46,6 +79,22 @@ function safeParse(raw) {
   } catch {
     return [];
   }
+}
+
+function normalizePosts(posts) {
+  return posts.map((p) => ({
+    id: String(p?.id || crypto.randomUUID()),
+    text: String(p?.text || ''),
+    time: String(p?.time || ''),
+    likeCount: Number(p?.likeCount || 0),
+    shareCount: Number(p?.shareCount || 0),
+  }));
+}
+
+function calcTotals(posts) {
+  const totalLike = posts.reduce((s, p) => s + Number(p.likeCount || 0), 0);
+  const totalShare = posts.reduce((s, p) => s + Number(p.shareCount || 0), 0);
+  return { totalLike, totalShare };
 }
 
 function json(obj, status, request) {

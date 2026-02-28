@@ -47,7 +47,12 @@
         </div>
       </div>
 
-      <h1>Forum</h1>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <h1 style="margin:0;">Forum</h1>
+        <div class="meta" style="background:#0f1730;border:1px solid #223055;border-radius:10px;padding:8px 10px;">
+          Total Like: <b id="totalLike">0</b> &nbsp;|&nbsp; Total Share: <b id="totalShare">0</b>
+        </div>
+      </div>
       <div class="card">
         <div class="row">
           <textarea id="forumInput" placeholder="輸入留言內容，可貼上圖片網址或 YouTube 連結…"></textarea>
@@ -74,11 +79,11 @@
       const prevPageBtn=document.getElementById('prevPage');
       const nextPageBtn=document.getElementById('nextPage');
       const pageInfo=document.getElementById('pageInfo');
+      const totalLikeEl=document.getElementById('totalLike');
+      const totalShareEl=document.getElementById('totalShare');
       let data=[];
       let currentPage=1;
       const PAGE_SIZE=200;
-      const LIKE_KEY='openai-tw-forum-likes-v1';
-      let likes = {};
 
       function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
       function visibleText(s){
@@ -110,10 +115,7 @@
         if (isImageUrl(url)) return `<div class="embed"><img src="${url}" alt="forum image" loading="lazy"/></div>`;
         return '';
       }
-      function postKey(x){ return btoa(unescape(encodeURIComponent(`${x.time}|${x.text}`))).slice(0,24); }
-      function loadLikes(){ try{ likes = JSON.parse(localStorage.getItem(LIKE_KEY)||'{}')||{}; }catch{ likes={}; } }
-      function saveLikes(){ localStorage.setItem(LIKE_KEY, JSON.stringify(likes)); }
-      function shareUrl(k){ return `${location.origin}${location.pathname}#post-${k}`; }
+      function shareUrl(id){ return `${location.origin}${location.pathname}#post-${id}`; }
       function render(){
 
         const total = data.length;
@@ -134,9 +136,9 @@
         const start = (currentPage - 1) * PAGE_SIZE;
         const pageItems = newestFirst.slice(start, start + PAGE_SIZE);
         list.innerHTML=pageItems.map(x=>{
-          const k = postKey(x);
-          const likeCount = Number(likes[k]||0);
-          return `<div class="item" id="post-${k}"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}<div class="actions"><button class="action-btn like-btn" data-k="${k}">👍 Like (${likeCount})</button><button class="action-btn share-btn" data-k="${k}">🔗 Share</button></div></div>`;
+          const id = x.id;
+          const likeCount = Number(x.likeCount||0);
+          return `<div class="item" id="post-${id}"><div class="meta">訪客 · ${esc(x.time)}</div><div class="text">${visibleText(x.text)}</div>${renderEmbed(x.text)}<div class="actions"><button class="action-btn like-btn" data-id="${id}">👍 Like (${likeCount})</button><button class="action-btn share-btn" data-id="${id}">🔗 Share (${Number(x.shareCount||0)})</button></div></div>`;
         }).join('');
       }
 
@@ -145,6 +147,8 @@
           const r=await fetch(API);
           const j=await r.json();
           data=Array.isArray(j?.posts)?j.posts:[];
+          totalLikeEl.textContent = Number(j?.totalLike || 0);
+          totalShareEl.textContent = Number(j?.totalShare || 0);
           render();
         }catch{
           list.innerHTML='<div class="meta">讀取留言失敗，請稍後再試。</div>';
@@ -172,15 +176,28 @@
         const likeBtn = e.target.closest('.like-btn');
         const shareBtn = e.target.closest('.share-btn');
         if (likeBtn) {
-          const k = likeBtn.dataset.k;
-          likes[k] = Number(likes[k] || 0) + 1;
-          saveLikes();
-          render();
+          const id = likeBtn.dataset.id;
+          try {
+            await fetch(API, {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ action:'like', id })
+            });
+            await refresh();
+          } catch {}
           return;
         }
         if (shareBtn) {
-          const k = shareBtn.dataset.k;
-          const url = shareUrl(k);
+          const id = shareBtn.dataset.id;
+          const url = shareUrl(id);
+          try {
+            await fetch(API, {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ action:'share', id })
+            });
+            await refresh();
+          } catch {}
           try {
             if (navigator.share) {
               await navigator.share({ title: 'Forum Post', url });
@@ -192,7 +209,6 @@
         }
       });
 
-      loadLikes();
       refresh();
       setInterval(refresh, 15000);
     </script>
