@@ -66,24 +66,15 @@ export default {
         { role: 'user', content: 'reply ok' },
       ];
 
-      const [openai, openrouter, gemini] = await Promise.all([
-        callOpenAI(env, probeMessages),
-        callOpenRouter(env, probeMessages),
-        callGemini(env, probeMessages),
-      ]);
-
-      const providers = {
-        openai: providerHealth(openai),
-        openrouter: providerHealth(openrouter),
-        gemini: providerHealth(gemini),
-      };
-      const anyOk = providers.openai.ok || providers.openrouter.ok || providers.gemini.ok;
+      const gemini = await callGemini(env, probeMessages);
+      const providers = { gemini: providerHealth(gemini) };
 
       return json({
-        ok: anyOk,
+        ok: providers.gemini.ok,
         providers,
+        mode: 'gemini-only',
         checkedAt: new Date().toISOString(),
-      }, anyOk ? 200 : 503, request);
+      }, providers.gemini.ok ? 200 : 503, request);
     }
 
     if (url.pathname !== '/api/chat') {
@@ -119,80 +110,15 @@ export default {
         ...sanitized,
       ];
 
-      const attempts = [];
-
       const gemini = await callGemini(env, normalized);
-      if (gemini.ok) return json({ reply: gemini.reply, provider: 'gemini' }, 200, request);
-      attempts.push(`gemini: ${gemini.error}`);
+      if (gemini.ok) return json({ reply: gemini.reply, provider: 'gemini', mode: 'gemini-only' }, 200, request);
 
-      const openai = await callOpenAI(env, normalized);
-      if (openai.ok) return json({ reply: openai.reply, provider: 'openai' }, 200, request);
-      attempts.push(`openai: ${openai.error}`);
-
-      const openrouter = await callOpenRouter(env, normalized);
-      if (openrouter.ok) return json({ reply: openrouter.reply, provider: 'openrouter' }, 200, request);
-      attempts.push(`openrouter: ${openrouter.error}`);
-
-      return json({ error: `All providers failed. ${attempts.join(' | ')}` }, 502, request);
+      return json({ error: `Gemini failed. ${gemini.error}` }, 502, request);
     } catch {
       return json({ error: 'Internal error' }, 500, request);
     }
   },
 };
-
-async function callOpenAI(env, messages) {
-  if (!env.OPENAI_API_KEY) return { ok: false, error: 'Missing OPENAI_API_KEY' };
-  try {
-    const payload = {
-      model: env.OPENAI_MODEL || 'gpt-4o-mini',
-      messages,
-      temperature: 0.6,
-    };
-    const r = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) return { ok: false, error: data?.error?.message || `HTTP ${r.status}` };
-    const reply = data?.choices?.[0]?.message?.content?.trim();
-    if (!reply) return { ok: false, error: 'Empty response' };
-    return { ok: true, reply };
-  } catch {
-    return { ok: false, error: 'Network error' };
-  }
-}
-
-async function callOpenRouter(env, messages) {
-  if (!env.OPENROUTER_API_KEY) return { ok: false, error: 'Missing OPENROUTER_API_KEY' };
-  try {
-    const payload = {
-      model: env.OPENROUTER_MODEL || 'openai/gpt-4o-mini',
-      messages,
-      temperature: 0.6,
-    };
-    const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://openai-tw.com',
-        'X-Title': 'openai-tw-chat',
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) return { ok: false, error: data?.error?.message || `HTTP ${r.status}` };
-    const reply = data?.choices?.[0]?.message?.content?.trim();
-    if (!reply) return { ok: false, error: 'Empty response' };
-    return { ok: true, reply };
-  } catch {
-    return { ok: false, error: 'Network error' };
-  }
-}
 
 function toGeminiText(messages = []) {
   return messages
