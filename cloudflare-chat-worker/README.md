@@ -36,7 +36,7 @@ wrangler deploy
 Then `https://openai-tw.com/guestbook/` will call `/api/chat` directly.
 
 ## Notes
-- Provider order for `/api/chat`: **OpenAI → OpenRouter → Gemini**.
+- Provider order for `/api/chat`: **Gemini → OpenAI → OpenRouter**.
 - If one provider fails (quota/billing/down), it auto-tries the next.
 - Health check endpoint: `GET /api/chat/health`
   - Returns each provider status/error in one response.

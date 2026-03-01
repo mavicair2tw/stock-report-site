@@ -121,6 +121,10 @@ export default {
 
       const attempts = [];
 
+      const gemini = await callGemini(env, normalized);
+      if (gemini.ok) return json({ reply: gemini.reply, provider: 'gemini' }, 200, request);
+      attempts.push(`gemini: ${gemini.error}`);
+
       const openai = await callOpenAI(env, normalized);
       if (openai.ok) return json({ reply: openai.reply, provider: 'openai' }, 200, request);
       attempts.push(`openai: ${openai.error}`);
@@ -128,10 +132,6 @@ export default {
       const openrouter = await callOpenRouter(env, normalized);
       if (openrouter.ok) return json({ reply: openrouter.reply, provider: 'openrouter' }, 200, request);
       attempts.push(`openrouter: ${openrouter.error}`);
-
-      const gemini = await callGemini(env, normalized);
-      if (gemini.ok) return json({ reply: gemini.reply, provider: 'gemini' }, 200, request);
-      attempts.push(`gemini: ${gemini.error}`);
 
       return json({ error: `All providers failed. ${attempts.join(' | ')}` }, 502, request);
     } catch {
