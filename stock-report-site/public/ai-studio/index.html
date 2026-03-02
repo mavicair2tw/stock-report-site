@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Studio · Riverside Coffee Gallery</title>
+    <style>
+      :root {
+        --bg: #05060f;
+        --surface: #0f1224;
+        --panel: #151936;
+        --accent: #f5b162;
+        --text: #f4f5fb;
+        --muted: #a8b0d6;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Inter", "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        background: radial-gradient(circle at top, rgba(245,177,98,0.18), transparent 55%), var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 48px 24px 32px;
+        text-align: center;
+      }
+      header h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 4vw, 3.5rem);
+        letter-spacing: -0.02em;
+      }
+      header p { margin: 0; color: var(--muted); font-size: 1.05rem; }
+      main { padding: 0 24px 80px; max-width: 1200px; margin: 0 auto; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 18px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+        transition: transform 180ms ease, border-color 180ms ease;
+      }
+      .card:hover { transform: translateY(-4px); border-color: rgba(245,177,98,0.35); cursor: pointer; }
+      .card img {
+        width: 100%;
+        aspect-ratio: 3 / 2;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+      }
+      .prompt {
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.45;
+      }
+      .tag {
+        align-self: flex-start;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        background: rgba(245,177,98,0.15);
+        color: var(--accent);
+        padding: 6px 10px;
+        border-radius: 999px;
+      }
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(5,6,15,0.85);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 24px;
+        z-index: 10;
+      }
+      .modal.open { display: flex; }
+      .modal-content {
+        background: var(--surface);
+        border-radius: 24px;
+        width: min(1200px, 100%);
+        max-height: 90vh;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.08);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+      }
+      .modal img {
+        width: 100%;
+        display: block;
+        object-fit: contain;
+        background: #000;
+        max-height: 70vh;
+      }
+      .modal-footer {
+        padding: 20px 24px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .modal-footer p { margin: 0; color: var(--muted); line-height: 1.5; }
+      .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+      .btn {
+        border: none;
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.95rem;
+      }
+      .btn.primary { background: var(--accent); color: #1a1206; }
+      .btn.secondary { background: rgba(255,255,255,0.08); color: var(--text); }
+      footer { text-align: center; padding: 20px; color: var(--muted); font-size: 0.85rem; }
+    </style>
+  </head>
+  <body>
+    <div class="modal" id="modal">
+      <div class="modal-content">
+        <img id="modalImg" alt="Full preview" />
+        <div class="modal-footer">
+          <p id="modalPrompt"></p>
+          <div class="actions">
+            <a class="btn primary" id="downloadBtn" download>Download</a>
+            <button class="btn secondary" id="closeBtn">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <header>
+      <p class="tag" style="margin:auto;">AI Studio</p>
+      <h1>Riverside Morning Gallery</h1>
+      <p>Explore images generated with GPT Image models. Click a tile to view the full-resolution scene.</p>
+    </header>
+
+    <main>
+      <section class="grid" id="gallery"></section>
+    </main>
+
+    <footer>Built March 2, 2026 · Powered by OpenAI Image Gen</footer>
+
+    <script>
+      async function loadGallery(){
+        const res = await fetch('gallery/prompts.json?_=' + Date.now());
+        const items = await res.json();
+        const grid = document.getElementById('gallery');
+        grid.innerHTML = '';
+        items.forEach((item, idx) => {
+          const card = document.createElement('article');
+          card.className = 'card';
+          card.innerHTML = `
+            <span class="tag">Scene ${String(idx + 1).padStart(2,'0')}</span>
+            <img src="gallery/${item.file}" alt="${item.prompt}" loading="lazy" />
+            <p class="prompt">${item.prompt}</p>
+          `;
+          card.addEventListener('click', () => openModal(item));
+          grid.appendChild(card);
+        });
+      }
+
+      function openModal(item){
+        const modal = document.getElementById('modal');
+        document.getElementById('modalImg').src = `gallery/${item.file}`;
+        document.getElementById('modalPrompt').textContent = item.prompt;
+        const download = document.getElementById('downloadBtn');
+        download.href = `gallery/${item.file}`;
+        download.setAttribute('download', item.file);
+        modal.classList.add('open');
+      }
+
+      document.getElementById('closeBtn').addEventListener('click', () => {
+        document.getElementById('modal').classList.remove('open');
+      });
+      document.getElementById('modal').addEventListener('click', (evt) => {
+        if (evt.target.id === 'modal') {
+          document.getElementById('modal').classList.remove('open');
+        }
+      });
+
+      loadGallery();
+    </script>
+  </body>
+</html>

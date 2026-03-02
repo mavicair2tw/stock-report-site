@@ -74,6 +74,7 @@ jobs:
           mkdir -p dist/assets
           mkdir -p dist/youtube
           mkdir -p dist/YouTube
+          mkdir -p dist/ai-studio/gallery
 
           # Combined portal (root)
           cp stock-report-site/public/index.html dist/index.html
@@ -146,6 +147,10 @@ jobs:
           # YouTube landing page
           cp stock-report-site/public/youtube/index.html dist/youtube/index.html
           cp stock-report-site/public/YouTube.html dist/YouTube/index.html
+
+          # AI Studio gallery
+          cp stock-report-site/public/ai-studio/index.html dist/ai-studio/index.html
+          cp -R stock-report-site/public/ai-studio/gallery/. dist/ai-studio/gallery/
 
           # Static assets (images, etc.)
           if [ -d stock-report-site/public/assets ]; then
