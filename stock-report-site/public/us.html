@@ -69,7 +69,7 @@
       const viewCounterEl = document.getElementById('viewCounter');
       if (viewCounterEl) viewCounterEl.textContent = `點閱數：${pageViews}`;
 
-      function cls(v){if(v>0)return'up';if(v<0)return'down';return'flat'}
+      function normalizeNumber(val){if(typeof val==='number')return val;if(typeof val==='string'){const num=Number(val.replace(/,/g,''));if(!Number.isNaN(num))return num;}return null;} function cls(v){const num=normalizeNumber(v);if(num===null)return'flat';if(num>0)return'up';if(num<0)return'down';return'flat'}
       function fmt(v,s=''){if(v===null||v===undefined||Number.isNaN(v))return '<span class="muted">N/A</span>'; return `${v}${s}`}
       function fmts(v,s=''){if(v===null||v===undefined||Number.isNaN(v))return '<span class="muted">N/A</span>'; const sign=v>0?'+':''; return `${sign}${v}${s}`}
 
@@ -106,7 +106,7 @@
 
           const labels = data.items.map(i=>i.label);
           const vals = data.items.map(i=>typeof i.changePercent==='number'?i.changePercent:0);
-          const colors = vals.map(v=>v>0?'rgba(34,197,94,0.8)':v<0?'rgba(239,68,68,0.8)':'rgba(159,176,195,0.8)');
+          const colors = vals.map(v=>v>0?'rgba(239,68,68,0.8)':v<0?'rgba(34,197,94,0.8)':'rgba(159,176,195,0.8)');
           new Chart(document.getElementById('changeChart'),{type:'bar',data:{labels,datasets:[{label:'漲跌幅 %',data:vals,backgroundColor:colors}]},options:{responsive:true,plugins:{legend:{labels:{color:'#e6edf3'}}},scales:{x:{ticks:{color:'#c7d5e5'}},y:{ticks:{color:'#c7d5e5'}}}}});
         })
         .catch(()=>{document.getElementById('updated').textContent='讀取資料失敗';});
