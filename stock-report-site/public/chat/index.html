@@ -111,14 +111,14 @@
           const geminiOk = !!p.gemini?.ok;
           const geminiErr = String(p.gemini?.error || '');
           const geminiExpired = /api key expired/i.test(geminiErr);
-          const detail = `Gemini: ${geminiOk ? 'OK' : (p.gemini?.error || 'Unavailable')}`;
+          const detail = geminiOk ? 'Gemini: OK' : 'Gemini: 僅提供搜尋結果';
 
           if (geminiExpired) {
             setHealth('red', '請更新 Gemini key / Renew Gemini key', detail);
           } else if (geminiOk) {
             setHealth('green', 'Gemini 正常 / Gemini Healthy', detail);
           } else {
-            setHealth('red', 'Gemini 不可用 / Gemini Unavailable', detail);
+            setHealth('yellow', 'Gemini 暫時提供搜尋摘要', detail);
           }
         } catch {
           setHealth('red', '健康檢查失敗 / Health check failed', 'Health endpoint unreachable');
