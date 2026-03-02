@@ -76,6 +76,33 @@
         transition: transform .12s ease, border-color .12s ease;
       }
       .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+      .card .embed {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        margin-top: 10px;
+      }
+      .card .embed iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+      .inline-link {
+        display: inline-flex;
+        margin-top: 12px;
+        font-size: 13px;
+        color: #93c5fd;
+        text-decoration: none;
+        font-weight: 600;
+        gap: 6px;
+        align-items: center;
+      }
+      .inline-link:hover { text-decoration: underline; }
       .name { font-weight: 700; margin-bottom: 6px; }
       .desc { color: var(--muted); font-size: 14px; }
       .hero-image-wrap{margin:14px 0 18px}
@@ -186,6 +213,15 @@
           <div class="name">健康分級建議</div>
           <div class="desc">健康勾選、風險分級、飲食注意與建議科別</div>
         </a>
+        <div class="card">
+          <div class="name">YouTube</div>
+          <div class="desc">最新播放清單</div>
+          <div class="embed">
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?si=gX9jPJyTatnNBVND&amp;list=PL-RVg4ur4a0QhrL30nahIw63iAOGsusnc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          </div>
+                  <a class="inline-link" href="/youtube/">前往完整頁面 →</a>
+        </div>
+
       </section>
 
       <div class="foot">提示：綠色 = 上漲，紅色 = 下跌。</div>
