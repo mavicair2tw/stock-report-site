@@ -72,6 +72,8 @@ jobs:
           mkdir -p dist/health-triage
           mkdir -p dist/health-triage/data
           mkdir -p dist/assets
+          mkdir -p dist/youtube
+          mkdir -p dist/YouTube
 
           # Combined portal (root)
           cp stock-report-site/public/index.html dist/index.html
@@ -140,6 +142,10 @@ jobs:
           cp stock-report-site/public/data/health-form-config.zh-TW.json dist/health-triage/data/health-form-config.zh-TW.json
           cp stock-report-site/public/data/health-comorb-config.zh-TW.json dist/health-triage/data/health-comorb-config.zh-TW.json
           cp stock-report-site/public/data/health-vitals-config.zh-TW.json dist/health-triage/data/health-vitals-config.zh-TW.json
+
+          # YouTube landing page
+          cp stock-report-site/public/youtube/index.html dist/youtube/index.html
+          cp stock-report-site/public/YouTube.html dist/YouTube/index.html
 
           # Static assets (images, etc.)
           if [ -d stock-report-site/public/assets ]; then
