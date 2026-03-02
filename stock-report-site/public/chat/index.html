@@ -160,6 +160,21 @@
         return esc.replace(/\n/g, '<br>');
       }
 
+      
+      function hasSimplifiedChinese(str=''){
+        const simplifiedChars = '万与丑专业丛东丝丢两严丧个临丽举义乌乐乔习乡书买乱争于亏云亚产亩亲亵仍从仓仪们价众优伙会伞伟传伤伦伪体余佛作佣来侄见贝观负风丽邮舰陈临东杰刘杨赵罗钟闽马东齐';
+        let chineseCount = 0;
+        let simplifiedCount = 0;
+        for(const ch of str){
+          const code = ch.charCodeAt(0);
+          if (code >= 0x4E00 && code <= 0x9FFF){
+            chineseCount++;
+            if (simplifiedChars.includes(ch)) simplifiedCount++;
+          }
+        }
+        return chineseCount > 0 && (simplifiedCount / chineseCount) > 0.25;
+      }
+
       function allUrls(s){
         return String(s).match(/https?:\/\/[^\s]+/ig) || [];
       }
@@ -281,17 +296,24 @@
       }
 
       async function fetchSearchSummary(q){
-        // Prefer backend summary API to centralize anti-abuse handling.
         const api = `https://openai-tw-chat.googselect.workers.dev/api/search/summary?q=${encodeURIComponent(q)}`;
         try {
           const r = await fetch(api);
           const data = await r.json();
           if (!r.ok || !data) return null;
           if (data.summary && isBlockedOrAbuseText(data.summary)) return null;
+          const items = Array.isArray(data.items) ? data.items : [];
+          const filteredItems = items.filter(item => {
+            const lang = String(item.language || item.lang || '').toLowerCase();
+            if (lang && !lang.includes('zh') && !lang.includes('chinese')) return false;
+            const snippet = String(item.summary || item.snippet || '');
+            if (snippet && hasSimplifiedChinese(snippet)) return false;
+            return true;
+          });
           return {
             summary: data.summary || null,
             media: data.media || null,
-            items: Array.isArray(data.items) ? data.items : []
+            items: filteredItems
           };
         } catch {}
         return null;
