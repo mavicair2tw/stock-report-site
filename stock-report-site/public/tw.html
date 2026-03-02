@@ -91,9 +91,9 @@
         <thead>
           <tr>
             <th>股名</th>
+            <th>成交</th>
             <th>漲跌</th>
             <th>漲幅</th>
-            <th>成交</th>
             <th>代號</th>
           </tr>
         </thead>
@@ -189,9 +189,9 @@
               return `
                 <tr>
                   <td>${item.label}</td>
+                  <td>${fmt(item.price)}</td>
                   <td class="${c}">${fmtSigned(item.change)}</td>
                   <td class="${c}">${fmtSigned(item.changePercent, '%')}</td>
-                  <td>${fmt(item.price)}</td>
                   <td>${item.symbol}</td>
                 </tr>
               `;
