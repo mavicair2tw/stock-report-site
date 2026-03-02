@@ -105,6 +105,7 @@
       .inline-link:hover { text-decoration: underline; }
       .name { font-weight: 700; margin-bottom: 6px; }
       .desc { color: var(--muted); font-size: 14px; }
+      .price-badge { margin-top: 6px; font-size: 13px; font-weight: 600; color: #93c5fd; }
       .hero-image-wrap{margin:14px 0 18px}
       .hero-image{width:100%;max-width:1100px;border-radius:14px;border:1px solid var(--line);display:block}
       .foot { margin-top: 20px; color: var(--muted); font-size: 13px; }
@@ -153,10 +154,12 @@
         <a class="card" href="/tw/">
           <div class="name">台股 15 分鐘</div>
           <div class="desc">台股即時報表、漲跌與摘要</div>
+          <div class="price-badge" id="twPrice">股價載入中...</div>
         </a>
         <a class="card" href="/us/">
           <div class="name">美股 15 分鐘</div>
           <div class="desc">美股即時報表、漲跌與摘要</div>
+          <div class="price-badge" id="usPrice">股價載入中...</div>
         </a>
         <a class="card" href="/btc-hourly/">
           <div class="name">BTC 每小時</div>
@@ -311,6 +314,32 @@
         const area = d?.city || d?.region || d?.country_name || '';
         await loadWeatherByLocation(lat, lon, area);
       }
+
+
+      function formatPrice(data){
+        if(!data || !Array.isArray(data.items) || !data.items.length) return null;
+        const main = data.items[0];
+        const price = typeof main.price === 'number' ? main.price.toLocaleString('en-US') : null;
+        const change = typeof main.changePercent === 'number' ? `${main.changePercent > 0 ? '+' : ''}${main.changePercent}%` : null;
+        if(!price) return null;
+        return change ? `${price} (${change})` : price;
+      }
+
+      async function loadCardPrice(elId, url){
+        const el = document.getElementById(elId);
+        if(!el) return;
+        try {
+          const res = await fetch(url + '?ts=' + Date.now());
+          const data = await res.json();
+          const formatted = formatPrice(data);
+          el.textContent = formatted ? `指數：${formatted}` : '指數資料暫無';
+        } catch {
+          el.textContent = '指數資料暫無';
+        }
+      }
+
+      loadCardPrice('twPrice', '/tw/data/latest.json');
+      loadCardPrice('usPrice', '/us/data/us_latest.json');
 
       (function initWeather(){
         const meta = document.getElementById('weatherMeta');
