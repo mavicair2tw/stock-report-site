@@ -108,9 +108,23 @@
           const res = await fetch('https://openai-tw-chat.googselect.workers.dev/api/chat/health');
           const data = await res.json().catch(() => ({}));
           const p = data?.providers || {};
+          const mode = String(data?.mode || '').toLowerCase();
           const geminiOk = !!p.gemini?.ok;
           const geminiErr = String(p.gemini?.error || '');
           const geminiExpired = /api key expired/i.test(geminiErr);
+          const openaiOk = !!p.openai?.ok;
+          const usingChatGPT = /openai|chatgpt/.test(mode) || (!!p.openai && !geminiOk);
+
+          if (usingChatGPT) {
+            const detail = openaiOk ? 'ChatGPT: OK' : (p.openai?.error || 'ChatGPT: 檢查中');
+            if (openaiOk) {
+              setHealth('green', 'ChatGPT 正常 / ChatGPT Healthy', detail);
+            } else {
+              setHealth('yellow', 'ChatGPT 檢查中 / ChatGPT Checking', detail);
+            }
+            return;
+          }
+
           const detail = geminiOk ? 'Gemini: OK' : 'Gemini: 僅提供搜尋結果';
 
           if (geminiExpired) {
