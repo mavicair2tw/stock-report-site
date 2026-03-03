@@ -162,6 +162,10 @@ Run locally:
 ```bash
 cd forum-system
 cp api/.env.example api/.env
+# fill in DATABASE_URL / REDIS_URL / Gmail creds in api/.env
+#   GMAIL_USER / GMAIL_APP_PASSWORD / MAIL_TO_DEFAULT / APP_ORIGIN
+#   MAIL_FROM_NAME is optional
+
 docker compose up -d postgres redis
 cd api
 npm install

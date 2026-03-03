@@ -3,9 +3,13 @@ import bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
 import { q } from '../db.js';
 import { signAccessToken } from '../middleware/auth.js';
+import { sendEmail } from '../utils/sendEmail.js';
+import { config } from '../config.js';
 
 const router = express.Router();
 const verifyTokens = new Map();
+
+const cleanBaseUrl = () => config.appOrigin?.replace(/\/$/, '') || '';
 
 router.post('/register', async (req, res) => {
   const { email, password } = req.body || {};
@@ -21,6 +25,23 @@ router.post('/register', async (req, res) => {
   if (!r) return res.status(409).json({ error: 'email exists' });
   const token = uuid();
   verifyTokens.set(token, r.rows[0].id);
+
+  const verifyUrl = `${cleanBaseUrl()}/verify-email?token=${token}`;
+  const subject = 'Verify your forum account';
+  const text = `Hi!\n\nThanks for registering. Please verify your email by visiting: ${verifyUrl}\n\nIf the link does not work, use this token: ${token}`;
+  const html = `
+    <p>Hi!</p>
+    <p>Thanks for registering. Please confirm your email by clicking the link below:</p>
+    <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+    <p>If the link does not work, use this token: <code>${token}</code></p>
+  `;
+
+  try {
+    await sendEmail({ to: r.rows[0].email, subject, text, html });
+  } catch (err) {
+    console.error('Failed to send verification email', err);
+  }
+
   res.json({ ok: true, verificationToken: token }); // dev mode
 });
 
