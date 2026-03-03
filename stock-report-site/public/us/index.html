@@ -100,7 +100,11 @@
         .then(r=>r.json())
         .then(data=>{
           document.getElementById('updated').textContent = `最後更新：${data.updatedAt} (${data.timezone})`;
-          const rows = data.items.map(i=>`<tr><td>${i.label}</td><td>${fmt(i.price)}</td><td class="${cls(i.change)}">${fmts(i.change)}</td><td class="${cls(i.changePercent)}">${fmts(i.changePercent,'%')}</td><td>${i.symbol}</td></tr>`).join('');
+          const rows = data.items.map(i=>{
+            const changeClass = cls(i.change);
+            const percentClass = cls(i.changePercent);
+            return `<tr><td>${i.label}</td><td>${fmt(i.price)}</td><td><span class="${changeClass}">${fmts(i.change)}</span></td><td><span class="${percentClass}">${fmts(i.changePercent,'%')}</span></td><td>${i.symbol}</td></tr>`;
+          }).join('');
           document.getElementById('rows').innerHTML = rows;
           renderSummary(data.items || []);
 

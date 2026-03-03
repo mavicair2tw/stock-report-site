@@ -191,13 +191,14 @@
             document.getElementById('marketStatus').textContent = twMarketStatus();
 
             const rows = data.items.map(item => {
-              const c = cls(item.change || 0);
+              const changeClass = cls(item.change || 0);
+              const percentClass = cls(item.changePercent || 0);
               return `
                 <tr>
                   <td>${item.label}</td>
                   <td>${fmt(item.price)}</td>
-                  <td class="${c}">${fmtSigned(item.change)}</td>
-                  <td class="${c}">${fmtSigned(item.changePercent, '%')}</td>
+                  <td><span class="${changeClass}">${fmtSigned(item.change)}</span></td>
+                  <td><span class="${percentClass}">${fmtSigned(item.changePercent, '%')}</span></td>
                   <td>${item.symbol}</td>
                 </tr>
               `;
