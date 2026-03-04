@@ -312,7 +312,7 @@
         const formula = `公式：綜合分 = 宮位分(${p.score})×0.55 + 星曜能力均值×4.5 = ${f.total}`;
         const text = `${p.name}（主題：${topic}；${level}，綜合分 ${f.total}）：${palaceBase}${formula}。${starHint}${dimAdvice}${action}${advice}`;
         const deduped = uniqueSentences(text);
-        return deduped.length > 500 ? `${deduped.slice(0,500)}…` : deduped;
+        return deduped.length > 800 ? `${deduped.slice(0,800)}…` : deduped;
       }
 
       function renderChart(chart){
@@ -325,7 +325,7 @@
           d.onclick = () => {
             box.querySelectorAll('.palace').forEach(x=>x.classList.remove('active'));
             d.classList.add('active');
-            $('interpretation').innerHTML = `<b>${p.name} 詳細解讀（500字內）：</b><br>${palaceDetailText(p).replace(/\n/g,'<br>')}`;
+            $('interpretation').innerHTML = `<b>${p.name} 詳細解讀（800字內）：</b><br>${palaceDetailText(p).replace(/\n/g,'<br>')}`;
           };
           box.appendChild(d);
         });
