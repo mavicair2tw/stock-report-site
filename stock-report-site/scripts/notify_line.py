@@ -15,8 +15,7 @@ from urllib.error import HTTPError, URLError
 BASE_DIR = Path(__file__).resolve().parents[1]
 ENV_FILE = BASE_DIR / ".env"
 LINE_TOKEN_URL = "https://api.line.me/v2/oauth/accessToken"
-LINE_PUSH_URL = "https://api.line.me/v2/bot/message/push"
-LINE_FOLLOWERS_URL = "https://api.line.me/v2/bot/followers/ids"
+LINE_BROADCAST_URL = "https://api.line.me/v2/bot/message/broadcast"
 
 
 def load_env() -> None:
@@ -47,7 +46,7 @@ def get_access_token(channel_id: str, channel_secret: str) -> str:
     return token
 
 
-def push_message(token: str, user_id: str, text: str, image_url: str | None) -> None:
+def broadcast_message(token: str, text: str, image_url: str | None) -> None:
     messages = []
     if text:
         messages.append({"type": "text", "text": text})
@@ -60,10 +59,9 @@ def push_message(token: str, user_id: str, text: str, image_url: str | None) -> 
     if not messages:
         raise RuntimeError("Nothing to send to LINE")
     payload = json.dumps({
-        "to": user_id,
         "messages": messages
     }).encode("utf-8")
-    req = Request(LINE_PUSH_URL, data=payload, headers={
+    req = Request(LINE_BROADCAST_URL, data=payload, headers={
         "content-type": "application/json",
         "authorization": f"Bearer {token}"
     })
@@ -72,26 +70,10 @@ def push_message(token: str, user_id: str, text: str, image_url: str | None) -> 
             resp.read()
     except HTTPError as exc:
         detail = exc.read().decode()
-        raise RuntimeError(f"LINE push failed: {exc.code} {detail}")
+        raise RuntimeError(f"LINE broadcast failed: {exc.code} {detail}")
     except URLError as exc:
-        raise RuntimeError(f"LINE push connection error: {exc}")
+        raise RuntimeError(f"LINE broadcast connection error: {exc}")
 
-
-def get_follower_ids(token: str) -> list[str]:
-    user_ids: list[str] = []
-    start = None
-    while True:
-        url = LINE_FOLLOWERS_URL if not start else f"{LINE_FOLLOWERS_URL}?start={start}"
-        req = Request(url, headers={
-            "authorization": f"Bearer {token}"
-        })
-        with urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode())
-        user_ids.extend(data.get("userIds", []))
-        start = data.get("next")
-        if not start:
-            break
-    return user_ids
 
 
 def main(argv: list[str]) -> None:
@@ -103,28 +85,12 @@ def main(argv: list[str]) -> None:
     load_env()
     channel_id = os.environ.get("LINE_CHANNEL_ID")
     channel_secret = os.environ.get("LINE_CHANNEL_SECRET")
-    fallback_user = os.environ.get("LINE_USER_ID")
     if not channel_id or not channel_secret:
         raise SystemExit("Missing LINE_CHANNEL_ID / LINE_CHANNEL_SECRET")
 
     token = get_access_token(channel_id, channel_secret)
-    targets: list[str] = []
-    if fallback_user:
-        targets.append(fallback_user)
-    try:
-        followers = get_follower_ids(token)
-        for follower in followers:
-            if follower not in targets:
-                targets.append(follower)
-    except Exception as exc:
-        print(f"Warning: failed to fetch LINE followers: {exc}")
-
-    if not targets:
-        raise SystemExit("No LINE recipients available")
-
-    for target in targets:
-        push_message(token, target, args.text, args.image_url)
-    print(f"Sent LINE push to {len(targets)} recipient(s)")
+    broadcast_message(token, args.text, args.image_url)
+    print("Broadcast LINE push successfully")
 
 
 if __name__ == "__main__":
