@@ -66,15 +66,22 @@ export default {
         { role: 'user', content: 'reply ok' },
       ];
 
-      const gemini = await callGemini(env, probeMessages);
-      const providers = { gemini: providerHealth(gemini) };
+      const [openai, gemini] = await Promise.all([
+        callOpenAI(env, probeMessages),
+        callGemini(env, probeMessages),
+      ]);
+      const providers = {};
+      if (env.OPENAI_API_KEY) providers.openai = providerHealth(openai);
+      if (env.GEMINI_API_KEY) providers.gemini = providerHealth(gemini);
+      const ok = (providers.openai?.ok) || (providers.gemini?.ok);
+      const mode = providers.openai?.ok ? 'openai' : providers.gemini?.ok ? 'gemini' : 'offline';
 
       return json({
-        ok: providers.gemini.ok,
+        ok,
         providers,
-        mode: 'gemini-only',
+        mode,
         checkedAt: new Date().toISOString(),
-      }, providers.gemini.ok ? 200 : 503, request);
+      }, ok ? 200 : 503, request);
     }
 
     if (url.pathname !== '/api/chat') {
@@ -110,10 +117,17 @@ export default {
         ...sanitized,
       ];
 
-      const gemini = await callGemini(env, normalized);
-      if (gemini.ok) return json({ reply: gemini.reply, provider: 'gemini', mode: 'gemini-only' }, 200, request);
+      const openai = await callOpenAI(env, normalized);
+      if (openai.ok) {
+        return json({ reply: openai.reply, provider: 'openai', mode: 'openai-first' }, 200, request);
+      }
 
-      return json({ error: `Gemini failed. ${gemini.error}` }, 502, request);
+      const gemini = await callGemini(env, normalized);
+      if (gemini.ok) {
+        return json({ reply: gemini.reply, provider: 'gemini', mode: 'gemini-fallback' }, 200, request);
+      }
+
+      return json({ error: 'All providers failed', details: { openai: openai.error, gemini: gemini.error } }, 502, request);
     } catch {
       return json({ error: 'Internal error' }, 500, request);
     }
@@ -150,6 +164,39 @@ async function callGemini(env, messages) {
       return { ok: false, error: msg };
     }
     const reply = data?.candidates?.[0]?.content?.parts?.map(p => p?.text || '').join('').trim();
+    if (!reply) return { ok: false, error: 'Empty response' };
+    return { ok: true, reply };
+  } catch {
+    return { ok: false, error: 'Network error' };
+  }
+}
+
+async function callOpenAI(env, messages) {
+  if (!env.OPENAI_API_KEY) return { ok: false, error: 'Missing OPENAI_API_KEY' };
+  try {
+    const base = env.OPENAI_API_BASE || 'https://api.openai.com/v1';
+    const model = env.OPENAI_MODEL || 'gpt-4o-mini';
+    const url = `${base.replace(/\/$/, '')}/chat/completions`;
+    const payload = {
+      model,
+      messages,
+      temperature: 0.6,
+      max_tokens: Number(env.OPENAI_MAX_TOKENS || 600),
+    };
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const msg = data?.error?.message || `HTTP ${r.status}`;
+      return { ok: false, error: msg };
+    }
+    const reply = data?.choices?.[0]?.message?.content?.trim();
     if (!reply) return { ok: false, error: 'Empty response' };
     return { ok: true, reply };
   } catch {

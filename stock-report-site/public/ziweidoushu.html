@@ -100,6 +100,11 @@
       </div>
 
       <div class="card">
+        <h3 style="margin-top:0">整體格局解析</h3>
+        <div id="overallSummary" class="sub">請先計算命盤。</div>
+      </div>
+
+      <div class="card">
         <h3 style="margin-top:0">互動式命盤（點擊宮位查看解讀）</h3>
         <div id="chart" class="chart"></div>
       </div>
@@ -226,6 +231,22 @@
         return `【AI 模擬解析】\n姓名：${name}\n${major}${major?'\n':''}${minor}${minor?'\n':''}${annual}${annual?'\n':''}\n核心觀察：\n${summary}\n\n重點宮位解析：\n${focus}`;
       }
 
+      function buildOverallSummary(chart){
+        if(!chart?.palaces?.length) return '請先計算命盤。';
+        const palaces = [...chart.palaces].sort((a,b)=>b.score-a.score);
+        const top = palaces.slice(0,3).map(p=>`${p.name}（${p.stars.join('、')}｜分數 ${p.score}）`).join('；');
+        const weak = palaces.slice(-2).map(p=>`${p.name}（${p.score}）`).join('；');
+        const key = palaces[0] ? palaceDetailText(palaces[0]) : '';
+        const summary = chart.summary || '';
+        return `強勢宮位：${top || '資料不足'}\n需補強宮位：${weak || '資料不足'}\n綜合摘要：${summary}\n行動建議：${key}`;
+      }
+
+      function renderOverall(chart){
+        const box = $('overallSummary');
+        if(!box){return;}
+        box.innerHTML = String(buildOverallSummary(chart)).replace(/\n/g,'<br>');
+      }
+
       function palaceFormulaScore(p){
         const ws = p.stars.map(s => STAR_WEIGHTS[s] || {lead:5,wealth:5,relation:5,health:5});
         const avg = (k) => ws.reduce((a,b)=>a+Number(b[k]||5),0) / Math.max(1, ws.length);
@@ -296,6 +317,7 @@
       function renderFortune(chart){
         $('fortune').innerHTML = `${chart.major}<br>${chart.minor}<br>${chart.annual}`;
         $('interpretation').textContent = chart.summary;
+        renderOverall(chart);
       }
 
       function collectData(){
