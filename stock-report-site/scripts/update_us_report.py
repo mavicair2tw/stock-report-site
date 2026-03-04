@@ -16,6 +16,8 @@ ASSETS = [
     {"label": "Tesla", "symbol": "TSLA", "type": "Stock"},
     {"label": "S&P 500", "symbol": "^GSPC", "type": "Index"},
     {"label": "美國費城半導體指數", "symbol": "^SOX", "type": "Index"},
+    {"label": "比特幣", "symbol": "BTC-USD", "type": "Crypto"},
+    {"label": "黃金期貨", "symbol": "GC=F", "type": "Commodity"},
 ]
 
 
