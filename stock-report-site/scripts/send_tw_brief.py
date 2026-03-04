@@ -73,15 +73,6 @@ def format_etf_line(label: str, item: dict[str, Any]) -> str:
     return f"{label}：{item['price']:.2f}（{format_percent(item.get('changePercent', 0.0))}）"
 
 
-def format_income_line(item_a: dict[str, Any], item_b: dict[str, Any]) -> str:
-    note = "相對抗跌" if item_a.get("changePercent", 0.0) >= item_b.get("changePercent", 0.0) else "波動加劇"
-    return (
-        "00909 / 00919：（高息/價值型）"
-        f"約{item_a['price']:.2f} / {item_b['price']:.2f}，"
-        f"漲跌約 {format_percent(item_a.get('changePercent', 0.0), 1)} / {format_percent(item_b.get('changePercent', 0.0), 1)}，{note}"
-    )
-
-
 def build_summary(index_item: dict[str, Any]) -> str:
     pct = index_item.get("changePercent", 0.0)
     if pct >= 0.8:
@@ -129,7 +120,8 @@ def main() -> None:
         format_etf_line("0050 元大台灣50", etf_0050),
         format_etf_line("0052 富邦科技", etf_0052),
         format_etf_line("009816 凱基台灣TOP50", etf_009816),
-        format_income_line(etf_00909, etf_00919),
+        format_etf_line("00919 群益台灣精選高息", etf_00919),
+        format_etf_line("00909 國泰數位支付服務", etf_00909),
         build_summary(index_item)
     ]
 
