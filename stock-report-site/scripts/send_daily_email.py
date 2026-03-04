@@ -294,12 +294,8 @@ def push_line_notification(summary: str, suggestion: str, rows: list[dict]) -> N
     if not LINE_SCRIPT.exists():
         return
     table = build_line_table(rows)
-    image_url = build_line_table_image_url(rows)
     message = f"台股收盤通知\n{summary}\n{suggestion}\n\n{table}"
     cmd = ["python3", str(LINE_SCRIPT), message]
-    if image_url:
-        print(f"LINE image URL: {image_url}")
-        cmd.extend(["--image-url", image_url])
     try:
         subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as exc:
