@@ -213,6 +213,19 @@
         return `本命盤強勢宮位：${top.map(x=>`${x.name}（${x.stars.join('、')}）`).join('、')}。\n建議把重心放在優勢宮位的長期累積，弱勢宮位採取保守策略與風險管理。`;
       }
 
+      function buildLocalAIReport(chart){
+        if(!chart) return '（尚未計算命盤）';
+        const palaces = chart.palaces || [];
+        const top = [...palaces].sort((a,b)=>b.score-a.score).slice(0,3);
+        const name = chart?.data?.name || '使用者';
+        const major = chart?.major || '';
+        const minor = chart?.minor || '';
+        const annual = chart?.annual || '';
+        const focus = top.map((p,i)=>`${i+1}. ${palaceDetailText(p)}`).join('\n');
+        const summary = chart.summary || '';
+        return `【AI 模擬解析】\n姓名：${name}\n${major}${major?'\n':''}${minor}${minor?'\n':''}${annual}${annual?'\n':''}\n核心觀察：\n${summary}\n\n重點宮位解析：\n${focus}`;
+      }
+
       function palaceFormulaScore(p){
         const ws = p.stars.map(s => STAR_WEIGHTS[s] || {lead:5,wealth:5,relation:5,health:5});
         const avg = (k) => ws.reduce((a,b)=>a+Number(b[k]||5),0) / Math.max(1, ws.length);
@@ -361,11 +374,13 @@
             return true;
           }
 
-          $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(limit500(current.summary||'')).replace(/\n/g,'<br>')}`;
+          const local = limit500(buildLocalAIReport(current));
+          $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(local).replace(/\n/g,'<br>')}`;
           $('status').textContent='AI 服務忙碌，已切換系統解讀。';
           return false;
         } catch {
-          $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(limit500(current.summary||'')).replace(/\n/g,'<br>')}`;
+          const local = limit500(buildLocalAIReport(current));
+          $('interpretation').innerHTML = `<b>系統解讀（備援）：</b><br>${String(local).replace(/\n/g,'<br>')}`;
           $('status').textContent='AI 連線異常，已切換系統解讀。';
           return false;
         }
