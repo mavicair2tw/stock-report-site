@@ -1,17 +1,25 @@
 #!/usr/bin/env python3
 import json
 from datetime import datetime, time
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-import yfinance as yf
+import requests
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 TZ = ZoneInfo("Asia/Taipei")
+TWSE_BASE = "https://openapi.twse.com.tw/v1"
+INDEX_NAME = "發行量加權股價指數"
+DEFAULT_HEADERS = {
+    "User-Agent": "stock-report-updater/1.0 (+https://openai-tw.com/)",
+    "Accept": "application/json",
+}
 
-# NOTE:
-# Please verify ticker for 「凱基台灣TOP50」 if you use a different fund code.
 ASSETS = [
-    {"label": "加權指數", "symbol": "^TWII", "type": "Index"},
+    {"label": "加權指數", "symbol": "^TWII", "type": "Index", "category": "index"},
     {"label": "台積電", "symbol": "2330.TW", "type": "Stock"},
     {"label": "富邦科技", "symbol": "0052.TW", "type": "ETF"},
     {"label": "元大台灣50", "symbol": "0050.TW", "type": "ETF"},
@@ -21,10 +29,42 @@ ASSETS = [
 ]
 
 
-def fmt(value, digits=2):
-    if value is None:
+def normalize_code(symbol: str) -> str:
+    return symbol.replace(".TW", "").replace(".TWO", "")
+
+
+def parse_decimal(value) -> Decimal | None:
+    if value in (None, "", "-", "+"):
         return None
-    return round(float(value), digits)
+    if isinstance(value, (int, float, Decimal)):
+        return Decimal(str(value))
+    cleaned = value.replace(",", "").strip()
+    if not cleaned:
+        return None
+    try:
+        return Decimal(cleaned)
+    except InvalidOperation:
+        return None
+
+
+def fmt(dec: Decimal | None, digits: int = 2) -> float | None:
+    if dec is None:
+        return None
+    quant = Decimal(10) ** -digits
+    return float(dec.quantize(quant))
+
+
+def roc_to_iso(date_str: str) -> str | None:
+    if not date_str or len(date_str) != 7:
+        return None
+    try:
+        roc_year = int(date_str[:3])
+        year = roc_year + 1911
+        month = int(date_str[3:5])
+        day = int(date_str[5:7])
+        return datetime(year, month, day, tzinfo=TZ).date().isoformat()
+    except ValueError:
+        return None
 
 
 def is_trading_window(now: datetime) -> bool:
@@ -35,79 +75,109 @@ def is_trading_window(now: datetime) -> bool:
     return market_open <= now.time() <= market_close
 
 
-def fetch_quote(symbol: str):
-    ticker = yf.Ticker(symbol)
+def fetch_json(path: str) -> list[dict]:
+    url = f"{TWSE_BASE}{path}"
+    response = requests.get(url, headers=DEFAULT_HEADERS, timeout=30, verify=False)
+    response.raise_for_status()
+    return response.json()
 
-    # 15-minute intraday for latest price in current session
-    intraday = ticker.history(period="1d", interval="15m", auto_adjust=False)
 
-    latest = None
-    if not intraday.empty and "Close" in intraday:
-        closes = intraday["Close"].dropna()
-        if not closes.empty:
-            latest = closes.iloc[-1]
+def fetch_stock_dataset() -> tuple[dict[str, dict], str | None]:
+    data = fetch_json("/exchangeReport/STOCK_DAY_ALL")
+    stock_map = {entry["Code"]: entry for entry in data if "Code" in entry}
+    data_date = None
+    if data:
+        data_date = roc_to_iso(data[0].get("Date"))
+    return stock_map, data_date
 
-    # Use recent daily close as reference for change/%
-    daily = ticker.history(period="5d", interval="1d", auto_adjust=False)
-    previous = None
-    if not daily.empty and "Close" in daily:
-        dclose = daily["Close"].dropna()
-        if len(dclose) >= 2:
-            previous = dclose.iloc[-2]
-        elif len(dclose) == 1:
-            previous = dclose.iloc[-1]
 
-    change = (latest - previous) if (latest is not None and previous is not None) else None
-    change_pct = ((change / previous) * 100) if (change is not None and previous not in (None, 0)) else None
+def fetch_index_entry() -> tuple[dict | None, str | None]:
+    data = fetch_json("/exchangeReport/MI_INDEX")
+    for entry in data:
+        if entry.get("指數") == INDEX_NAME:
+            return entry, roc_to_iso(entry.get("日期"))
+    return None, None
 
-    currency = None
-    try:
-        finfo = ticker.fast_info or {}
-        if isinstance(finfo, dict):
-            currency = finfo.get("currency")
-    except Exception:
-        pass
 
-    trend_points = []
-    if not intraday.empty and "Close" in intraday:
-        trend_series = intraday["Close"].dropna().tail(20)
-        for idx, val in trend_series.items():
-            trend_points.append(
-                {
-                    "time": idx.tz_convert(TZ).strftime("%H:%M") if getattr(idx, "tzinfo", None) else idx.strftime("%H:%M"),
-                    "close": fmt(val, 2),
-                }
-            )
+def build_index_quote(entry: dict, data_date: str | None) -> dict:
+    price = fmt(parse_decimal(entry.get("收盤指數")))
+    sign_token = entry.get("漲跌") or ""
+    magnitude = parse_decimal(entry.get("漲跌點數"))
+    change = None
+    if magnitude is not None:
+        sign = -1 if sign_token.strip() == "-" else 1
+        change = fmt(magnitude * sign)
+    change_percent = fmt(parse_decimal(entry.get("漲跌百分比")))
+
+    trend = []
+    if price is not None and data_date:
+        trend.append({"time": data_date, "close": price})
 
     return {
-        "price": fmt(latest, 2),
-        "change": fmt(change, 2),
-        "changePercent": fmt(change_pct, 2),
-        "currency": currency or "TWD",
-        "trend": trend_points,
+        "price": price,
+        "change": change,
+        "changePercent": change_percent,
+        "currency": "TWD",
+        "trend": trend,
+    }
+
+
+def build_stock_quote(entry: dict | None, data_date: str | None) -> dict:
+    if not entry:
+        return {"price": None, "change": None, "changePercent": None, "currency": "TWD", "trend": []}
+
+    price_dec = parse_decimal(entry.get("ClosingPrice"))
+    change_dec = parse_decimal(entry.get("Change"))
+    price = fmt(price_dec)
+    change = fmt(change_dec)
+
+    change_percent = None
+    if price_dec is not None and change_dec is not None:
+        prev_close = price_dec - change_dec
+        if prev_close != 0:
+            change_percent = fmt((change_dec / prev_close) * 100)
+
+    trend = []
+    if price is not None and data_date:
+        trend.append({"time": data_date, "close": price})
+
+    return {
+        "price": price,
+        "change": change,
+        "changePercent": change_percent,
+        "currency": "TWD",
+        "trend": trend,
     }
 
 
 def build_report(now: datetime):
+    stock_map, stock_date = fetch_stock_dataset()
+    index_entry, index_date = fetch_index_entry()
+    data_date = stock_date or index_date
+
     items = []
     for asset in ASSETS:
-        quote = fetch_quote(asset["symbol"])
-        items.append(
-            {
-                "label": asset["label"],
-                "symbol": asset["symbol"],
-                "type": asset["type"],
-                **quote,
-            }
-        )
+        if asset.get("category") == "index":
+            quote = build_index_quote(index_entry, data_date)
+        else:
+            code = normalize_code(asset["symbol"])
+            quote = build_stock_quote(stock_map.get(code), data_date)
+
+        items.append({
+            "label": asset["label"],
+            "symbol": asset["symbol"],
+            "type": asset["type"],
+            **quote,
+        })
 
     return {
         "updatedAt": now.isoformat(),
         "timezone": "Asia/Taipei",
+        "dataDate": data_date,
         "source": {
-            "name": "Yahoo Finance",
-            "provider": "yfinance",
-            "url": "https://finance.yahoo.com/"
+            "name": "臺灣證券交易所 OpenAPI",
+            "provider": "TWSE",
+            "url": "https://openapi.twse.com.tw/"
         },
         "market": {
             "name": "TWSE",
@@ -121,7 +191,6 @@ def build_report(now: datetime):
 
 def main():
     now = datetime.now(tz=TZ)
-
     report = build_report(now)
 
     base_dir = Path(__file__).resolve().parent.parent
