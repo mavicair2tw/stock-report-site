@@ -188,13 +188,43 @@ jobs:
           git config --global user.name "openai-tw bot"
           git config --global user.email "deploy@openai-tw.com"
 
-          rm -rf site-publish
+          rm -rf site-publish preserved-manual-pages
           git clone git@github.com:$TARGET_REPO.git site-publish
+          mkdir -p preserved-manual-pages
+
+          # Preserve William's manually maintained pages and safety workflow.
+          if [ -d site-publish/etf ]; then
+            mkdir -p preserved-manual-pages/etf
+            cp -R site-publish/etf/. preserved-manual-pages/etf/
+          fi
+          if [ -d site-publish/五子棋 ]; then
+            mkdir -p preserved-manual-pages/五子棋
+            cp -R site-publish/五子棋/. preserved-manual-pages/五子棋/
+          fi
+          if [ -f site-publish/.github/workflows/protect-pages.yml ]; then
+            mkdir -p preserved-manual-pages/.github/workflows
+            cp site-publish/.github/workflows/protect-pages.yml preserved-manual-pages/.github/workflows/protect-pages.yml
+          fi
+
           cd site-publish
 
           git rm -rf . >/dev/null 2>&1 || true
-          rm -rf ./*
+          rm -rf ./* .github
           cp -R ../dist/. .
+
+          # Restore preserved manual pages after deploy output is copied in.
+          if [ -d ../preserved-manual-pages/etf ]; then
+            mkdir -p etf
+            cp -R ../preserved-manual-pages/etf/. etf/
+          fi
+          if [ -d ../preserved-manual-pages/五子棋 ]; then
+            mkdir -p 五子棋
+            cp -R ../preserved-manual-pages/五子棋/. 五子棋/
+          fi
+          if [ -f ../preserved-manual-pages/.github/workflows/protect-pages.yml ]; then
+            mkdir -p .github/workflows
+            cp ../preserved-manual-pages/.github/workflows/protect-pages.yml .github/workflows/protect-pages.yml
+          fi
 
           git add .
           git commit -m "Deploy site $(date -u +%Y-%m-%dT%H:%M:%SZ)" || exit 0
