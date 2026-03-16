@@ -55,6 +55,12 @@
       }
       .sub { margin: 0 0 20px; color: var(--muted); }
       .counter { color: var(--muted); margin-bottom: 20px; }
+      .featured-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+      }
       .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -151,6 +157,17 @@
       </div>
       <p class="sub">主入口：選擇你要看的報表與內容。</p>
       <div class="counter" id="viewCounter">點閱數：--</div>
+
+      <section class="featured-grid">
+        <a class="card" href="/etf/">
+          <div class="name">ETF 投資工具</div>
+          <div class="desc">配息試算、投資組合分析與 ETF 比較</div>
+        </a>
+        <a class="card" href="/五子棋/">
+          <div class="name">五子棋 AI 對戰</div>
+          <div class="desc">與 AI 對弈五子棋，四種難度，支援音效與悔棋</div>
+        </a>
+      </section>
 
       <section class="grid">
         <a class="card" href="https://openai-tw.com/tw/">
