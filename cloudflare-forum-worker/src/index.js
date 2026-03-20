@@ -8,6 +8,10 @@ export default {
       return new Response(null, { headers: cors(request) });
     }
 
+    if (url.pathname === '/api/forum/translate' && request.method === 'POST') {
+      return handleTranslate(request, env);
+    }
+
     if (url.pathname !== '/api/forum') {
       return json({ error: 'Not found' }, 404, request);
     }
@@ -102,6 +106,40 @@ export default {
   },
 };
 
+async function handleTranslate(request, env) {
+  const body = await request.json().catch(() => ({}));
+  const target = String(body?.target || '').trim();
+  const texts = Array.isArray(body?.texts) ? body.texts.map((x) => String(x || '')).slice(0, 100) : [];
+
+  if (!target) return json({ error: 'target required' }, 400, request);
+  if (!texts.length) return json({ items: [] }, 200, request);
+  if (target === 'en') return json({ items: texts }, 200, request);
+
+  try {
+    const translated = await Promise.all(texts.map((text) => translateText(text, target)));
+    return json({ items: translated }, 200, request);
+  } catch (err) {
+    return json({ error: 'translation failed', detail: String(err?.message || err || 'unknown') }, 502, request);
+  }
+}
+
+async function translateText(text, target) {
+  const value = String(text || '');
+  if (!value.trim()) return value;
+
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(target)}&dt=t&q=${encodeURIComponent(value)}`;
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0',
+      'Accept': 'application/json,text/plain,*/*',
+    },
+  });
+  if (!res.ok) throw new Error(`upstream ${res.status}`);
+  const data = await res.json();
+  if (!Array.isArray(data) || !Array.isArray(data[0])) return value;
+  return data[0].map((part) => Array.isArray(part) ? String(part[0] || '') : '').join('') || value;
+}
+
 function safeParse(raw) {
   try {
     const arr = JSON.parse(raw || '[]');
@@ -175,6 +213,6 @@ function cors(request) {
   return {
     'Access-Control-Allow-Origin': allow.includes(origin) ? origin : 'https://openai-tw.com',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
 }
