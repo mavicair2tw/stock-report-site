@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-15 03:27",
+  "updatedAt": "2026-05-15 10:09",
   "timezone": "Asia/Taipei",
   "storiesZh": [
     {
@@ -55,14 +55,6 @@
     {
       "lang": "en",
       "titleZh": "",
-      "titleEn": "16 Movies Inspired by Real Events You’ll Want to See to Believe - Netflix",
-      "summaryZh": "",
-      "summaryEn": "16 Movies Inspired by Real Events You’ll Want to See to Believe Netflix",
-      "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE1QeEFGS0RYSUlpTjhIdkxfdktWRklDMzYxbXJqUnBHU20xMmVuWVUyeHdMS01YTFpyZlJiUU0xSGgxVnVxbFR0VjBJOWZlQ3k4YkZwX1FNaWozUjFZMFBUV2E1NXFwbkpVQkRMZ3BaTF9hVndSaEE?oc=5"
-    },
-    {
-      "lang": "en",
-      "titleZh": "",
       "titleEn": "When You Know, You Know: 12 Real-Life Love Stories That Will Make Your Heart Skip a Beat - Reader's Digest",
       "summaryZh": "",
       "summaryEn": "When You Know, You Know: 12 Real-Life Love Stories That Will Make Your Heart Skip a Beat Reader's Digest",
@@ -83,6 +75,14 @@
       "summaryZh": "",
       "summaryEn": "The Creepy True Stories Behind 'The Conjuring' Films All That's Interesting",
       "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE9wU0xSdWZ5QkZuRlFGQ0ZlaS1BaFlKMEMxMVI3TDVjaE83VXRzOVpLeWxwdGRzSUc1Tk5oVkhackg0alJSdlROT1I1MU1JR0lONk15N3I3UWN6X1E5aVBxSk1NcGg?oc=5"
+    },
+    {
+      "lang": "en",
+      "titleZh": "",
+      "titleEn": "25 Charming Love Stories About How Real Couples Met - Brides",
+      "summaryZh": "",
+      "summaryEn": "25 Charming Love Stories About How Real Couples Met Brides",
+      "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTFBOdFh1TGNrMlZxWWlycTdCWnBuM0w2LXdvaHJGZ0VNeDBkdHQ0UjNCVnVWVHE1U2hLY2kxa1AzakFXTFhfY3ZfYndXbm11SGg5c2F2OFlmOFdDWW9MYkE?oc=5"
     }
   ],
   "stories": [
@@ -137,14 +137,6 @@
     {
       "lang": "en",
       "titleZh": "",
-      "titleEn": "16 Movies Inspired by Real Events You’ll Want to See to Believe - Netflix",
-      "summaryZh": "",
-      "summaryEn": "16 Movies Inspired by Real Events You’ll Want to See to Believe Netflix",
-      "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE1QeEFGS0RYSUlpTjhIdkxfdktWRklDMzYxbXJqUnBHU20xMmVuWVUyeHdMS01YTFpyZlJiUU0xSGgxVnVxbFR0VjBJOWZlQ3k4YkZwX1FNaWozUjFZMFBUV2E1NXFwbkpVQkRMZ3BaTF9hVndSaEE?oc=5"
-    },
-    {
-      "lang": "en",
-      "titleZh": "",
       "titleEn": "When You Know, You Know: 12 Real-Life Love Stories That Will Make Your Heart Skip a Beat - Reader's Digest",
       "summaryZh": "",
       "summaryEn": "When You Know, You Know: 12 Real-Life Love Stories That Will Make Your Heart Skip a Beat Reader's Digest",
@@ -165,6 +157,14 @@
       "summaryZh": "",
       "summaryEn": "The Creepy True Stories Behind 'The Conjuring' Films All That's Interesting",
       "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE9wU0xSdWZ5QkZuRlFGQ0ZlaS1BaFlKMEMxMVI3TDVjaE83VXRzOVpLeWxwdGRzSUc1Tk5oVkhackg0alJSdlROT1I1MU1JR0lONk15N3I3UWN6X1E5aVBxSk1NcGg?oc=5"
+    },
+    {
+      "lang": "en",
+      "titleZh": "",
+      "titleEn": "25 Charming Love Stories About How Real Couples Met - Brides",
+      "summaryZh": "",
+      "summaryEn": "25 Charming Love Stories About How Real Couples Met Brides",
+      "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTFBOdFh1TGNrMlZxWWlycTdCWnBuM0w2LXdvaHJGZ0VNeDBkdHQ0UjNCVnVWVHE1U2hLY2kxa1AzakFXTFhfY3ZfYndXbm11SGg5c2F2OFlmOFdDWW9MYkE?oc=5"
     }
   ],
   "ok": true,
